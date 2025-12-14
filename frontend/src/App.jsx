@@ -1,34 +1,33 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { LoginUI } from './pages/LoginUI'
+import { Button } from '@/components/ui/button'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [showLogin, setShowLogin] = useState(false)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/e/e7/Everest_North_Face_toward_Base_Camp_Tibet_Luca_Galuzzi_2006.jpg')"
+      }}
+    >
+      <div className="p-8">
+        <Button 
+          onClick={() => setShowLogin(true)} 
+          size="lg"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
+        >
+          Login / Sign Up
+        </Button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {showLogin && (
+        <div className="fixed inset-0 z-50" onClick={() => setShowLogin(false)}>
+          <LoginUI onClose={() => setShowLogin(false)} />
+        </div>
+      )}
+    </div>
   )
 }
 
