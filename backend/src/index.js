@@ -24,7 +24,6 @@ app.use(
 app.use(express.json());
 
 // Routes
-app.use(authMiddleware);
 app.use("/api", routes);
 
 // Server
