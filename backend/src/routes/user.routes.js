@@ -60,23 +60,23 @@ export const login = async (req, res) => {
 
     if(!existingUser) {
         return res.status(404).json({ error: "User not found" })
-    }
+}
 
     const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
     if(!isPasswordValid) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        
     }
 
-    const paylaod = {
+    const payload = {
         _id: existingUser._id,
         email: existingUser.email,
         userName: existingUser.userName,
     }
 
-    const token = jwt.sign(paylaod, process.env.JWT_SECRET);
+    const token = jwt.sign(payload, process.env.JWT_SECRET);
 
-    return res.status(200).json({ status: "sucess", token })
+    return res.status(200).json({ status: "success", token })
 };
 
 export const logoutUser = async (req, res) => {

@@ -3,10 +3,8 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import routes from "./routes/index.js";
-import { authMiddleware } from "./middlewares/auth.middleware.js";
 import session from "express-session";
 import passport from "passport";
-import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
@@ -49,7 +47,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BASE_URL}/api/auth/google/callback`,
+      callbackURL: `${process.env.BASE_URL}/api/oauth/google/callback`,
       scope: ["profile", "email"],
     },
     (accessToken, refreshToken, profile, done) => {
@@ -61,7 +59,7 @@ passport.use(
 
 // Routes
 app.use("/api/auth", routes);
-app.use("/api/auth", authRoutes);
+app.use("/api/oauth", authRoutes);
 
 // Default route
 app.get("/", (req, res) => res.send("✅ Server running"));
