@@ -5,24 +5,41 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+<<<<<<< HEAD
     "dev": "nodemon src/index.js",
     "start": "node src/index.js"
+=======
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev" : "nodemon src/index.js"
+>>>>>>> 403f149db495ae53d2395af5c88816739dad0610
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+<<<<<<< HEAD
+=======
+  "type": "module",
+>>>>>>> 403f149db495ae53d2395af5c88816739dad0610
   "dependencies": {
     "-": "^0.0.1",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+<<<<<<< HEAD
     "g": "^2.0.1",
     "mongodb": "^7.0.0",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^2.2.1",
     "nodemon": "^3.1.11"
+=======
+    "express-session": "^1.18.2",
+    "mongoose": "^9.0.1",
+    "nodemon": "^3.1.11",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+>>>>>>> 403f149db495ae53d2395af5c88816739dad0610
   },
   "devDependencies": {
     "prettier": "^3.7.4"
