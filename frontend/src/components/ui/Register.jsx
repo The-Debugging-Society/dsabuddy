@@ -18,7 +18,7 @@ const Register = () => {
               Name
             </label>
             <input
-              className="text-white mb-5 mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
+              className="text-white font-JetBrains-Mono mb-5 mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
               placeholder="enter_name"
             />
           </div>
@@ -28,7 +28,7 @@ const Register = () => {
               Username
             </label>
             <input
-              className="text-white mb-5 mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
+              className="text-white mb-5 font-JetBrains-Mono mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
               placeholder="enter_username"
             />
           </div>
@@ -38,7 +38,7 @@ const Register = () => {
               Email Address
             </label>
             <input
-              className="text-white mb-5 bg-[#101e22] mt-1 p-3 w-full border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
+              className="text-white mb-5 font-JetBrains-Mono bg-[#101e22] mt-1 p-3 w-full border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
               placeholder="enter_email"
             />
           </div>
@@ -49,7 +49,7 @@ const Register = () => {
                 Password
               </label>
               <input
-                className="text-white mb-5 mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
+                className="text-white mb-5   font-JetBrains-Mono mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
                 placeholder="******"
               />
             </div>
@@ -59,7 +59,7 @@ const Register = () => {
                 Confirm Password
               </label>
               <input
-                className="text-white mb-5 mt-1 p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
+                className="text-white mb-5 mt-1 font-JetBrains-Mono p-3 w-full bg-[#101e22] border border-gray-600 rounded-lg focus:outline-none focus:border-[#faf506] focus:ring-1 focus:ring-[#faf506] transition-colors text-sm sm:text-base"
                 placeholder="******"
               />
             </div>
@@ -74,7 +74,7 @@ const Register = () => {
           <div className="w-20 sm:w-32 md:w-44 h-0.5 bg-(--content-color)"/>
         </div>
         <div>
-          <button className="bg-[#101e22] cursor-pointer flex justify-center gap-2 sm:gap-3 p-2 sm:p-3 w-full rounded-lg border border-gray-600 items-center hover:border-gray-500 transition-colors">
+          <button className="bg-[#101e22] cursor-pointer flex justify-center gap-2 sm:gap-3 p-2 sm:p-3 w-full rounded-lg border border-gray-600 hover:border-[#faf506] items-center transition-colors">
             <img className="size-4 sm:size-5" src="Google.png" alt="Google" />
             <p className="text-white font-bold font-JetBrains-Mono text-xs sm:text-sm md:text-base">Continue with Google</p>
           </button>

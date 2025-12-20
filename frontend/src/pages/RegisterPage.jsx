@@ -27,8 +27,8 @@ const RegisterPage = () => {
       <div className="w-full px-4 sm:px-6">
         <Register />
       </div>
-      <div className="w-full max-w-120 mt-5 mb-6 cursor-pointer mx-auto px-4 sm:px-6 group">
-        <p className="text-[#6c7280] group-hover:text-[#faf506] transition-colors duration-200 w-full text-sm sm:text-base text-center">// Already a member? <span className="underline"> Login here</span></p>
+      <div className="w-full max-w-120 mt-5 font-JetBrains-Mono mb-6 cursor-pointer mx-auto px-4 sm:px-6 group">
+        <p className="text-[#6c7280] group-hover:text-[#faf506]   transition-colors duration-200 w-full text-sm sm:text-base text-center">// Already a member? <span className="underline"> Login here</span></p>
       </div>
     </div>
   );
