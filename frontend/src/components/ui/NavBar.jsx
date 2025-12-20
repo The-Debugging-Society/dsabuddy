@@ -20,7 +20,7 @@ const NavBar = () => {
           </ul>
         </div>
         <div className="bg-(--primary-color) p-1 rounded-full font-bold border-b-2 sm:border-b-4 border-black">
-          <Link to="/RegisterPage">
+          <Link to="/LoginUI">
             <button className="font-SF-Pro cursor-pointer rounded-full px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base hover:opacity-90 transition-opacity">Start Coding</button>
           </Link>
         </div>

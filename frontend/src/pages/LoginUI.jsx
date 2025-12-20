@@ -4,7 +4,7 @@ import TextType from "@/components/ui/TextType";
 import { IdCard } from "lucide-react";
 import React from "react";
 
-const RegisterPage = () => {
+const LoginUI = () => {
 
   return (
 
@@ -34,4 +34,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default LoginUI;
