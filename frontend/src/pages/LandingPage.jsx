@@ -8,10 +8,10 @@ import Footer from "@/components/ui/Footer";
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const handleStartTracking = () => navigate("/LoginUI");
+  const handleStartTracking = () => navigate("/register");
 
   return (
-    <>
+    <div>
     
       <NavBar />
       <HeroSection onStartTracking={handleStartTracking} />
@@ -19,6 +19,6 @@ export function LandingPage() {
       <Problem />
       <FinalCard />
       <Footer />
-    </>
+    </div>
   );
 }
