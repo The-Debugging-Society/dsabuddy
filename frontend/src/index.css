@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300..700&display=swap');
+@import "tailwindcss";
 
 body{
 	background-color: #f4f4f0;
@@ -18,8 +18,8 @@ body{
 
 
 ::selection {
-  background: #faf506; /* The background color of the highlighted text */
-  color: black;      /* The text color when highlighted (optional) */
+  background: #faf506; 
+  color: black;      
 }
 
 

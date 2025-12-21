@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const HeroSection = ({ onStartTracking = () => {} }) => {
   return (
     <motion.div 
-      className="mt-40 m-auto xl:max-w-270 2xl:max-w-270 md:max-w-190 sm:max-w-150 max-w-90"
+      className="mt-40  m-auto xl:max-w-270 2xl:max-w-270 md:max-w-190 sm:max-w-150 max-w-90"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

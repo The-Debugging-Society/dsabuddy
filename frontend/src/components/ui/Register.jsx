@@ -10,7 +10,7 @@ import React from "react";
 const Register = () => {
   return (
     <div className="flex justify-center items-center w-full">
-      <div className="mt-6 sm:mt-10 w-full max-w-120 p-4 sm:p-6 md:p-10 max-h-fit rounded-xl bg-[#18262b] border border-gray-700 mx-auto">
+      <div className="mt-6 sm:mt-10 w-full border-t-(--primary-color) border-t-2 max-w-120 p-4 sm:p-6 md:p-10 max-h-fit rounded-xl bg-[#18262b] border border-gray-700 mx-auto">
         <form className="mx-auto w-full flex flex-col justify-center items-center">
           <div className="w-full">
             <label className="text-white flex gap-2 text-sm sm:text-base">

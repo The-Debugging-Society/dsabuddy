@@ -1,13 +1,11 @@
 import NavBar from "@/components/ui/NavBar";
 import Register from "@/components/ui/Register";
 import TextType from "@/components/ui/TextType";
-import { IdCard } from "lucide-react";
 import React from "react";
+import { Link } from "react-router-dom";
 
 const RegisterPage = () => {
-
   return (
-
     <div className="bg-[#101e22] flex flex-col justify-center items-center min-h-screen">
       <NavBar />
       <div className="w-full max-w-150 mx-auto px-4 sm:px-6 font-bold primary-color text-2xl sm:text-3xl md:text-4xl pt-20 sm:pt-30 md:pt-45">
@@ -28,7 +26,11 @@ const RegisterPage = () => {
         <Register />
       </div>
       <div className="w-full max-w-120 mt-5 font-JetBrains-Mono mb-6 cursor-pointer mx-auto px-4 sm:px-6 group">
-        <p className="text-[#6c7280] group-hover:text-[#faf506]   transition-colors duration-200 w-full text-sm sm:text-base text-center">// Already a member? <span className="underline"> Login here</span></p>
+        <Link to="/login">
+          <p className="text-[#6c7280] group-hover:text-[#faf506] transition-colors duration-200 w-full text-sm sm:text-base text-center">
+            // Already a member? <span className="underline">Login here</span>
+          </p>
+        </Link>
       </div>
     </div>
   );
