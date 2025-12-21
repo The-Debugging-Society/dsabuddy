@@ -6,6 +6,7 @@ import passport from "passport";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import emailRoutes from "./routes/emailRoutes.js";
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ passport.use(
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use('/api/email', emailRoutes);
 
 // Default route
 app.get("/", (req, res) => res.send("✅ Server running"));
