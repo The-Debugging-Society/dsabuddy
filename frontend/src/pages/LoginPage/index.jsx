@@ -4,7 +4,7 @@ import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import TextType from "@/components/ui/TextType";
 
-const LoginPage = () => {
+export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
@@ -69,6 +69,4 @@ const LoginPage = () => {
       )}
     </div>
   );
-};
-
-export default LoginPage;
+}
