@@ -1,10 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import NavBar from "@/components/ui/NavBar";
-import HeroSection from "@/components/ui/HeroSection";
-import About from "@/components/ui/About";
-import Problem from "@/components/ui/Problem";
-import FinalCard from "@/components/ui/FinalCard";
-import Footer from "@/components/ui/Footer";
+import { Header, Footer } from "@/components/layout";
+import { HeroSection, FeaturesSection, ComparisonSection, CTASection } from "@/components/sections";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -12,12 +8,11 @@ export function LandingPage() {
 
   return (
     <div>
-    
-      <NavBar />
+      <Header />
       <HeroSection onStartTracking={handleStartTracking} />
-      <About />
-      <Problem />
-      <FinalCard />
+      <FeaturesSection />
+      <ComparisonSection />
+      <CTASection onGetStarted={handleStartTracking} />
       <Footer />
     </div>
   );
