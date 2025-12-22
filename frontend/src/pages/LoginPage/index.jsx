@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Header } from "@/components/layout";
-import { LoginForm, RegisterForm } from "@/components/sections";
+import { LoginForm } from "./LoginForm";
+import { RegisterForm } from "./RegisterForm";
 import TextType from "@/components/ui/TextType";
 
 const LoginPage = () => {

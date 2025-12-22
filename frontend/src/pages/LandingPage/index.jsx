@@ -1,6 +1,9 @@
 import { useNavigation } from "@/hooks";
 import { Header, Footer } from "@/components/layout";
-import { HeroSection, FeaturesSection, ComparisonSection, CTASection } from "@/components/sections";
+import { HeroSection } from "./HeroSection";
+import { FeaturesSection } from "./FeaturesSection";
+import { ComparisonSection } from "./ComparisonSection";
+import { CTASection } from "./CTASection";
 
 export function LandingPage() {
   const { goToRegister } = useNavigation();

@@ -37,6 +37,7 @@ export const ComparisonSection = () => {
               className="rounded-4xl grayscale group-hover:grayscale-0 transition-all duration-300"
               src={StruggleImg}
               alt="The Struggle"
+              loading="lazy"
             />
           </motion.div>
         </Card>
@@ -79,6 +80,7 @@ export const ComparisonSection = () => {
               className="rounded-4xl grayscale group-hover:grayscale-0 transition-all duration-300"
               src={DashboardImg}
               alt="The Solution"
+              loading="lazy"
             />
           </motion.div>
         </Card>

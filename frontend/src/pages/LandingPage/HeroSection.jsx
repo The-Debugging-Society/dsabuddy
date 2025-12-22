@@ -68,7 +68,12 @@ export const HeroSection = ({ onStartTracking = () => {} }) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.8 }}
       >
-        <img className="rounded-4xl border-2 border-black" src={DashboardImg} alt="Dashboard Preview" />
+        <img 
+          className="rounded-4xl border-2 border-black" 
+          src={DashboardImg} 
+          alt="Dashboard Preview"
+          loading="lazy"
+        />
       </motion.div>
 
       {/* Stats Section */}

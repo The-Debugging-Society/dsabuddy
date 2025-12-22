@@ -4,3 +4,5 @@ export { Card } from './Card';
 export { Badge } from './Badge';
 export { Divider } from './Divider';
 export { IconBox } from './IconBox';
+export { ErrorBoundary } from './ErrorBoundary';
+export { Spinner } from './Spinner';

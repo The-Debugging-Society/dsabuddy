@@ -1,36 +1,37 @@
+import { memo } from 'react';
 import { motion } from "framer-motion";
 import { ChartNoAxesCombined, Trophy, Flame, CloudSync } from "lucide-react";
 import { Badge } from "@/components/common";
 import { FeatureCard } from "@/components/layout";
 
-export const FeaturesSection = () => {
-  const features = [
-    {
-      icon: ChartNoAxesCombined,
-      iconVariant: "primary",
-      title: "Unified DSA Progress",
-      description: "Track every problem you solve across platforms in one clean dashboard. No manual tracking, no guesswork.",
-    },
-    {
-      icon: Trophy,
-      iconVariant: "info",
-      title: "College Leaderboards",
-      description: "Compete with students from your branch and year. See exactly where you stand — and who's ahead of you.",
-    },
-    {
-      icon: Flame,
-      iconVariant: "warning",
-      title: "Streak System",
-      description: "Build momentum and stay consistent. Your streak motivates you to code every single day.",
-    },
-    {
-      icon: CloudSync,
-      iconVariant: "success",
-      title: "Auto-Sync Platforms",
-      description: "Connect your LeetCode, Codeforces, and CodeChef. Everything syncs automatically.",
-    },
-  ];
+const featuresList = [
+  {
+    icon: ChartNoAxesCombined,
+    iconVariant: "primary",
+    title: "Unified DSA Progress",
+    description: "Track every problem you solve across platforms in one clean dashboard. No manual tracking, no guesswork.",
+  },
+  {
+    icon: Trophy,
+    iconVariant: "info",
+    title: "College Leaderboards",
+    description: "Compete with students from your branch and year. See exactly where you stand — and who's ahead of you.",
+  },
+  {
+    icon: Flame,
+    iconVariant: "warning",
+    title: "Streak System",
+    description: "Build momentum and stay consistent. Your streak motivates you to code every single day.",
+  },
+  {
+    icon: CloudSync,
+    iconVariant: "success",
+    title: "Auto-Sync Platforms",
+    description: "Connect your LeetCode, Codeforces, and CodeChef. Everything syncs automatically.",
+  },
+];
 
+export const FeaturesSection = memo(() => {
   return (
     <motion.div 
       className="mt-15 mb-20 mx-auto xl:max-w-270 2xl:max-w-270 md:max-w-190 sm:max-w-150 max-w-90"
@@ -66,9 +67,9 @@ export const FeaturesSection = () => {
       </motion.p>
 
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        {features.map((feature, index) => (
+        {featuresList.map((feature, index) => (
           <FeatureCard
-            key={index}
+            key={feature.title}
             icon={feature.icon}
             iconVariant={feature.iconVariant}
             title={feature.title}
@@ -79,4 +80,6 @@ export const FeaturesSection = () => {
       </div>
     </motion.div>
   );
-};
+});
+
+FeaturesSection.displayName = 'FeaturesSection';
