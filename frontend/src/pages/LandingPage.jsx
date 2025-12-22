@@ -1,18 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigation } from "@/hooks";
 import { Header, Footer } from "@/components/layout";
 import { HeroSection, FeaturesSection, ComparisonSection, CTASection } from "@/components/sections";
 
 export function LandingPage() {
-  const navigate = useNavigate();
-  const handleStartTracking = () => navigate("/register");
+  const { goToRegister } = useNavigation();
 
   return (
     <div>
       <Header />
-      <HeroSection onStartTracking={handleStartTracking} />
+      <HeroSection onStartTracking={goToRegister} />
       <FeaturesSection />
       <ComparisonSection />
-      <CTASection onGetStarted={handleStartTracking} />
+      <CTASection onGetStarted={goToRegister} />
       <Footer />
     </div>
   );
