@@ -48,10 +48,7 @@ export const FeaturesSection = memo(() => {
         transition={{ duration: 0.5 }}
       >
         <h1>
-          Why{" "}
-          <Badge variant="primary" className="rounded-full px-4 py-2 text-lg inline-block">
-            DSABuddy?
-          </Badge>
+          Why <span className="bg-[#faf506] dark:bg-[#faf506] px-2">DSABuddy?</span>
         </h1>
       </motion.div>
       
