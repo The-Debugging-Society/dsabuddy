@@ -24,6 +24,24 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+
+    // Personal details (Issue #4)
+    college: {
+        type: String,
+        default: "NSUT",
+    },
+    branch: {
+        type: String,
+    },
+    year: {
+        type: Number,
+    },
+
+    // CP profile
+    leetcodeUsername: {
+        type: String,
+    },
+
 }, { timestamps: true });
 
 const BlacklistedTokenSchema = new Schema({
@@ -37,6 +55,9 @@ const BlacklistedTokenSchema = new Schema({
     },
 }, { timestamps: true });
 
-const User = model('user', userSchema);
+const User = model("user", userSchema);
 export default User;
-export const BlacklistedToken = model('blacklistedToken', BlacklistedTokenSchema);
+export const BlacklistedToken = model(
+    "blacklistedToken",
+    BlacklistedTokenSchema
+);
