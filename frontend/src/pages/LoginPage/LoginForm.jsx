@@ -34,14 +34,14 @@ export const LoginForm = () => {
           </form>
         </div>
 
-        <Button variant="accent" className="mt-8 w-full flex gap-3">
+        <Button variant="accent" className="mt-8 w-full flex gap-3 cursor-pointer">
           <LogIn />
           <h3>Log In</h3>
         </Button>
 
         <Divider text="OR" className="mt-5 mb-5" />
 
-        <SocialButton icon={GoogleLogo} text="Continue with Google" />
+        <SocialButton icon={GoogleLogo} text="Continue with Google" className="cursor-pointer" />
       </div>
     </div>
   );

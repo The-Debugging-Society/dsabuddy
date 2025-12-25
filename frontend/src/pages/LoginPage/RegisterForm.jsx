@@ -50,13 +50,13 @@ export const RegisterForm = () => {
           </div>
         </form>
 
-        <Button variant="accent" className="w-full text-sm sm:text-base">
+        <Button variant="accent" className="w-full text-sm sm:text-base cursor-pointer">
           &#91; Initialize Account &#93;
         </Button>
 
         <Divider text="OR" className="mt-5 mb-5" />
 
-        <SocialButton icon={GoogleLogo} text="Continue with Google" />
+        <SocialButton icon={GoogleLogo} text="Continue with Google" className="cursor-pointer" />
       </div>
     </div>
   );
