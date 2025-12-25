@@ -33,7 +33,7 @@ export default function LoginPage() {
           <div className="w-full max-w-120 mt-5 font-JetBrains-Mono mb-6 cursor-pointer mx-auto px-4 sm:px-6 group">
             <button onClick={() => setIsLogin(false)} className="w-full">
               <p className="text-[#6c7280] group-hover:text-[#faf506] transition-colors duration-200 w-full text-sm sm:text-base text-center">
-                // Not a member? <span className="underline">Register here</span>
+                // Not a member? <span className="underline cursor-pointer">Register here</span>
               </p>
             </button>
           </div>
@@ -61,7 +61,7 @@ export default function LoginPage() {
           <div className="w-full max-w-120 mt-5 font-JetBrains-Mono mb-6 cursor-pointer mx-auto px-4 sm:px-6 group">
             <button onClick={() => setIsLogin(true)} className="w-full">
               <p className="text-[#6c7280] group-hover:text-[#faf506] transition-colors duration-200 w-full text-sm sm:text-base text-center">
-                // Already a member? <span className="underline">Login here</span>
+                // Already a member? <span className="underline cursor-pointer">Login here</span>
               </p>
             </button>
           </div>
