@@ -193,3 +193,84 @@ export const analyticsStats = [
   { label: 'Total Solved', value: '1,234', color: '#3B82F6' },
   { label: 'Best Streak', value: '45', color: '#F59E0B' },
 ];
+
+export const companies = [
+  { id: 'adobe', name: 'Adobe', questionCount: 48 },
+  { id: 'amazon', name: 'Amazon', questionCount: 90 },
+  { id: 'google', name: 'Google', questionCount: 158 },
+  { id: 'microsoft', name: 'Microsoft', questionCount: 80 },
+  { id: 'meta', name: 'Meta', questionCount: 88 },
+  { id: 'apple', name: 'Apple', questionCount: 65 },
+];
+
+export const interviewSets = {
+  adobe: {
+    name: 'Adobe Interview Set',
+    tag: 'TOP 50',
+    lastUpdated: '2 days ago',
+    easy: { count: 18, total: 45 },
+    medium: { count: 19, total: 45 },
+    hard: { count: 8, total: 45 },
+  },
+  amazon: {
+    name: 'Amazon Interview Set',
+    tag: 'TOP 100',
+    lastUpdated: '1 week ago',
+    easy: { count: 25, total: 90 },
+    medium: { count: 45, total: 90 },
+    hard: { count: 20, total: 90 },
+  },
+  google: {
+    name: 'Google Interview Set',
+    tag: 'TOP 150',
+    lastUpdated: '3 days ago',
+    easy: { count: 35, total: 158 },
+    medium: { count: 78, total: 158 },
+    hard: { count: 45, total: 158 },
+  },
+};
+
+export const companyQuestions = {
+  adobe: [
+    {
+      id: 1,
+      title: 'Trapping Rain Water',
+      tags: ['Array', 'Two Pointers', 'Dynamic Programming'],
+      difficulty: 'HARD',
+      frequency: 'Very High',
+      solved: false,
+    },
+    {
+      id: 2,
+      title: 'Add Two Numbers',
+      tags: ['Linked List', 'Math', 'Recursion'],
+      difficulty: 'MEDIUM',
+      frequency: 'High',
+      solved: false,
+    },
+    {
+      id: 3,
+      title: 'Merge Intervals',
+      tags: ['Array', 'Sorting'],
+      difficulty: 'MEDIUM',
+      frequency: 'High',
+      solved: false,
+    },
+    {
+      id: 4,
+      title: 'Two Sum',
+      tags: ['Array', 'Hash Table'],
+      difficulty: 'EASY',
+      frequency: 'Occasional',
+      solved: true,
+    },
+    {
+      id: 5,
+      title: 'Median of Two Sorted Arrays',
+      tags: ['Array', 'Binary Search', 'Divide and Conquer'],
+      difficulty: 'HARD',
+      frequency: 'Occasional',
+      solved: false,
+    },
+  ],
+};
