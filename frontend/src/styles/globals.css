@@ -59,3 +59,82 @@ body{
 		opacity: 0;
 	}
 }
+
+/* Custom Scrollbar Styles */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+}
+
+::-webkit-scrollbar-track {
+	background: #0D1117;
+	border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, #FBBF24 0%, #D97706 100%);
+	border-radius: 10px;
+	border: 2px solid #0D1117;
+	transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(180deg, #FCD34D 0%, #FBBF24 100%);
+	box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+::-webkit-scrollbar-thumb:active {
+	background: #D97706;
+}
+
+/* Thin scrollbar variant for smaller containers */
+.scrollbar-thin::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	border: 1px solid #0D1117;
+}
+
+/* Firefox scrollbar */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: #FBBF24 #0D1117;
+}
+
+/* Smooth scrolling */
+html {
+	scroll-behavior: smooth;
+}
+
+/* Scrollbar variants for different use cases */
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}
+
+.scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* Blue variant scrollbar (for Codeforces theme) */
+.scrollbar-blue::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+.scrollbar-blue::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
+	box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Green variant scrollbar (for GFG theme) */
+.scrollbar-green::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, #10B981 0%, #047857 100%);
+}
+
+.scrollbar-green::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
+	box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}

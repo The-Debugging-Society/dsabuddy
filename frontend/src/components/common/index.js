@@ -6,3 +6,4 @@ export { Divider } from './Divider';
 export { IconBox } from './IconBox';
 export { ErrorBoundary } from './ErrorBoundary';
 export { Spinner } from './Spinner';
+export { StatCard } from './StatCard';
