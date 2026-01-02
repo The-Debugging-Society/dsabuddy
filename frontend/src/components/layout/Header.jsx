@@ -37,7 +37,9 @@ export const Header = () => {
           <ul className="flex gap-4 lg:gap-7 font-JetBrains-Mono cursor-pointer text-sm lg:text-base">
             <li className="hover:text-gray-600 transition-colors">Features</li>
             <li className="hover:text-gray-600 transition-colors">Leaderboard</li>
-            <li className="hover:text-gray-600 transition-colors">Team</li>
+            <Link to="/dashboard">
+              <li className="hover:text-gray-600 transition-colors">Dashboard</li>
+            </Link>
           </ul>
         </div>
         <div className="bg-(--primary-color) p-1 rounded-full font-bold border-b-2 sm:border-b-4 border-black active:border-b-0 active:translate-y-0.5 sm:active:translate-y-1 transition-all">
