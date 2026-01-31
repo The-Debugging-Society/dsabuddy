@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './styles/globals.css'
 import App from './App.jsx'
 import { ErrorBoundary } from './components/common'
+import { BrowserRouter } from 'react-router-dom'  
 
 fetch('/keywords.json')
   .then(response => response.json())
@@ -16,8 +17,10 @@ fetch('/keywords.json')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <BrowserRouter>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </BrowserRouter>
   </StrictMode>,
 )
