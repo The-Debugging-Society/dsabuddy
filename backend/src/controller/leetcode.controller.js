@@ -1,16 +1,4 @@
-import { leetcodeGraphqlRequest, buildLeetCodeCookiesFromEnv, fetchLeetCodeUserStats } from "../ingestion/leetcode.js";
-
-const USER_PROFILE_QUERY = `
-query getUserProfile($username: String!) {
-  matchedUser(username: $username) {
-    username
-    profile { ranking reputation starRating }
-    submitStats {
-      acSubmissionNum { difficulty count }
-      totalSubmissionNum { difficulty count }
-    }
-  }
-}`;
+import { leetcodeGraphqlRequest, buildLeetCodeCookiesFromEnv, USER_PROFILE_QUERY } from "../ingestion/leetcode.js";
 
 const QUESTION_DATA_QUERY = `
 query questionData($titleSlug: String!) {
@@ -33,6 +21,11 @@ query questionData($titleSlug: String!) {
 export const getLeetcodeUser = async (req, res) => {
   try {
     const { username } = req.params;
+
+    if (!username || typeof username !== 'string' || !/^[A-Za-z0-9_-]{1,39}$/.test(username)) {
+      return res.status(400).json({ error: "Invalid username parameter" });
+    }
+
     const cookies = buildLeetCodeCookiesFromEnv();
 
     const data = await leetcodeGraphqlRequest({
@@ -48,13 +41,18 @@ export const getLeetcodeUser = async (req, res) => {
     return res.status(200).json(data.matchedUser);
   } catch (error) {
     console.error("Error in getLeetcodeUser:", error.message);
-    return res.status(500).json({ error: "Failed to fetch user data.", details: error.message });
+    return res.status(500).json({ error: "Failed to fetch user data." });
   }
 };
 
 export const getLeetcodeQuestion = async (req, res) => {
   try {
     const { titleSlug } = req.params;
+
+    if (!titleSlug || typeof titleSlug !== 'string' || !/^[a-z0-9-]+$/i.test(titleSlug)) {
+      return res.status(400).json({ error: "Invalid titleSlug parameter" });
+    }
+
     const cookies = buildLeetCodeCookiesFromEnv();
 
     const data = await leetcodeGraphqlRequest({
@@ -78,7 +76,7 @@ export const getLeetcodeQuestion = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getLeetcodeQuestion:", error.message);
-    return res.status(500).json({ error: "Failed to fetch question data.", details: error.message });
+    return res.status(500).json({ error: "Failed to fetch question data." });
   }
 };
 

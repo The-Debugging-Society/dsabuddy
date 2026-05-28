@@ -22,7 +22,7 @@ query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $fi
 }
 `.trim();
 
-const USER_PROFILE_QUERY = `
+export const USER_PROFILE_QUERY = `
 query getUserProfile($username: String!) {
   matchedUser(username: $username) {
     username
