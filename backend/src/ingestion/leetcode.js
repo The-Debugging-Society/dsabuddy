@@ -45,7 +45,7 @@ query getUserProfile($username: String!) {
 }
 `.trim();
 
-async function leetcodeGraphqlRequest({ query, variables, cookies }) {
+export async function leetcodeGraphqlRequest({ query, variables, cookies }) {
   const headers = {
     "content-type": "application/json",
     ...(cookies ? { cookie: cookies } : {}),
@@ -64,7 +64,7 @@ async function leetcodeGraphqlRequest({ query, variables, cookies }) {
   return json.data;
 }
 
-function buildLeetCodeCookiesFromEnv() {
+export function buildLeetCodeCookiesFromEnv() {
   const session = process.env.LEETCODE_SESSION;
   const csrf = process.env.LEETCODE_CSRF_TOKEN;
   const parts = [];

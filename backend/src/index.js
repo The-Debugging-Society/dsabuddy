@@ -16,6 +16,7 @@ import userQuestionRoutes from "./routes/userQuestion.routes.js";
 import dailyActivityRoutes from "./routes/dailyActivity.routes.js";
 import platformConnectionRoutes from "./routes/platformConnection.routes.js";
 import syncRoutes from "./routes/sync.routes.js";
+import leetcodeRoutes from "./routes/leetcode.routes.js";
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.use("/api/user-questions", userQuestionRoutes);
 app.use("/api/daily-activity", dailyActivityRoutes);
 app.use("/api/platform-connections", platformConnectionRoutes);
 app.use("/api/sync", syncRoutes);
+app.use("/api/leetcode", leetcodeRoutes);
 
 app.get("/", (req, res) => res.send("Server running"));
 
