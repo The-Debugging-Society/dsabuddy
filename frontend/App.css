@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Martel+Sans:wght@200;300;400;600;700;800;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: rgb(24, 23, 18);
+  color: white;
+  font-family: 'Martel Sans', sans-serif;
+}
+
+/* Navbar */
+nav {
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 55px;
+  border-bottom: 1px solid rgb(40, 40, 31);
+}
+
+.name,
+.skip {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Main */
+main {
+  width: 100%;
+}
+
+/* Center column */
+.content {
+  max-width: 840px;
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Progress */
+.container1 {
+  display: flex;
+  justify-content: space-between;
+}
+
+.box1 {
+  font-size: 15px;
+}
+
+.box2 {
+  font-size: 15px;
+  font-weight: 800;
+  color: rgb(227, 195, 38);
+}
+
+.container2 {
+  display: flex;
+  margin-top: 8px;
+}
+
+.box3 {
+  height: 5px;
+  width: 50%;
+  background-color: rgb(237, 200, 21);
+}
+
+.box4 {
+  height: 5px;
+  width: 50%;
+  background-color: rgb(40, 41, 27);
+}
+
+/* Title */
+.container3 {
+  font-size: 40px;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.container4 {
+  margin-top: 6px;
+  color: rgb(135, 134, 118);
+}
+
+/* Avatar */
+.container5,
+.container6 {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 30px;
+  margin-top: 25px;
+}
+
+.box7 {
+  width: 100px;
+  height: 100px;
+  border: 3px dotted rgb(76, 73, 60);
+  border-radius: 50%;
+  background-color: rgb(39, 36, 27);
+}
+
+.field {
+  height: 40px;
+  width: 100%;
+  border: 3px solid rgb(76, 73, 60);
+  border-radius: 9px;
+  background-color: rgb(39, 36, 27);
+  padding-left: 20px;
+  color: white;
+}
+
+.cont {
+  font-size: 12px;
+  margin-top: 6px;
+  color: rgb(119, 119, 111);
+}
+
+/* Sync */
+.container8 {
+  margin-top: 40px;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.container9 {
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: 9px;
+  border: 2px solid rgb(76, 75, 62);
+  background-color: rgb(34, 31, 16);
+}
+
+.box10 {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgb(157, 153, 137);
+}
+
+/* Platforms */
+.container10 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.site {
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  height: 40px;
+  border: 3px solid rgb(76, 73, 60);
+  border-radius: 5px;
+  background-color: rgb(39, 36, 27);
+  padding-left: 15px;
+  color: white;
+}
+
+/* Button */
+button {
+  width: 100%;
+  height: 44px;
+  background-color: rgb(243, 204, 13);
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+
+/* Footer */
+.container11 {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgb(115, 113, 102);
+  text-align: center;
+}
+
+
+a {
+  color: rgb(197, 196, 197);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#root {
+  width: 100%;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-box {
+  background: #facc15;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px dashed #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-icon {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+.platform {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.platform-icon {
+  font-size: 10px;
+  opacity: 0.8;
+  width: 50px;
+}
+
+.footer-actions {
+  width: 100%;
+  max-width: 840px;
+  margin: 40px auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
