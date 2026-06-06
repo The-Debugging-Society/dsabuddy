@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar, Topbar } from './components';
 import { Dashboard } from './Dashboard';
 import { Analytics } from './Analytics';
@@ -10,6 +10,17 @@ import { userData } from './userData';
 
 export function DashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    
+    if (token) {
+      localStorage.setItem('token', token);
+      // Clean up URL without reloading
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const renderSection = () => {
     switch (activeSection) {
