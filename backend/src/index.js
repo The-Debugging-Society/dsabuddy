@@ -26,9 +26,29 @@ async function connectDatabases() {
   await prisma.$connect();
 }
 
+const allowedOrigins = [
+  "https://dsabuddy.xyz",
+  "https://www.dsabuddy.xyz",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+if (process.env.FRONTEND_URL) {
+  const envOrigin = process.env.FRONTEND_URL.replace(/\/$/, "");
+  if (!allowedOrigins.includes(envOrigin)) {
+    allowedOrigins.push(envOrigin);
+  }
+}
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
   })
 );
