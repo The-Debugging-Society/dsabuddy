@@ -10,6 +10,8 @@ import { userData } from './userData';
 
 export function DashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [user, setUser] = useState(userData);
+  const [platforms, setPlatforms] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -17,15 +19,34 @@ export function DashboardPage() {
     
     if (token) {
       localStorage.setItem('token', token);
-      // Clean up URL without reloading
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const headers = { Authorization: `Bearer ${token}` };
+        const [userRes, platRes] = await Promise.all([
+          fetch('http://localhost:5000/api/users/me', { headers }),
+          fetch('http://localhost:5000/api/platform-connections', { headers })
+        ]);
+
+        if (userRes.ok) setUser(await userRes.json());
+        if (platRes.ok) setPlatforms(await platRes.json());
+      } catch (e) {
+        console.error("Failed to fetch dashboard data", e);
+      }
+    };
+    
+    fetchData();
   }, []);
 
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard user={user} platforms={platforms} />;
       case 'problems':
         return <QuestionView />;
       case 'analytics':
@@ -37,7 +58,7 @@ export function DashboardPage() {
       case 'settings':
         return <Settings />;
       default:
-        return <Dashboard />;
+        return <Dashboard user={user} platforms={platforms} />;
     }
   };
 
@@ -46,7 +67,7 @@ export function DashboardPage() {
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       <div className="flex-1 ml-20 flex flex-col h-screen overflow-hidden">
-        <Topbar user={userData} onSectionChange={setActiveSection} />
+        <Topbar user={user} onSectionChange={setActiveSection} />
         
         <main className="flex-1 overflow-y-auto p-8">
           <div className="max-w-7xl mx-auto">
