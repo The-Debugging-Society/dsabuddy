@@ -76,7 +76,8 @@ app.use("/api/platform-connections", platformConnectionRoutes);
 app.use("/api/sync", syncRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
 
-app.get("/", (req, res) => res.send("Server running"));
+// Default route
+app.get("/", (req, res) => res.send("✅ Server running"));
 
 const PORT = process.env.PORT || 5000;
 connectDatabases()
