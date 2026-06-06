@@ -27,19 +27,39 @@ export function Settings() {
     ));
   };
 
-  const handleSave = () => {
-    if (!password) {
-      setError('Password is required to save changes');
+  const handleSave = async () => {
+    if (!password && openModal === 'profile') {
+      setError('Password is required to save profile changes');
       return;
     }
     
-    // TODO: Make API call to save data with password verification
-    console.log('Saving changes...', { profileData, platformData, password });
-    
-    // Reset and close
-    setPassword('');
-    setError('');
-    setOpenModal(null);
+    try {
+      const token = localStorage.getItem('token');
+      if (openModal === 'platforms') {
+        for (const platform of platformData) {
+          if (platform.id === 'leetcode' || platform.id === 'codeforces') {
+            await fetch(`http://localhost:5000/api/platform-connections/${platform.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ username: platform.username })
+            });
+
+            if (platform.synced) {
+              await fetch(`http://localhost:5000/api/platform-connections/${platform.id}/sync`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+              });
+            }
+          }
+        }
+      }
+      
+      setPassword('');
+      setError('');
+      setOpenModal(null);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const handleCloseModal = () => {
