@@ -12,6 +12,8 @@ export function DashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [user, setUser] = useState(userData);
   const [platforms, setPlatforms] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -28,13 +30,17 @@ export function DashboardPage() {
         if (!token) return;
         
         const headers = { Authorization: `Bearer ${token}` };
-        const [userRes, platRes] = await Promise.all([
+        const [userRes, platRes, analyticsRes, compRes] = await Promise.all([
           fetch('http://localhost:5000/api/users/me', { headers }),
-          fetch('http://localhost:5000/api/platform-connections', { headers })
+          fetch('http://localhost:5000/api/platform-connections', { headers }),
+          fetch('http://localhost:5000/api/daily-activity/analytics', { headers }),
+          fetch('http://localhost:5000/api/companies', { headers })
         ]);
 
         if (userRes.ok) setUser(await userRes.json());
         if (platRes.ok) setPlatforms(await platRes.json());
+        if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
+        if (compRes.ok) setCompanies(await compRes.json());
       } catch (e) {
         console.error("Failed to fetch dashboard data", e);
       }
@@ -46,19 +52,19 @@ export function DashboardPage() {
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard user={user} platforms={platforms} />;
+        return <Dashboard user={user} platforms={platforms} analytics={analytics} />;
       case 'problems':
         return <QuestionView />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics analytics={analytics} />;
       case 'pyqs':
-        return <PYQs />;
+        return <PYQs companies={companies} />;
       case 'leaderboard':
         return <Leaderboard />;
       case 'settings':
-        return <Settings />;
+        return <Settings platforms={platforms} />;
       default:
-        return <Dashboard user={user} platforms={platforms} />;
+        return <Dashboard user={user} platforms={platforms} analytics={analytics} />;
     }
   };
 

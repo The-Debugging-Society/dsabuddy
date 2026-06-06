@@ -1,26 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { companies, interviewSets, companyQuestions } from './userData';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
+import { companies as mockCompanies, interviewSets, companyQuestions as mockQuestions } from './userData';
 
-export function PYQs() {
-  const [selectedCompany, setSelectedCompany] = useState('adobe');
+export function PYQs({ companies }) {
+  const displayCompanies = companies?.length > 0 ? companies : mockCompanies;
+  const [selectedCompany, setSelectedCompany] = useState(displayCompanies[0]?.slug || 'adobe');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
   const [frequencyFilter, setFrequencyFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  
+  const [currentCompanyDetails, setCurrentCompanyDetails] = useState(null);
+  const [questions, setQuestions] = useState([]);
 
-  const currentSet = interviewSets[selectedCompany];
-  const questions = companyQuestions[selectedCompany] || [];
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+        const [detailsRes, questionsRes] = await Promise.all([
+          fetch(`http://localhost:5000/api/companies/${selectedCompany}`, { headers }),
+          fetch(`http://localhost:5000/api/companies/${selectedCompany}/questions`, { headers })
+        ]);
+        
+        if (detailsRes.ok) {
+          const json = await detailsRes.json();
+          setCurrentCompanyDetails(json.company);
+        }
+        
+        if (questionsRes.ok) {
+          const json = await questionsRes.json();
+          // Map backend questions to frontend format
+          const mappedQuestions = json.companyQuestions.map(cq => ({
+            id: cq.question.id,
+            title: cq.question.title,
+            difficulty: cq.question.difficulty,
+            frequency: cq.frequency || 'Occasional',
+            solved: cq.solved || false,
+            leetcodeUrl: cq.question.leetcodeUrl,
+            tags: [] // Backend schema doesn't nest tags deeply here, keep empty or fetch later
+          }));
+          setQuestions(mappedQuestions);
+        }
+      } catch(e) { console.error(e); }
+    };
+    
+    if (selectedCompany) fetchCompanyData();
+  }, [selectedCompany]);
+
+  const currentSet = currentCompanyDetails?.interviewSets?.[0] || interviewSets['adobe'];
+  const displayQuestions = questions.length > 0 ? questions : mockQuestions['adobe'] || [];
 
   // Apply filters
-  const filteredQuestions = questions.filter((question) => {
+  const filteredQuestions = displayQuestions.filter((question) => {
     const matchesDifficulty = difficultyFilter === 'all' || 
-      question.difficulty.toLowerCase() === difficultyFilter.toLowerCase();
+      question.difficulty?.toLowerCase() === difficultyFilter.toLowerCase();
     
     const matchesFrequency = frequencyFilter === 'all' || 
-      question.frequency.toLowerCase().replace(' ', '-') === frequencyFilter;
+      question.frequency?.toLowerCase().replace(' ', '-') === frequencyFilter;
     
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'solved' ? question.solved : !question.solved);
@@ -48,12 +87,12 @@ export function PYQs() {
 
       <div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {companies.map((company) => (
+          {displayCompanies.map((company) => (
             <button
               key={company.id}
-              onClick={() => setSelectedCompany(company.id)}
+              onClick={() => setSelectedCompany(company.slug || company.id)}
               className={`p-6 rounded-xl border-2 transition-all ${
-                selectedCompany === company.id
+                selectedCompany === (company.slug || company.id)
                   ? 'bg-[#FBBF24]/10 border-[#FBBF24]'
                   : 'bg-[#161B22] border-[#1F2937] hover:border-[#FBBF24]/20'
               }`}
@@ -76,7 +115,7 @@ export function PYQs() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-[#E5E7EB] rounded-lg flex items-center justify-center">
                 <span className="text-[#0D1117] font-bold text-xl font-Spline-Sans">
-                  {companies.find(c => c.id === selectedCompany)?.name[0]}
+                  {displayCompanies.find(c => (c.slug || c.id) === selectedCompany)?.name[0]}
                 </span>
               </div>
               <div>

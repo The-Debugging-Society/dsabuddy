@@ -1,9 +1,10 @@
 import { UserSnapshotCard, PlatformCard, ConsistencyHeatmap, LeaderboardRow } from './components';
 import { userData, platformsData, yearlyActivityData, leaderboardData, leaderboardFilters } from './userData';
 
-export function Dashboard({ user, platforms }) {
+export function Dashboard({ user, platforms, analytics }) {
   const displayUser = user || userData;
   const displayPlatforms = platforms?.length > 0 ? platforms : platformsData;
+  const displayHeatmap = analytics?.heatmap || yearlyActivityData;
 
   return (
     <div className="space-y-6">
@@ -16,7 +17,7 @@ export function Dashboard({ user, platforms }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <UserSnapshotCard user={displayUser} />
         <div className="lg:col-span-2">
-          <ConsistencyHeatmap data={yearlyActivityData} />
+          <ConsistencyHeatmap data={displayHeatmap} />
         </div>
       </div>
 
