@@ -28,15 +28,19 @@ async function connectDatabases() {
 
 const allowedOrigins = [
   "https://dsabuddy.xyz",
+  "https://dsabuddy.xyz/",
   "https://www.dsabuddy.xyz",
-  "http://localhost:5173",
-  "http://localhost:3000",
+  "https://www.dsabuddy.xyz/",
 ];
 
 if (process.env.FRONTEND_URL) {
-  const envOrigin = process.env.FRONTEND_URL.replace(/\/$/, "");
-  if (!allowedOrigins.includes(envOrigin)) {
-    allowedOrigins.push(envOrigin);
+  const envOriginWithoutSlash = process.env.FRONTEND_URL.replace(/\/$/, "");
+  const envOriginWithSlash = envOriginWithoutSlash + "/";
+  if (!allowedOrigins.includes(envOriginWithoutSlash)) {
+    allowedOrigins.push(envOriginWithoutSlash);
+  }
+  if (!allowedOrigins.includes(envOriginWithSlash)) {
+    allowedOrigins.push(envOriginWithSlash);
   }
 }
 
