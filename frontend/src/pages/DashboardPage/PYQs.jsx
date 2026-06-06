@@ -5,7 +5,7 @@ import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { companies as mockCompanies, interviewSets, companyQuestions as mockQuestions } from './userData';
 
-export function PYQs({ companies }) {
+export function PYQs({ companies, onSelectQuestion }) {
   const displayCompanies = companies?.length > 0 ? companies : mockCompanies;
   const [selectedCompany, setSelectedCompany] = useState(displayCompanies[0]?.slug || 'adobe');
   const [difficultyFilter, setDifficultyFilter] = useState('all');
@@ -261,15 +261,20 @@ export function PYQs({ companies }) {
                     </Badge>
                   )}
 
-                  <a 
-                    href={question.leetcodeUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
+                  <Button 
+                    variant="accent" 
+                    size="sm" 
+                    className="!bg-[#FBBF24] hover:!bg-[#D97706]"
+                    onClick={() => {
+                      if (onSelectQuestion) {
+                        const match = question.leetcodeUrl?.match(/problems\/([^\/]+)/);
+                        const slug = match ? match[1] : 'two-sum';
+                        onSelectQuestion(slug);
+                      }
+                    }}
                   >
-                    <Button variant="accent" size="sm" className="!bg-[#FBBF24] hover:!bg-[#D97706]">
-                      Solve
-                    </Button>
-                  </a>
+                    Solve
+                  </Button>
                 </div>
               </div>
             </div>

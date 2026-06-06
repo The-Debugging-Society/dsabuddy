@@ -10,6 +10,7 @@ import { userData } from './userData';
 
 export function DashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [selectedQuestionSlug, setSelectedQuestionSlug] = useState('two-sum');
   const [user, setUser] = useState(userData);
   const [platforms, setPlatforms] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -49,16 +50,21 @@ export function DashboardPage() {
     fetchData();
   }, []);
 
+  const handleSelectQuestion = (slug) => {
+    setSelectedQuestionSlug(slug);
+    setActiveSection('problems');
+  };
+
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
         return <Dashboard user={user} platforms={platforms} analytics={analytics} />;
       case 'problems':
-        return <QuestionView />;
+        return <QuestionView titleSlug={selectedQuestionSlug} />;
       case 'analytics':
         return <Analytics analytics={analytics} />;
       case 'pyqs':
-        return <PYQs companies={companies} />;
+        return <PYQs companies={companies} onSelectQuestion={handleSelectQuestion} />;
       case 'leaderboard':
         return <Leaderboard />;
       case 'settings':
