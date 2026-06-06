@@ -5,8 +5,10 @@ import { Analytics } from './Analytics';
 import { PYQs } from './PYQs';
 import { Leaderboard } from './Leaderboard';
 import { Settings } from './Settings';
+import { Settings } from './Settings';
 import { QuestionView } from './QuestionView';
 import { userData } from './userData';
+import { API_BASE_URL } from '@/config/constants';
 
 export function DashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -32,10 +34,10 @@ export function DashboardPage() {
         
         const headers = { Authorization: `Bearer ${token}` };
         const [userRes, platRes, analyticsRes, compRes] = await Promise.all([
-          fetch('http://localhost:5000/api/users/me', { headers }),
-          fetch('http://localhost:5000/api/platform-connections', { headers }),
-          fetch('http://localhost:5000/api/daily-activity/analytics', { headers }),
-          fetch('http://localhost:5000/api/companies', { headers })
+          fetch(`${API_BASE_URL}/users/me`, { headers }),
+          fetch(`${API_BASE_URL}/platform-connections`, { headers }),
+          fetch(`${API_BASE_URL}/daily-activity/analytics`, { headers }),
+          fetch(`${API_BASE_URL}/companies`, { headers })
         ]);
 
         if (userRes.ok) setUser(await userRes.json());

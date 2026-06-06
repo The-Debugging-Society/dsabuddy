@@ -2,6 +2,7 @@ import { Settings as SettingsIcon, User, Link2 } from 'lucide-react';
 import { useState } from 'react';
 import { settingSections, profileSettings, platformsData } from './userData';
 import { Modal } from '@/components/common';
+import { API_BASE_URL } from '@/config/constants';
 
 const iconMap = {
   user: User,
@@ -38,14 +39,14 @@ export function Settings() {
       if (openModal === 'platforms') {
         for (const platform of platformData) {
           if (platform.id === 'leetcode' || platform.id === 'codeforces') {
-            await fetch(`http://localhost:5000/api/platform-connections/${platform.id}`, {
+            await fetch(`${API_BASE_URL}/platform-connections/${platform.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
               body: JSON.stringify({ username: platform.username })
             });
 
             if (platform.synced) {
-              await fetch(`http://localhost:5000/api/platform-connections/${platform.id}/sync`, {
+              await fetch(`${API_BASE_URL}/platform-connections/${platform.id}/sync`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` }
               });

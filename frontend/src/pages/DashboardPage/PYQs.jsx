@@ -4,6 +4,7 @@ import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { companies as mockCompanies, interviewSets, companyQuestions as mockQuestions } from './userData';
+import { API_BASE_URL } from '@/config/constants';
 
 export function PYQs({ companies, onSelectQuestion }) {
   const displayCompanies = companies?.length > 0 ? companies : mockCompanies;
@@ -21,8 +22,8 @@ export function PYQs({ companies, onSelectQuestion }) {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         const [detailsRes, questionsRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/companies/${selectedCompany}`, { headers }),
-          fetch(`http://localhost:5000/api/companies/${selectedCompany}/questions`, { headers })
+          fetch(`${API_BASE_URL}/companies/${selectedCompany}`, { headers }),
+          fetch(`${API_BASE_URL}/companies/${selectedCompany}/questions`, { headers })
         ]);
         
         if (detailsRes.ok) {

@@ -8,6 +8,7 @@ import {
 import { Button, Divider } from "@/components/common";
 import { FormField, SocialButton } from "@/components/layout";
 import GoogleLogo from "@/assets/Google.png";
+import { API_BASE_URL } from "@/config/constants";
 
 export const RegisterForm = () => {
   return (
@@ -59,7 +60,7 @@ export const RegisterForm = () => {
         <SocialButton 
           icon={GoogleLogo} 
           text="Continue with Google" 
-          onClick={() => window.location.href = "http://localhost:5000/api/oauth/google"}
+          onClick={() => window.location.href = `${API_BASE_URL}/oauth/google`}
         />
       </div>
     </div>

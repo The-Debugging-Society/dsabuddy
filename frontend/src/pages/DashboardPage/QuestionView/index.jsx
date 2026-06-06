@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge, Spinner } from '../../../components/common';
 import { mockQuestion } from './mockData';
+import { API_BASE_URL } from '@/config/constants';
 
 export function QuestionView({ titleSlug = 'two-sum' }) {
   const [question, setQuestion] = useState(null);
@@ -11,7 +12,7 @@ export function QuestionView({ titleSlug = 'two-sum' }) {
       try {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await fetch(`http://localhost:5000/api/leetcode/questions/${titleSlug}`, { headers });
+        const res = await fetch(`${API_BASE_URL}/leetcode/questions/${titleSlug}`, { headers });
         if (res.ok) {
           const data = await res.json();
           setQuestion(data);
