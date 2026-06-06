@@ -5,17 +5,18 @@ import { useState, useEffect } from "react";
 export const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
@@ -26,7 +27,7 @@ export const Header = () => {
   return (
     <div className={`w-[90%] sm:w-[85%] md:w-[80%] lg:w-[70%] xl:w-[60%] max-w-7xl mx-auto mt-4 sm:mt-6 md:mt-8 rounded-3xl sm:rounded-[3rem] fixed top-0 left-1/2 px-4 sm:px-6 bg-white shadow-lg z-50 transition-all duration-500 ease-in-out ${isVisible ? '-translate-x-1/2 translate-y-0 opacity-100' : '-translate-x-1/2 -translate-y-full opacity-0'}`}>
       <div className="flex text-black justify-between items-center py-3 px-2 sm:p-4">
-        <div>
+        <div className="flex-1 md:flex-none text-center md:text-left">
           <Link to="/">
             <h1 className="text-xl sm:text-2xl font-bold text-black font-SF-Pro">
               DSABuddy
@@ -42,14 +43,38 @@ export const Header = () => {
             </Link>
           </ul>
         </div>
-        <div className="bg-(--primary-color) p-1 rounded-full font-bold border-b-2 sm:border-b-4 border-black active:border-b-0 active:translate-y-0.5 sm:active:translate-y-1 transition-all">
+        <div className="hidden md:block bg-(--primary-color) p-1 rounded-full font-bold border-b-2 sm:border-b-4 border-black active:border-b-0 active:translate-y-0.5 sm:active:translate-y-1 transition-all">
           <Link to="/register">
             <button className="font-SF-Pro cursor-pointer rounded-full px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base hover:opacity-90 transition-opacity">
               Start Coding
             </button>
           </Link>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden text-2xl font-bold"
+        >
+          {isMenuOpen ? "×" : "☰"}
+        </button>
       </div>
+      {isMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 px-2 pb-4">
+          <ul className="flex flex-col gap-3 pt-4 font-JetBrains-Mono text-sm text-black">
+            <li className="cursor-pointer hover:text-gray-600 transition-colors">Features</li>
+            <li className="cursor-pointer hover:text-gray-600 transition-colors">Leaderboard</li>
+            <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+              <li className="cursor-pointer hover:text-gray-600 transition-colors">Dashboard</li>
+            </Link>
+          </ul>
+
+          <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+            <button className="mt-4 w-full bg-(--primary-color) font-SF-Pro font-bold cursor-pointer rounded-full px-4 py-2 border-b-2 border-black active:border-b-0 active:translate-y-0.5 transition-all">
+              Start Coding
+            </button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
