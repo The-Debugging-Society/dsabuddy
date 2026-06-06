@@ -1,33 +1,30 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import { connectDB } from "./config/db.js";
+import { prisma } from "./config/prismaClient.js";
 import routes from "./routes/index.js";
 import session from "express-session";
 import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import emailRoutes from "./routes/emailRoutes.js";
-import uploadRoutes from "./routes/upload.js";
 
 dotenv.config();
 
-// Initialize express
 const app = express();
 
-// Connect to DB
-connectDB();
+async function connectDatabases() {
+  await prisma.$connect();
+}
 
-// Middleware
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL],
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   })
 );
 app.use(express.json());
 
-// Session setup
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -36,11 +33,9 @@ app.use(
   })
 );
 
-// Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport config
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
@@ -59,16 +54,20 @@ passport.use(
   )
 );
 
-// Routes
 app.use("/api/auth", routes);
 app.use("/api/oauth", authRoutes);
 app.use('/api/email', emailRoutes);
-app.use('/api/upload', uploadRoutes);
 
 // Default route
 app.get("/", (req, res) => res.send("✅ Server running"));
 
-// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+connectDatabases()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("❌ Failed to connect databases:", err);
+    process.exit(1);
+  });
 
