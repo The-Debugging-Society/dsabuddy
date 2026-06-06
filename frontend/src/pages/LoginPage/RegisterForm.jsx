@@ -56,7 +56,11 @@ export const RegisterForm = () => {
 
         <Divider text="OR" className="mt-5 mb-5" />
 
-        <SocialButton icon={GoogleLogo} text="Continue with Google" />
+        <SocialButton 
+          icon={GoogleLogo} 
+          text="Continue with Google" 
+          onClick={() => window.location.href = "http://localhost:5000/api/oauth/google"}
+        />
       </div>
     </div>
   );
