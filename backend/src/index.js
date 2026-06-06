@@ -8,6 +8,15 @@ import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import emailRoutes from "./routes/emailRoutes.js";
+import userRoutes from "./routes/user.routes.js";
+import companyRoutes from "./routes/company.routes.js";
+import questionRoutes from "./routes/question.routes.js";
+import tagRoutes from "./routes/tag.routes.js";
+import userQuestionRoutes from "./routes/userQuestion.routes.js";
+import dailyActivityRoutes from "./routes/dailyActivity.routes.js";
+import platformConnectionRoutes from "./routes/platformConnection.routes.js";
+import syncRoutes from "./routes/sync.routes.js";
+import leetcodeRoutes from "./routes/leetcode.routes.js";
 
 dotenv.config();
 
@@ -57,6 +66,15 @@ passport.use(
 app.use("/api/auth", routes);
 app.use("/api/oauth", authRoutes);
 app.use('/api/email', emailRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/tags", tagRoutes);
+app.use("/api/user-questions", userQuestionRoutes);
+app.use("/api/daily-activity", dailyActivityRoutes);
+app.use("/api/platform-connections", platformConnectionRoutes);
+app.use("/api/sync", syncRoutes);
+app.use("/api/leetcode", leetcodeRoutes);
 
 // Default route
 app.get("/", (req, res) => res.send("✅ Server running"));
