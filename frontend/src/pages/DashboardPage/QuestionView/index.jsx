@@ -2,23 +2,32 @@ import { useState, useEffect } from 'react';
 import { Badge, Spinner } from '../../../components/common';
 import { mockQuestion } from './mockData';
 import { API_BASE_URL } from '@/config/constants';
+import DOMPurify from 'dompurify';
 
 export function QuestionView({ titleSlug = 'two-sum' }) {
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         const res = await fetch(`${API_BASE_URL}/leetcode/questions/${titleSlug}`, { headers });
-        if (res.ok) {
+        if (!res.ok) {
+          const errText = await res.text();
+          setError(`Failed to fetch question: ${res.statusText}`);
+          console.error(errText);
+        } else {
           const data = await res.json();
           setQuestion(data);
         }
       } catch (e) {
         console.error(e);
+        setError('Network error occurred while fetching the question.');
       } finally {
         setLoading(false);
       }
@@ -30,6 +39,15 @@ export function QuestionView({ titleSlug = 'two-sum' }) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-red-500">
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 rounded">Retry</button>
       </div>
     );
   }
@@ -77,7 +95,7 @@ export function QuestionView({ titleSlug = 'two-sum' }) {
         <div className="bg-[#161B22] border border-gray-800 rounded-lg p-6 overflow-hidden">
           <div 
             className="prose prose-invert max-w-none text-gray-300 [&>p]:mb-4 [&>pre]:bg-[#0D1117] [&>pre]:p-4 [&>pre]:rounded-lg [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-4"
-            dangerouslySetInnerHTML={{ __html: question.content }} 
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.content) }} 
           />
         </div>
       </div>

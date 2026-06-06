@@ -15,10 +15,12 @@ export function PYQs({ companies, onSelectQuestion }) {
   
   const [currentCompanyDetails, setCurrentCompanyDetails] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCompanyData = async () => {
       try {
+        setError(null);
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         const [detailsRes, questionsRes] = await Promise.all([
@@ -26,12 +28,21 @@ export function PYQs({ companies, onSelectQuestion }) {
           fetch(`${API_BASE_URL}/companies/${selectedCompany}/questions`, { headers })
         ]);
         
-        if (detailsRes.ok) {
+        let hasError = false;
+        if (!detailsRes.ok) {
+          const errText = await detailsRes.text();
+          console.error('Failed to fetch company details:', errText);
+          hasError = true;
+        } else {
           const json = await detailsRes.json();
           setCurrentCompanyDetails(json.company);
         }
         
-        if (questionsRes.ok) {
+        if (!questionsRes.ok) {
+          const errText = await questionsRes.text();
+          console.error('Failed to fetch company questions:', errText);
+          hasError = true;
+        } else {
           const json = await questionsRes.json();
           // Map backend questions to frontend format
           const mappedQuestions = json.companyQuestions.map(cq => ({
@@ -41,11 +52,18 @@ export function PYQs({ companies, onSelectQuestion }) {
             frequency: cq.frequency || 'Occasional',
             solved: cq.solved || false,
             leetcodeUrl: cq.question.leetcodeUrl,
-            tags: [] // Backend schema doesn't nest tags deeply here, keep empty or fetch later
+            tags: [] 
           }));
           setQuestions(mappedQuestions);
         }
-      } catch(e) { console.error(e); }
+
+        if (hasError) {
+          setError('Failed to load real data. Falling back to mock data.');
+        }
+      } catch(e) {
+        console.error(e);
+        setError('Network error occurred. Falling back to mock data.');
+      }
     };
     
     if (selectedCompany) fetchCompanyData();
@@ -82,6 +100,12 @@ export function PYQs({ companies, onSelectQuestion }) {
 
   return (
     <div className="space-y-8">
+      {error && (
+        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded mb-6 flex justify-between items-center">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-400 font-bold">×</button>
+        </div>
+      )}
       <div>
         <h1 className="text-[#E5E7EB] text-4xl font-bold font-Spline-Sans">Company Archives</h1>
       </div>
@@ -268,8 +292,13 @@ export function PYQs({ companies, onSelectQuestion }) {
                     className="!bg-[#FBBF24] hover:!bg-[#D97706]"
                     onClick={() => {
                       if (onSelectQuestion) {
-                        const match = question.leetcodeUrl?.match(/problems\/([^\/]+)/);
-                        const slug = match ? match[1] : 'two-sum';
+                        let slug = 'two-sum';
+                        if (question.leetcodeUrl) {
+                          const match = question.leetcodeUrl.match(/problems\/([^/]+)/);
+                          if (match && match[1]) {
+                            slug = match[1];
+                          }
+                        }
                         onSelectQuestion(slug);
                       }
                     }}

@@ -262,6 +262,7 @@ export async function fetchLeetCodeCalendar({ username, year }) {
   if (!username) throw new Error("LeetCode username is required");
 
   const cookies = buildLeetCodeCookiesFromEnv();
+  await sleep(800);
   
   const data = await leetcodeGraphqlRequest({
     query: LEETCODE_CALENDAR_QUERY,

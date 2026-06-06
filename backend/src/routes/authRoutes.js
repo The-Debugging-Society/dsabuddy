@@ -12,6 +12,9 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/api/oauth/fail" }),
   (req, res) => {
     const token = req.user?.token;
+    if (!token) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_token_missing`);
+    }
     res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
   }
 );

@@ -157,7 +157,7 @@ export async function fetchCodeforcesCalendar({ username }) {
   const submissionCalendar = {};
   
   submissions.forEach(sub => {
-    if (sub.verdict === "OK") { // Only count successful submissions
+    if (sub.verdict === "OK" && Number.isFinite(sub.creationTimeSeconds)) { // Only count successful submissions with valid timestamps
       // Convert to start of day Unix timestamp (in seconds)
       const startOfDay = Math.floor(sub.creationTimeSeconds / 86400) * 86400;
       submissionCalendar[startOfDay] = (submissionCalendar[startOfDay] || 0) + 1;
