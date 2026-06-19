@@ -51,8 +51,8 @@ if (process.env.FRONTEND_URL) {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, postman) in development
-      if (!origin && process.env.NODE_ENV !== "production") {
+      // Allow requests with no origin (like redirects, direct browser requests, mobile apps)
+      if (!origin) {
         return callback(null, true);
       }
       if (allowedOrigins.includes(origin)) {

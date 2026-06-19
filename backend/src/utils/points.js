@@ -32,7 +32,31 @@ export async function recalculateUserPoints(userId) {
       }
     }
 
-    // 2. In-app activity points are removed
+    // 2. Fetch in-app solved questions and add points based on difficulty
+    const solvedQuestions = await prisma.userQuestion.findMany({
+      where: {
+        userId,
+        status: "SOLVED",
+      },
+      select: {
+        question: {
+          select: {
+            difficulty: true,
+          },
+        },
+      },
+    });
+
+    for (const sq of solvedQuestions) {
+      const diff = sq.question?.difficulty;
+      if (diff === "EASY") {
+        totalPoints += 10;
+      } else if (diff === "MEDIUM") {
+        totalPoints += 20;
+      } else if (diff === "HARD") {
+        totalPoints += 40;
+      }
+    }
 
     // 3. Update the User points field
     await prisma.user.update({

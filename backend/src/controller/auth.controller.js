@@ -83,13 +83,14 @@ export const login = async (req, res) => {
     return res.status(400).json({ error: validationResult.error.format() });
   }
 
-  const { identifier, password } = validationResult.data;
+  const { identifier, email, userName, password } = validationResult.data;
+  const loginIdentifier = identifier || email || userName;
 
   const existingUser = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: identifier },
-        { userName: identifier },
+        { email: loginIdentifier },
+        { userName: loginIdentifier },
       ],
     },
     select: {
