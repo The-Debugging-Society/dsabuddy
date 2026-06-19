@@ -17,6 +17,7 @@ import { userService, platformService } from '@/api/services';
 import { useUserStore } from '@/store/useUserStore';
 import { Button } from '@/components/common';
 import apiClient from '@/api/client';
+import LogoImg from '@/assets/DSABuddy Logo.png';
 
 const BRANCHES = [
   "Bio-Technology (BT)",
@@ -277,9 +278,7 @@ export default function OnboardingPage() {
       {/* ── Navbar ── */}
       <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-gray-800 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#35b9f1] flex items-center justify-center text-black font-extrabold text-sm shadow-[0_0_12px_rgba(250,245,6,0.3)] select-none">
-            DB
-          </div>
+          <img src={LogoImg} alt="DSABuddy Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-lg font-Spline-Sans text-white tracking-tight">
             DSABuddy
           </span>
@@ -542,7 +541,9 @@ export default function OnboardingPage() {
                   <Cpu className="w-5 h-5 text-gray-400 shrink-0" />
                   <select 
                     name="branch"
-                    value={formData.branch}
+                    value={formData.branch
+                      
+                    }
                     onChange={handleInputChange}
                     required
                     className="bg-transparent border-none outline-none text-white text-sm w-full ml-3 mr-2 placeholder-gray-500 focus:ring-0 font-medium cursor-pointer appearance-none"
