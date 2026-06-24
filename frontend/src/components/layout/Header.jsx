@@ -45,10 +45,10 @@ export const Header = () => {
         <div className="hidden md:block">
           <ul className="flex gap-4 lg:gap-7 font-JetBrains-Mono cursor-pointer text-sm lg:text-base">
             <li onClick={handleScrollToFeatures} className="hover:text-gray-600 transition-colors">Features</li>
-            <Link to={localStorage.getItem("token") ? "/dashboard/leaderboard" : "/login"}>
+            <Link to="/dashboard/leaderboard">
               <li className="hover:text-gray-600 transition-colors">Leaderboard</li>
             </Link>
-            <Link to={localStorage.getItem("token") ? "/dashboard" : "/login"}>
+            <Link to="/dashboard">
               <li className="hover:text-gray-600 transition-colors">Dashboard</li>
             </Link>
           </ul>

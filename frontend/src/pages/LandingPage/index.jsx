@@ -12,10 +12,15 @@ export function LandingPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard", { replace: true });
-    }
+    fetch(`${API_BASE_URL}/auth/me`, {
+      credentials: "include",
+    })
+      .then((res) => {
+        if (res.ok) {
+          navigate("/dashboard", { replace: true });
+        }
+      })
+      .catch(() => {});
   }, [navigate]);
 
   return (

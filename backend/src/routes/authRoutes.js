@@ -38,7 +38,7 @@ router.get(
     });
     const needsOnboarding = !req.user?.branch || !req.user?.year;
     const targetPath = needsOnboarding ? "/onboarding" : "/dashboard";
-    res.redirect(`${frontendUrl}${targetPath}?token=${token}`);
+    res.redirect(`${frontendUrl}${targetPath}`);
   }
 );
 
