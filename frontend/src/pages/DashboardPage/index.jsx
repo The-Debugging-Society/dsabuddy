@@ -33,11 +33,22 @@ export function DashboardPage() {
   const [companies, setCompanies] = useState([]);
   const [error, setError] = useState(null);
 
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token") || localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+  const [loading, setLoading] = useState(true);
+const [authenticated, setAuthenticated] = useState(false);
+
+useEffect(() => {
+  fetch(`${API_BASE_URL}/auth/me`, {
+    credentials: "include",
+  })
+    .then((res) => setAuthenticated(res.ok))
+    .finally(() => setLoading(false));
+}, []);
+
+if (loading) return null;
+
+if (!authenticated) {
+  return <Navigate to="/login" replace />;
+}
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -65,16 +76,21 @@ export function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       setError(null);
 
-      const headers = { Authorization: `Bearer ${token}` };
       const [userRes, platRes, analyticsRes, compRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/auth/me`, { headers }),
-        fetch(`${API_BASE_URL}/platform-connections`, { headers }),
-        fetch(`${API_BASE_URL}/daily-activity/analytics`, { headers }),
-        fetch(`${API_BASE_URL}/companies`, { headers }),
+        fetch(`${API_BASE_URL}/auth/me`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE_URL}/platform-connections`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE_URL}/daily-activity/analytics`, {
+          credentials: "include",
+        }),
+        fetch(`${API_BASE_URL}/companies`, {
+          credentials: "include",
+        }),
       ]);
 
       let hasError = false;
