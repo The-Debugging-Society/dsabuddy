@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ROUTES } from './config/constants'
+import { useEffect, useState } from "react";
 
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -9,21 +10,41 @@ const ComponentShowcase = lazy(() => import('./pages/ComponentShowcase'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 
 function ProtectedRoute({ children }) {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token") || localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/auth/me`, {
+      credentials: "include",
+    })
+      .then((res) => setAuthenticated(res.ok))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
+
+  return authenticated ? children : <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token") || localStorage.getItem("token");
-  if (token) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  return children;
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/auth/me`, {
+      credentials: "include",
+    })
+      .then((res) => setAuthenticated(res.ok))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return null;
+
+  return authenticated ? (
+    <Navigate to="/dashboard" replace />
+  ) : (
+    children
+  );
 }
 
 function App() {

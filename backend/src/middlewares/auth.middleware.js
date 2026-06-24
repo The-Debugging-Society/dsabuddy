@@ -11,16 +11,8 @@ import { prisma } from "../config/prismaClient.js";
 export const authMiddleware = async (req, res, next) => {
     try {
         let token = req.cookies?.token;
-
         if (!token) {
-            const tokenHeader = req.headers['authorization'];
-            if (!tokenHeader) {
-                return next();
-            }
-            if (!tokenHeader.startsWith('Bearer')) {
-                return res.status(401).json({ error: "Invalid token format" });
-            }
-            token = tokenHeader.split(' ')[1];
+            return next();
         }
 
         const isBlacklisted = await prisma.blacklistedToken.findUnique({

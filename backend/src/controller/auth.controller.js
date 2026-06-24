@@ -142,7 +142,7 @@ export const logoutUser = async (req, res) => {
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.token;
 
     const expSeconds = req.user?.exp;
     const expiresAt =
