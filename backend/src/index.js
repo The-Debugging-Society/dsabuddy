@@ -9,8 +9,10 @@ import routes from "./routes/index.js";
 import session from "express-session";
 import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import emailRoutes from "./routes/emailRoutes.js";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "./controller/mailerController.js";
 import userRoutes from "./routes/user.routes.js";
 import companyRoutes from "./routes/company.routes.js";
 import questionRoutes from "./routes/question.routes.js";
@@ -25,10 +27,6 @@ import uploadRoutes from "./routes/upload.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-async function connectDatabases() {
-  await prisma.$connect();
-}
 
 const allowedOrigins = new Set([
   "https://dsabuddy.xyz",
@@ -66,8 +64,6 @@ app.use(passport.session());
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-import jwt from "jsonwebtoken";
-
 passport.use(
   new GoogleStrategy(
     {
@@ -92,6 +88,10 @@ passport.use(
               userName: `user_${profile.id}`,
               avatarUrl: profile.photos?.[0]?.value || null,
             },
+          });
+          // Send welcome email asynchronously
+          sendWelcomeEmail(user.email, user.name).catch((error) => {
+            console.error("Failed to send welcome email to", user.email, error);
           });
         }
 
@@ -132,13 +132,5 @@ app.use("/api/upload", uploadRoutes);
 
 app.get("/", (req, res) => res.send("Server running"));
 
-connectDatabases()
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-  })
-  .catch((err) => {
-    console.error("Failed to connect databases:", err);
-    process.exit(1);
-  });
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
