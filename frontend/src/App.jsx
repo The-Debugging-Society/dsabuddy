@@ -7,6 +7,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ de
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const ComponentShowcase = lazy(() => import('./pages/ComponentShowcase'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
 
 function ProtectedRoute({ children }) {
   const params = new URLSearchParams(window.location.search);
@@ -32,6 +33,7 @@ function App() {
       <Suspense fallback={null}>
         <Routes>
           <Route path={ROUTES.HOME} element={<PublicRoute><LandingPage /></PublicRoute>} />
+          <Route path={ROUTES.ABOUT} element={<AboutPage />} />
           <Route path={ROUTES.DASHBOARD} element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/forum" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/analytics" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
