@@ -75,9 +75,17 @@ export const signup = async (req, res) => {
     { expiresIn: '7d' }
   );
 
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    domain: process.env.COOKIE_DOMAIN || undefined,
+  });
+
   return res
     .status(201)
-    .json({ message: "User created successfully", user, token });
+    .json({ message: "User created successfully", user });
 };
 
 export const login = async (req, res) => {
@@ -134,30 +142,30 @@ export const login = async (req, res) => {
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-  return res.status(200).json({ status: "success", token });
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    domain: process.env.COOKIE_DOMAIN || undefined,
+  });
+
+  return res.status(200).json({ status: "success" });
 };
 
 export const logoutUser = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const token = req.headers.authorization?.split(" ")[1];
-
-    const expSeconds = req.user?.exp;
-    const expiresAt =
-      typeof expSeconds === "number"
-        ? new Date(expSeconds * 1000)
-        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    await prisma.blacklistedToken.create({
-      data: { token, expiresAt },
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      domain: process.env.COOKIE_DOMAIN || undefined,
     });
-
     return res
       .status(200)
       .json({ status: "success", message: "Logged out successfully" });
   } catch (error) {
+    console.error("Logout error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

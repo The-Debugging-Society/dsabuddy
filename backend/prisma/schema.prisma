@@ -307,17 +307,6 @@ model UserQuestion {
   @@index([questionId])
 }
 
-model BlacklistedToken {
-  id String @id @default(cuid())
-
-  token     String   @unique
-  expiresAt DateTime
-
-  createdAt DateTime @default(now())
-
-  @@index([expiresAt])
-}
-
 model CompanyPyq {
   id          Int       @id @default(autoincrement())
   question_id Int?

@@ -11,11 +11,13 @@ import GoogleLogo from "@/assets/Google.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { authService } from "@/api/services";
+import { useUserStore } from "@/store/useUserStore";
 import { API_BASE_URL } from "@/config/constants";
 import { getErrorMessage } from "@/utils";
 
 export const RegisterForm = () => {
   const navigate = useNavigate();
+  const setUser = useUserStore((state) => state.setUser);
   const [formData, setFormData] = useState({
     name: "",
     userName: "",
@@ -61,9 +63,7 @@ export const RegisterForm = () => {
         password: formData.password,
         userName: formData.userName,
       });
-      if (res?.token) {
-        localStorage.setItem("token", res.token);
-      }
+      setUser(res.user || res);
       navigate("/onboarding");
     } catch (err) {
       setError(getErrorMessage(err));

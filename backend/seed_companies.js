@@ -267,68 +267,45 @@ async function main() {
   await prisma.question.deleteMany({});
   await prisma.company.deleteMany({});
 
-  console.log("Seeding companies, questions, tags, and mapping records...");
-  const companySlugToIdMap = {};
-  
-  for (const [companyName, questions] of Object.entries(companyQuestions)) {
-    const compSlug = normalizeName(companyName);
-    const logoUrl = getCompanyLogoUrl(companyName);
+  console.log("Processing and preparing data for bulk insert...");
 
-    // Get metadata from companiesMetadata
-    const metadata = data.companiesMetadata ? data.companiesMetadata[companyName] : null;
+  // 1. Collect all unique tags
+  const uniqueTagNamesSet = new Set();
+  for (const questions of Object.values(companyQuestions)) {
+    for (const q of questions) {
+      if (q.tags && Array.isArray(q.tags)) {
+        for (const t of q.tags) {
+          if (t && t.trim()) {
+            uniqueTagNamesSet.add(t.trim());
+          }
+        }
+      }
+    }
+  }
+  const uniqueTagsList = Array.from(uniqueTagNamesSet).map(name => ({ name }));
+  console.log(`Inserting ${uniqueTagsList.length} unique tags...`);
+  await prisma.tag.createMany({
+    data: uniqueTagsList,
+    skipDuplicates: true,
+  });
 
-    // 1. Create Company
-    const company = await prisma.company.create({
-      data: {
-        name: companyName,
-        slug: compSlug,
-        logoUrl,
-        questionCount: questions.length,
-        eligibilityCriteria: metadata ? metadata.eligibility_criteria : null,
-        roundsInfo: metadata ? metadata.rounds_info : null,
-        oaPlatform: metadata ? metadata.oa_platform : null,
-        topTopics: metadata ? metadata.top_topics_and_questions : [],
-        otherInfo: metadata ? metadata.other_relevant_information : null,
-      },
-    });
+  // Fetch all tags to get a Map of name -> ID
+  const dbTags = await prisma.tag.findMany({ select: { id: true, name: true } });
+  const tagNameToIdMap = {};
+  for (const t of dbTags) {
+    tagNameToIdMap[t.name] = t.id;
+  }
 
-    companySlugToIdMap[compSlug] = company.id;
-
-    let easyCount = 0;
-    let mediumCount = 0;
-    let hardCount = 0;
-
-    // 2. Loop over questions
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      const difficulty = mapDifficulty(q.difficulty);
-      if (difficulty === "EASY") easyCount++;
-      else if (difficulty === "MEDIUM") mediumCount++;
-      else if (difficulty === "HARD") hardCount++;
-
+  // 2. Collect all unique questions by sourceId
+  const uniqueQuestionsMap = new Map();
+  for (const questions of Object.values(companyQuestions)) {
+    for (const q of questions) {
       const titleSlug = getSlugFromUrl(q.url, q.title);
-      const mappedFreq = mapFrequency(q.frequency);
-      const acceptance = q.acceptance ? parseFloat(q.acceptance) : null;
-
-      // 3. Upsert Question record
-      const question = await prisma.question.upsert({
-        where: {
-          sourcePlatform_sourceId: {
-            sourcePlatform: "LEETCODE",
-            sourceId: titleSlug,
-          },
-        },
-        update: {
-          title: q.title,
-          displayName: q.title,
-          difficulty,
-          leetcodeUrl: q.url,
-          sourceSlug: titleSlug,
-          sourceUrl: q.url,
-          frequency: mappedFreq,
-          acceptanceRate: acceptance,
-        },
-        create: {
+      if (!uniqueQuestionsMap.has(titleSlug)) {
+        const difficulty = mapDifficulty(q.difficulty);
+        const mappedFreq = mapFrequency(q.frequency);
+        const acceptance = q.acceptance ? parseFloat(q.acceptance) : null;
+        uniqueQuestionsMap.set(titleSlug, {
           title: q.title,
           displayName: q.title,
           difficulty,
@@ -339,97 +316,192 @@ async function main() {
           sourceUrl: q.url,
           frequency: mappedFreq,
           acceptanceRate: acceptance,
-        },
+        });
+      }
+    }
+  }
+  const uniqueQuestionsList = Array.from(uniqueQuestionsMap.values());
+  console.log(`Inserting ${uniqueQuestionsList.length} unique questions...`);
+  await prisma.question.createMany({
+    data: uniqueQuestionsList,
+    skipDuplicates: true,
+  });
+
+  // Fetch all questions to get a Map of sourceId -> ID
+  const dbQuestions = await prisma.question.findMany({ select: { id: true, sourceId: true } });
+  const questionSourceIdToIdMap = {};
+  for (const q of dbQuestions) {
+    questionSourceIdToIdMap[q.sourceId] = q.id;
+  }
+
+  // 3. Create Companies
+  console.log("Creating companies...");
+  const companyDataList = [];
+  for (const [companyName, questions] of Object.entries(companyQuestions)) {
+    const compSlug = normalizeName(companyName);
+    const logoUrl = getCompanyLogoUrl(companyName);
+    const metadata = data.companiesMetadata ? data.companiesMetadata[companyName] : null;
+
+    companyDataList.push({
+      name: companyName,
+      slug: compSlug,
+      logoUrl,
+      questionCount: questions.length,
+      eligibilityCriteria: metadata ? metadata.eligibility_criteria : null,
+      roundsInfo: metadata ? metadata.rounds_info : null,
+      oaPlatform: metadata ? metadata.oa_platform : null,
+      topTopics: metadata ? metadata.top_topics_and_questions : [],
+      otherInfo: metadata ? metadata.other_relevant_information : null,
+    });
+  }
+
+  await prisma.company.createMany({
+    data: companyDataList,
+    skipDuplicates: true,
+  });
+
+  // Fetch all companies to map slug -> ID
+  const dbCompanies = await prisma.company.findMany({ select: { id: true, slug: true } });
+  const companySlugToIdMap = {};
+  for (const c of dbCompanies) {
+    companySlugToIdMap[c.slug] = c.id;
+  }
+
+  // 4. Prepare mapping entries (CompanyQuestion, QuestionTag, InterviewSet)
+  console.log("Preparing relation mapping records...");
+  const companyQuestionsToCreate = [];
+  const questionTagsToCreate = [];
+  const interviewSetsToCreate = [];
+
+  for (const [companyName, questions] of Object.entries(companyQuestions)) {
+    const compSlug = normalizeName(companyName);
+    const companyId = companySlugToIdMap[compSlug];
+    if (!companyId) continue;
+
+    let easyCount = 0;
+    let mediumCount = 0;
+    let hardCount = 0;
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const titleSlug = getSlugFromUrl(q.url, q.title);
+      const questionId = questionSourceIdToIdMap[titleSlug];
+      if (!questionId) continue;
+
+      const difficulty = mapDifficulty(q.difficulty);
+      if (difficulty === "EASY") easyCount++;
+      else if (difficulty === "MEDIUM") mediumCount++;
+      else if (difficulty === "HARD") hardCount++;
+
+      const mappedFreq = mapFrequency(q.frequency);
+
+      // CompanyQuestion
+      companyQuestionsToCreate.push({
+        companyId,
+        questionId,
+        frequency: mappedFreq,
+        solved: false,
+        order: i,
       });
 
-      // 4. Create tags and QuestionTag associations
+      // QuestionTags
       if (q.tags && Array.isArray(q.tags)) {
         for (const tagName of q.tags) {
           if (!tagName) continue;
-          const tag = await prisma.tag.upsert({
-            where: { name: tagName },
-            update: {},
-            create: { name: tagName },
-          });
-
-          await prisma.questionTag.upsert({
-            where: {
-              questionId_tagId: {
-                questionId: question.id,
-                tagId: tag.id,
-              },
-            },
-            update: {},
-            create: {
-              questionId: question.id,
-              tagId: tag.id,
-            },
-          });
+          const tagId = tagNameToIdMap[tagName.trim()];
+          if (tagId) {
+            questionTagsToCreate.push({
+              questionId,
+              tagId,
+            });
+          }
         }
       }
-
-      // 5. Create CompanyQuestion record linking them
-      await prisma.companyQuestion.create({
-        data: {
-          companyId: company.id,
-          questionId: question.id,
-          frequency: mappedFreq,
-          solved: false,
-          order: i,
-        },
-      });
     }
 
-    // 6. Create InterviewSet
-    await prisma.interviewSet.create({
-      data: {
-        companyId: company.id,
-        name: `${companyName} Interview Set`,
-        tag: "TOP SELECTION",
-        lastUpdated: "Just updated",
-        easyCount: 0,
-        easyTotal: easyCount,
-        mediumCount: 0,
-        mediumTotal: mediumCount,
-        hardCount: 0,
-        hardTotal: hardCount,
-      },
+    // InterviewSet
+    interviewSetsToCreate.push({
+      companyId,
+      name: `${companyName} Interview Set`,
+      tag: "TOP SELECTION",
+      lastUpdated: "Just updated",
+      easyCount: 0,
+      easyTotal: easyCount,
+      mediumCount: 0,
+      mediumTotal: mediumCount,
+      hardCount: 0,
+      hardTotal: hardCount,
     });
-    
   }
 
+  // Deduplicate questionTagsToCreate (unique constraint on questionId_tagId)
+  const questionTagSet = new Set();
+  const dedupedQuestionTags = [];
+  for (const qt of questionTagsToCreate) {
+    const key = `${qt.questionId}_${qt.tagId}`;
+    if (!questionTagSet.has(key)) {
+      questionTagSet.add(key);
+      dedupedQuestionTags.push(qt);
+    }
+  }
+
+  console.log(`Inserting ${companyQuestionsToCreate.length} CompanyQuestion records...`);
+  await prisma.companyQuestion.createMany({
+    data: companyQuestionsToCreate,
+    skipDuplicates: true,
+  });
+
+  console.log(`Inserting ${dedupedQuestionTags.length} QuestionTag records...`);
+  await prisma.questionTag.createMany({
+    data: dedupedQuestionTags,
+    skipDuplicates: true,
+  });
+
+  console.log(`Inserting ${interviewSetsToCreate.length} InterviewSet records...`);
+  await prisma.interviewSet.createMany({
+    data: interviewSetsToCreate,
+    skipDuplicates: true,
+  });
+
+  // 5. Placements
   console.log("Seeding NSUT placements...");
   const placementsPath = path.join(__dirname, '../nsut_placements.json');
   if (fs.existsSync(placementsPath)) {
     const placementsRaw = fs.readFileSync(placementsPath, 'utf8');
     const placementsData = JSON.parse(placementsRaw);
+    
+    const placementsToCreate = [];
     let skippedCount = 0;
-    let seededCount = 0;
+
     for (const p of placementsData) {
       const normCompany = normalizeName(p.company);
-      let companyId = companySlugToIdMap[normCompany];
+      const companyId = companySlugToIdMap[normCompany];
 
       if (!companyId) {
         skippedCount++;
         continue;
       }
 
-      await prisma.placement.create({
-        data: {
-          companyId,
-          companyName: getDisplayName(p.company),
-          role: p.role,
-          ctcLpa: p.ctc_lpa ? parseFloat(p.ctc_lpa) : null,
-          stipendMonth: p.stipend_month ? parseFloat(p.stipend_month) : null,
-          type: p.type,
-          category: p.category,
-          eligibleBranches: p.eligible_branches || [],
-          minCgpa: p.min_cgpa ? parseFloat(p.min_cgpa) : null,
-        },
+      placementsToCreate.push({
+        companyId,
+        companyName: getDisplayName(p.company),
+        role: p.role,
+        ctcLpa: p.ctc_lpa ? parseFloat(p.ctc_lpa) : null,
+        stipendMonth: p.stipend_month ? parseFloat(p.stipend_month) : null,
+        type: p.type,
+        category: p.category,
+        eligibleBranches: p.eligible_branches || [],
+        minCgpa: p.min_cgpa ? parseFloat(p.min_cgpa) : null,
       });
-      seededCount++;
     }
-    console.log(`Seeded ${seededCount} placement records. Skipped ${skippedCount} placements for companies with no questions/metadata.`);
+
+    if (placementsToCreate.length > 0) {
+      await prisma.placement.createMany({
+        data: placementsToCreate,
+        skipDuplicates: true,
+      });
+      console.log(`Seeded ${placementsToCreate.length} placement records. Skipped ${skippedCount} placements for companies with no questions/metadata.`);
+    }
   } else {
     console.log("Placements file not found at:", placementsPath);
   }

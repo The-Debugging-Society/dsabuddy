@@ -1,35 +1,11 @@
 import jwt from "jsonwebtoken";
-import { prisma } from "../config/prismaClient.js";
-
-/**
- * 
- * @param {import('express').Request} req 
- * @param {import('express').Response} res 
- * @param {import('express').NextFunction} next
- */
 
 export const authMiddleware = async (req, res, next) => {
     try {
-        let token = req.cookies?.token;
+        const token = req.cookies?.token;
 
         if (!token) {
-            const tokenHeader = req.headers['authorization'];
-            if (!tokenHeader) {
-                return next();
-            }
-            if (!tokenHeader.startsWith('Bearer')) {
-                return res.status(401).json({ error: "Invalid token format" });
-            }
-            token = tokenHeader.split(' ')[1];
-        }
-
-        const isBlacklisted = await prisma.blacklistedToken.findUnique({
-            where: { token },
-            select: { id: true },
-        });
-
-        if(isBlacklisted) {
-            return res.status(401).json({ error: "You are not authorized" });
+            return next();
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
