@@ -1,6 +1,14 @@
 import express from "express";
 import passport from "passport";
 
+const ALLOWED_ORIGINS = new Set([
+  "https://dsabuddy.xyz",
+  "https://www.dsabuddy.xyz",
+  "http://localhost:4173",
+  "http://localhost:5173",
+  process.env.FRONTEND_URL?.replace(/\/$/, ""),
+].filter(Boolean));
+
 const router = express.Router();
 
 // Start Google Login
@@ -23,7 +31,9 @@ router.get(
 
 // Google Callback
 router.get("/google/callback", (req, res, next) => {
-  const state = req.query.state || process.env.FRONTEND_URL || "http://localhost:5173";
+  const rawState = req.query.state || "";
+  const defaultOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+  const state = ALLOWED_ORIGINS.has(rawState) ? rawState : defaultOrigin;
   
   passport.authenticate("google", (err, user, info) => {
     if (err || !user) {
@@ -45,13 +55,14 @@ router.get("/google/callback", (req, res, next) => {
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: process.env.COOKIE_DOMAIN || undefined,
       });
-      
+
       const needsOnboarding = !user.branch || !user.year;
       const targetPath = needsOnboarding ? "/onboarding" : "/dashboard";
-      return res.redirect(`${state}${targetPath}?token=${token}`);
+      return res.redirect(`${state}${targetPath}`);
     });
   })(req, res, next);
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { userService, activityService } from '@/api/services';
+import { userService, activityService, authService } from '@/api/services';
 import { Sidebar, ConsistencyHeatmap } from '../DashboardPage/components';
 import { useUserStore } from '@/store/useUserStore';
 import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
@@ -79,6 +79,7 @@ export default function ProfilePage() {
 
   // Logged-in User Store
   const loggedInUser = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
 
   // Chart States
   const [timeFilter, setTimeFilter] = useState("1y");
@@ -155,9 +156,13 @@ export default function ProfilePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("dsabuddy_user");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
+    setUser(null);
     localStorage.removeItem("dsabuddy_dashboard_cache");
     window.location.href = "/login";
   };
@@ -334,7 +339,7 @@ export default function ProfilePage() {
     };
   }, [comparePlatforms, ratingHistoryData, yLabels]);
 
-  const isLoggedIn = !!localStorage.getItem('token');
+  const isLoggedIn = !!loggedInUser;
 
   return (
     <div className="flex min-h-screen bg-[#000000] text-[#E5E7EB] font-Spline-Sans selection:bg-[#35b9f1]/30 selection:text-white">

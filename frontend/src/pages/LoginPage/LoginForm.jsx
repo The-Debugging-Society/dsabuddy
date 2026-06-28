@@ -4,12 +4,14 @@ import { FormField, SocialButton } from "@/components/layout";
 import GoogleLogo from "@/assets/Google.png";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { authService } from "@/api/services";
+import { authService, userService } from "@/api/services";
+import { useUserStore } from "@/store/useUserStore";
 import { API_BASE_URL } from "@/config/constants";
 import { getErrorMessage } from "@/utils";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
+  const setUser = useUserStore((state) => state.setUser);
   const [formData, setFormData] = useState({
     identifier: "",
     password: ""
@@ -52,13 +54,13 @@ export const LoginForm = () => {
     }
     try{
       setLoading(true);
-      const res = await authService.login({
+      await authService.login({
         identifier: formData.identifier,
         password: formData.password,
       });
-      if (res?.token) {
-        localStorage.setItem('token', res.token);
-      }
+      const userRes = await userService.getMe();
+      const u = userRes.user || userRes;
+      setUser(u);
       navigate('/dashboard');
     } catch (error) {
       setError(getErrorMessage(error));

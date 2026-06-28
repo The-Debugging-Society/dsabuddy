@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Sidebar, DashboardSkeleton } from "./components";
 import { Dashboard } from "./Dashboard";
 import { Analytics } from "./Analytics";
@@ -8,9 +8,9 @@ import { Leaderboard } from "./Leaderboard";
 import { Settings } from "./Settings";
 import { InterviewForum } from "./InterviewForum";
 import { QuestionView } from "./QuestionView";
-
-import { API_BASE_URL } from "@/config/constants";
 import { useUserStore } from "@/store/useUserStore";
+import apiClient from "@/api/client";
+import { authService } from "@/api/services";
 
 export function DashboardPage() {
   const location = useLocation();
@@ -33,15 +33,13 @@ export function DashboardPage() {
   const [companies, setCompanies] = useState([]);
   const [error, setError] = useState(null);
 
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token") || localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("dsabuddy_user");
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
+    setUser(null);
     localStorage.removeItem("dsabuddy_dashboard_cache");
     window.location.href = "/login";
   };
@@ -65,73 +63,32 @@ export function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       setError(null);
 
-      const headers = { Authorization: `Bearer ${token}` };
       const [userRes, platRes, analyticsRes, compRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/auth/me`, { headers }),
-        fetch(`${API_BASE_URL}/platform-connections`, { headers }),
-        fetch(`${API_BASE_URL}/daily-activity/analytics`, { headers }),
-        fetch(`${API_BASE_URL}/companies`, { headers }),
+        apiClient.get('/auth/me'),
+        apiClient.get('/platform-connections'),
+        apiClient.get('/daily-activity/analytics'),
+        apiClient.get('/companies'),
       ]);
 
-      let hasError = false;
-      if (!userRes.ok) {
-        hasError = true;
-        console.error("User fetch failed:", userRes.status);
-      }
-      if (!platRes.ok) {
-        hasError = true;
-        console.error("Platforms fetch failed:", platRes.status);
-      }
-      if (!analyticsRes.ok) {
-        hasError = true;
-        console.error("Analytics fetch failed:", analyticsRes.status);
-      }
-      if (!compRes.ok) {
-        hasError = true;
-        console.error("Companies fetch failed:", compRes.status);
-      }
+      const u = userRes.user || userRes;
+      setUser(u);
 
-      if (hasError) {
-        setError(
-          "Failed to fetch some dashboard data. Please try again later.",
-        );
-      }
+      const p = platRes.platformConnections || platRes;
+      setPlatforms(p);
 
-      let updatedCache = {};
-      try {
-        const cachedData = localStorage.getItem("dsabuddy_dashboard_cache");
-        if (cachedData) {
-          updatedCache = JSON.parse(cachedData);
-        }
-      } catch (e) {}
+      setAnalytics(analyticsRes);
 
-      if (userRes.ok) {
-        const resData = await userRes.json();
-        const u = resData.user || resData;
-        setUser(u);
-        updatedCache.user = u;
-      }
-      if (platRes.ok) {
-        const platData = await platRes.json();
-        const p = platData.platformConnections || platData;
-        setPlatforms(p);
-        updatedCache.platforms = p;
-      }
-      if (analyticsRes.ok) {
-        const a = await analyticsRes.json();
-        setAnalytics(a);
-        updatedCache.analytics = a;
-      }
-      if (compRes.ok) {
-        const c = await compRes.json();
-        const companiesArray = Array.isArray(c) ? c : c.companies || [];
-        setCompanies(companiesArray);
-        updatedCache.companies = companiesArray;
-      }
+      const companiesArray = Array.isArray(compRes) ? compRes : compRes.companies || [];
+      setCompanies(companiesArray);
+
+      const updatedCache = {
+        user: u,
+        platforms: p,
+        analytics: analyticsRes,
+        companies: companiesArray,
+      };
 
       try {
         localStorage.setItem(
@@ -143,21 +100,13 @@ export function DashboardPage() {
       }
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
-      setError("Network error occurred while fetching dashboard data.");
+      setError("Failed to fetch some dashboard data. Please try again later.");
     } finally {
       setFirstLoad(false);
     }
   }, [setUser]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      localStorage.setItem("token", token);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
     // Load from cache immediately so the user has something to see instantly
     try {
       const cachedData = localStorage.getItem("dsabuddy_dashboard_cache");

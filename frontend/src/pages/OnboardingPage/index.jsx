@@ -59,13 +59,6 @@ export default function OnboardingPage() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
     let active = true;
     const loadProfileData = async () => {
       try {
