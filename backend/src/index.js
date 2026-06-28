@@ -1,5 +1,4 @@
 import { authLimiter, apiLimiter } from "./middlewares/rateLimiter.js";
-import { connectRedis } from "./config/redis.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -140,17 +139,8 @@ app.use("/api/upload", uploadRoutes);
 
 app.get("/", (req, res) => res.send("Server running"));
 
-async function startServer() {
-  try {
-    await connectRedis();
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error("❌ Failed to start server:", err);
-    process.exit(1);
-  }
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 startServer();
