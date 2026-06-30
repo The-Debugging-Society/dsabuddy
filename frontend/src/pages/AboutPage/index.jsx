@@ -29,6 +29,21 @@ const developers = [
     batch: "2028",
   },
   {
+    name: "Mayank",
+    image: "/Mayank.webp",
+    batch: "2028",
+  },
+  {
+    name: "Prachi",
+    image: "/Prachi.webp",
+    batch: "2028",
+  },
+  {
+    name: "Shagun",
+    image: "/Shagun.webp",
+    batch: "2028",
+  },
+  {
     name: "Keshav",
     image: "/Keshav.webp",
     batch: "2029",
@@ -40,6 +55,31 @@ const prTeam = [
     name: "Komal",
     image: "/Komal.webp",
     batch: "2028",
+  },
+  {
+    name: "Siddharth",
+    image: "/Siddharth.webp",
+    batch: "2028",
+  },
+  {
+    name: "Aarav",
+    image: "/Aarav.webp",
+    batch: "2029",
+  },
+  {
+    name: "Farhan",
+    image: "/Farhan.webp",
+    batch: "2029",
+  },
+  {
+    name: "Keshav Bansal",
+    image: "/Keshav Bansal.webp",
+    batch: "2029",
+  },
+  {
+    name: "Krishna",
+    image: "/Krishna.webp",
+    batch: "2029",
   }
 ];
 
@@ -69,7 +109,7 @@ const BackgroundGrid = () => (
 const FullCard = ({ member, type, index = 0 }) => {
   return (
     <motion.div
-      className="relative w-full h-full rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group cursor-pointer"
+      className="relative w-full h-full bg-black rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group cursor-pointer"
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -78,7 +118,7 @@ const FullCard = ({ member, type, index = 0 }) => {
       <motion.img
         src={member.image}
         alt={member.name}
-        className="absolute inset-0 w-full h-full object-cover origin-center"
+        className="absolute inset-0 w-full h-full object-contain"
         whileHover={{ scale: 1.08 }}
         transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
       />
@@ -88,7 +128,7 @@ const FullCard = ({ member, type, index = 0 }) => {
 
 
       <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8 z-20 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-        <h3 className="font-bold tracking-tight text-white text-2xl sm:text-3xl lg:text-4xl leading-tight">
+        <h3 className="font-bold tracking-tight text-white text-lg sm:text-xl lg:text-2xl leading-tight">
           {member.name}
         </h3>
         {member.batch && (
@@ -106,22 +146,17 @@ const FullCard = ({ member, type, index = 0 }) => {
 
 const DynamicGrid = ({ items, type }) => {
   const n = items.length;
-  let rows = 1;
-  let cols = n;
 
-  if (n > 4) {
-    rows = 2;
-    cols = Math.ceil(n / 2);
-  }
+  let gridClasses = "";
+  if (n === 1) gridClasses = "grid-cols-1 grid-rows-1";
+  else if (n === 2) gridClasses = "grid-cols-2 grid-rows-1";
+  else if (n === 3) gridClasses = "grid-cols-2 sm:grid-cols-3 grid-rows-2 sm:grid-rows-1";
+  else if (n === 4) gridClasses = "grid-cols-2 sm:grid-cols-4 grid-rows-2 sm:grid-rows-1";
+  else if (n <= 6) gridClasses = "grid-cols-2 sm:grid-cols-3 grid-rows-3 sm:grid-rows-2";
+  else gridClasses = "grid-cols-2 sm:grid-cols-4 grid-rows-4 sm:grid-rows-3";
 
   return (
-    <div
-      className="grid w-full h-full gap-4 sm:gap-6"
-      style={{
-        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`
-      }}
-    >
+    <div className={`grid w-full h-full gap-4 sm:gap-6 ${gridClasses}`}>
       {items.map((member, i) => (
         <FullCard key={member.name} member={member} type={type} index={i} />
       ))}
@@ -180,7 +215,7 @@ export function AboutPage() {
             >
               About DSABuddy
             </motion.span>
-            <h1 className="font-serif font-normal italic text-6xl sm:text-8xl md:text-[10rem] bg-linear-to-b from-white to-gray-400 bg-clip-text text-transparent leading-[1.1] tracking-tight">
+            <h1 className="font-serif font-normal italic text-4xl sm:text-6xl md:text-7xl lg:text-8xl bg-linear-to-b from-white to-gray-400 bg-clip-text text-transparent leading-[1.1] tracking-tight">
               Meet the <br className="hidden sm:block" />
               <span className="bg-linear-to-r from-[#35b9f1] to-cyan-200 bg-clip-text text-transparent">Team behind</span>
             </h1>
@@ -201,9 +236,9 @@ export function AboutPage() {
         <section className="sticky top-0 h-screen w-full flex flex-col xl:flex-row items-center bg-[#070707] border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-20 px-4 sm:px-8 xl:px-16">
           <div className="w-full xl:w-1/4 shrink-0 flex flex-col justify-center py-8 xl:py-0 xl:pr-12">
             <span className="text-[#35b9f1] font-mono text-[10px] uppercase tracking-[0.2em] mb-4 block">01 // Academic advisors</span>
-            <h2 className="font-serif italic text-5xl sm:text-6xl lg:text-7xl text-white">Mentors</h2>
+            <h2 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl text-white">Mentors</h2>
           </div>
-          <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0">
+          <div className="w-full xl:w-3/4 h-[55vh] xl:h-[70vh] pb-8 xl:pb-0">
             <DynamicGrid items={mentors} type="Advisor" />
           </div>
         </section>
@@ -211,9 +246,9 @@ export function AboutPage() {
         <section className="sticky top-0 h-screen w-full flex flex-col xl:flex-row-reverse items-center bg-[#090909] border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-30 px-4 sm:px-8 xl:px-16">
           <div className="w-full xl:w-1/4 shrink-0 flex flex-col justify-center py-8 xl:py-0 xl:pl-12">
             <span className="text-[#35b9f1] font-mono text-[10px] uppercase tracking-[0.2em] mb-4 block">02 // Core Engineers</span>
-            <h2 className="font-serif italic text-5xl sm:text-6xl lg:text-7xl text-white">Development<br className="hidden xl:block" />Team</h2>
+            <h2 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl text-white">Development<br className="hidden xl:block" />Team</h2>
           </div>
-          <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0">
+          <div className="w-full xl:w-3/4 h-[55vh] xl:h-[70vh] pb-8 xl:pb-0">
             <DynamicGrid items={developers} type="Developer" />
           </div>
         </section>
@@ -221,9 +256,9 @@ export function AboutPage() {
         <section className="sticky top-0 h-screen w-full flex flex-col xl:flex-row items-center bg-[#0b0b0b] border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-40 px-4 sm:px-8 xl:px-16">
           <div className="w-full xl:w-1/4 shrink-0 flex flex-col justify-center py-8 xl:py-0 xl:pr-12">
             <span className="text-[#35b9f1] font-mono text-[10px] uppercase tracking-[0.2em] mb-4 block">03 // Public Relations</span>
-            <h2 className="font-serif italic text-5xl sm:text-6xl lg:text-7xl text-white">Outreach &<br className="hidden xl:block" />PR Team</h2>
+            <h2 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl text-white">Outreach &<br className="hidden xl:block" />PR Team</h2>
           </div>
-          <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0">
+          <div className="w-full xl:w-3/4 h-[55vh] xl:h-[70vh] pb-8 xl:pb-0">
             <DynamicGrid items={prTeam} type="PR & Events" />
           </div>
         </section>
@@ -231,13 +266,13 @@ export function AboutPage() {
         <section className="sticky top-0 h-screen w-full flex flex-col xl:flex-row items-center bg-[#0c0c0c] border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-[45] px-4 sm:px-8 xl:px-16">
           <div className="w-full xl:w-1/4 shrink-0 flex flex-col justify-center py-8 xl:py-0 xl:pr-12">
             <span className="text-[#35b9f1] font-mono text-[10px] uppercase tracking-[0.2em] mb-4 block">04 // Team Photo</span>
-            <h2 className="font-serif italic text-5xl sm:text-6xl lg:text-7xl text-white">TDS Family</h2>
+            <h2 className="font-serif italic text-3xl sm:text-4xl lg:text-5xl text-white">TDS Family</h2>
           </div>
-          <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0 flex items-center justify-center">
+          <div className="w-full xl:w-3/4 h-[55vh] xl:h-[70vh] overflow-y-auto scrollbar-hide pb-8 xl:pb-0 pr-2 flex items-center justify-center">
             <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 group">
-              <img 
-                src={teamImg} 
-                alt="The Debugging Society Team" 
+              <img
+                src={teamImg}
+                alt="The Debugging Society Team"
                 className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -263,7 +298,7 @@ export function AboutPage() {
                 <span className="text-[#35b9f1] font-mono tracking-widest text-xs uppercase block mb-6">
                   Brought to you by
                 </span>
-                <h2 className="font-serif font-normal italic text-5xl sm:text-7xl lg:text-[7rem] bg-linear-to-r from-white via-white to-[#35b9f1] bg-clip-text text-transparent leading-[1.1] mb-12">
+                <h2 className="font-serif font-normal italic text-3xl sm:text-5xl lg:text-[5rem] bg-linear-to-r from-white via-white to-[#35b9f1] bg-clip-text text-transparent leading-[1.1] mb-12">
                   The Debugging Society
                 </h2>
 
