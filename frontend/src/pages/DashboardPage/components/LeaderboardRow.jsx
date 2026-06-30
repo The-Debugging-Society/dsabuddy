@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import { Trophy } from 'lucide-react';
+import { BRANCH_CODE_MAP } from '@/config/constants';
+
+function getBranchCode(branch) {
+  if (!branch) return null;
+  return BRANCH_CODE_MAP[branch] ?? branch;
+}
 
 export function getInitials(name) {
   if (!name) return '?';
@@ -77,7 +83,7 @@ export function LeaderboardRow({ user, rank, isCurrentUser, onClick }) {
             {isCurrentUser && <span className="ml-2 text-[#35b9f1] text-xs font-mono">(You)</span>}
           </p>
           {user?.branch && (
-            <p className="text-[#6B7280] text-xs font-mono mt-0.5">{user.branch}</p>
+            <p className="text-[#6B7280] text-xs font-mono mt-0.5">{getBranchCode(user.branch)}</p>
           )}
         </div>
       </div>

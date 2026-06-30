@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LeaderboardRow } from './components';
-import { Trophy, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { userService } from '@/api/services';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,9 +21,7 @@ export function Leaderboard({ user }) {
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [error, setError] = useState(null);
-  const [showInfo, setShowInfo] = useState(() => {
-    return localStorage.getItem('dsabuddy_hide_points_info') !== 'true';
-  });
+  const [showInfo, setShowInfo] = useState(false);
 
   const currentUser = user || {};
 
@@ -68,25 +66,16 @@ export function Leaderboard({ user }) {
     fetchLeaderboard();
   }, [activeFilter, activeSubFilter, skip]);
 
-  const handleDismissInfo = () => {
-    setShowInfo(false);
-    localStorage.setItem('dsabuddy_hide_points_info', 'true');
-  };
-
-  const displayLeaderboard = leaderboardData;
   const matchedUser = leaderboardData.find(u => {
     if (currentUser.id && u.id) return u.id === currentUser.id;
     if (currentUser.userName && u.userName) return u.userName === currentUser.userName;
     return false;
   });
-  const getCurrentUserRank = () => {
-    if (matchedUser) return matchedUser.rank;
-    if (activeFilter === 'college') return currentUser.collegeRank || '-';
-    if (activeFilter === 'branch') return currentUser.branchRank || '-';
-    if (activeFilter === 'year') return currentUser.yearRank || '-';
-    return currentUser.overallRank || '-';
-  };
-  const currentUserRank = getCurrentUserRank();
+  const currentUserRank = matchedUser?.rank
+    ?? (activeFilter === 'college' ? currentUser.collegeRank
+      : activeFilter === 'branch' ? currentUser.branchRank
+      : activeFilter === 'year' ? currentUser.yearRank
+      : currentUser.overallRank) ?? '-';
   const currentUserDisplayValue = matchedUser
     ? (matchedUser.displayValue !== undefined && matchedUser.displayValue !== null ? matchedUser.displayValue : (matchedUser.points || 0))
     : (currentUser.points || 0);
@@ -110,56 +99,60 @@ export function Leaderboard({ user }) {
           </h1>
           <p className="text-[#9CA3AF] font-mono text-sm">Compare coding analytics across colleges, departments, and years</p>
         </div>
-        <div className="bg-[#161B22]/50 border border-[#1F2937]/50 text-gray-400 text-xs font-semibold px-4 py-1.5 rounded-lg select-none tracking-wider uppercase">
-          Live Sync Active
-        </div>
       </div>
 
-      {showInfo && (
-        <div className="bg-[#161B22] border border-[#1F2937] rounded-xl p-5 relative overflow-hidden transition-all">
-          <button 
-            onClick={handleDismissInfo}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-lg transition-colors cursor-pointer"
-            aria-label="Dismiss"
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowInfo(false)}
           >
-            ×
-          </button>
-          <div className="space-y-2 flex-1 pr-6">
-            <h3 className="text-[#E5E7EB] font-bold">DSABuddy Points System</h3>
-            <p className="text-sm text-[#9CA3AF] leading-relaxed font-mono">
-              Points are normalized across connected profiles. Overall score is the sum of these platform scores (Max 3000 overall pts):
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-              <div className="bg-[#0D1117] p-3 rounded-lg border border-[#1F2937]/50 text-center">
-                <p className="text-[#35b9f1] font-bold text-sm">LeetCode</p>
-                <p className="text-xs text-[#9CA3AF] mt-1 font-mono">Max 1000 pts</p>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#161B22] border border-[#1F2937] rounded-2xl p-6 w-full max-w-md relative"
+            >
+              <button
+                onClick={() => setShowInfo(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-xl leading-none transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h3 className="text-[#E5E7EB] font-bold text-lg mb-2">DSABuddy Points System</h3>
+              <p className="text-sm text-[#9CA3AF] leading-relaxed font-mono mb-4">
+                Points are normalized across connected profiles. Overall score is the sum of these platform scores (Max 3000 overall pts):
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'LeetCode', max: 1000 },
+                  { label: 'Codeforces', max: 1000 },
+                  { label: 'CodeChef', max: 500 },
+                  { label: 'GFG', max: 500 },
+                ].map(({ label, max }) => (
+                  <div key={label} className="bg-[#0D1117] p-3 rounded-lg border border-[#1F2937]/50 text-center">
+                    <p className="text-[#35b9f1] font-bold text-sm">{label}</p>
+                    <p className="text-xs text-[#9CA3AF] mt-1 font-mono">Max {max} pts</p>
+                  </div>
+                ))}
               </div>
-              <div className="bg-[#0D1117] p-3 rounded-lg border border-[#1F2937]/50 text-center">
-                <p className="text-[#35b9f1] font-bold text-sm">Codeforces</p>
-                <p className="text-xs text-[#9CA3AF] mt-1 font-mono">Max 1000 pts</p>
-              </div>
-              <div className="bg-[#0D1117] p-3 rounded-lg border border-[#1F2937]/50 text-center">
-                <p className="text-[#35b9f1] font-bold text-sm">CodeChef</p>
-                <p className="text-xs text-[#9CA3AF] mt-1 font-mono">Max 500 pts</p>
-              </div>
-              <div className="bg-[#0D1117] p-3 rounded-lg border border-[#1F2937]/50 text-center">
-                <p className="text-[#35b9f1] font-bold text-sm">GFG</p>
-                <p className="text-xs text-[#9CA3AF] mt-1 font-mono">Max 500 pts</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {user ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Your Position */}
-          <div className="bg-[#161B22] border border-[#1F2937] rounded-xl p-5 flex flex-col justify-between min-h-[140px]">
-            <div>
-              <p className="text-[#6B7280] text-xs font-mono tracking-wider uppercase">YOUR POSITION</p>
-              <p className="text-xs text-gray-500 font-mono mt-0.5">In Active College Cohort</p>
-            </div>
-            <div className="flex items-baseline justify-between mt-4">
+        <div className="bg-[#161B22] border border-[#1F2937] rounded-xl p-5 flex items-center justify-between gap-6">
+          <div className="flex flex-col gap-1">
+            <p className="text-[#6B7280] text-xs font-mono tracking-wider uppercase">YOUR POSITION</p>
+            <p className="text-xs text-gray-500 font-mono">In Active College Cohort</p>
+            <div className="flex items-baseline gap-2 mt-2">
               <h2 className="text-white text-5xl font-bold">#{currentUserRank}</h2>
               <div className="flex items-center gap-1 text-[#10B981] text-sm font-mono">
                 <TrendingUp className="w-4 h-4" />
@@ -168,16 +161,15 @@ export function Leaderboard({ user }) {
             </div>
           </div>
 
-          {/* Card 2: Active Metric Value */}
-          <div className="bg-[#161B22] border border-[#1F2937] rounded-xl p-5 flex flex-col justify-between min-h-[140px]">
-            <div>
-              <p className="text-[#6B7280] text-xs font-mono tracking-wider uppercase">ACTIVE METRIC VALUE</p>
-              <p className="text-xs text-gray-500 font-mono mt-0.5 uppercase">{currentUserDisplayLabel}</p>
-            </div>
-            <div className="flex items-baseline gap-1 mt-4">
+          <div className="w-px self-stretch bg-[#1F2937]" />
+
+          <div className="flex flex-col gap-1 text-right">
+            <p className="text-[#6B7280] text-xs font-mono tracking-wider uppercase">ACTIVE METRIC</p>
+            <p className="text-xs text-gray-500 font-mono uppercase">{currentUserDisplayLabel}</p>
+            <div className="flex items-baseline gap-1 mt-2 justify-end">
               <h3 className="text-[#35b9f1] text-5xl font-bold">
-                {typeof currentUserDisplayValue === 'number' 
-                  ? currentUserDisplayValue.toLocaleString() 
+                {typeof currentUserDisplayValue === 'number'
+                  ? currentUserDisplayValue.toLocaleString()
                   : String(currentUserDisplayValue ?? 0)}
               </h3>
               <span className="text-[#35b9f1] text-lg font-medium">pts</span>
@@ -204,14 +196,14 @@ export function Leaderboard({ user }) {
       )}
 
       <div className="bg-[#161B22] rounded-xl p-6 border border-[#1F2937]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-b border-[#1F2937]/50 pb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 border-b border-[#1F2937]/50 pb-6">
           {/* Main Filters (College, Branch, Year) */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <label className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider block font-semibold">FILTER COHORT</label>
               {loading && <div className="w-3.5 h-3.5 border-2 border-t-transparent border-[#35b9f1] rounded-full animate-spin" />}
             </div>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
               {LEADERBOARD_FILTERS.map((filter) => {
                 const isLocked = !user;
                 return (
@@ -224,7 +216,7 @@ export function Leaderboard({ user }) {
                         setActiveFilter(filter.id);
                       }
                     }}
-                    className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                    className={`shrink-0 px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                       !isLocked && activeFilter === filter.id
                         ? 'bg-[#35b9f1] text-[#0D1117]'
                         : 'text-[#9CA3AF] hover:text-[#E5E7EB]'
@@ -246,7 +238,7 @@ export function Leaderboard({ user }) {
           {/* Sub Categories (Overall, LeetCode, Codeforces, CodeChef) */}
           <div className="space-y-2">
             <label className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider block font-semibold">RANK BY METRIC</label>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
               {[
                 { id: 'all', label: 'Overall Points' },
                 { id: 'leetcode', label: 'LeetCode' },
@@ -256,7 +248,7 @@ export function Leaderboard({ user }) {
                 <button
                   key={sub.id}
                   onClick={() => setActiveSubFilter(sub.id)}
-                  className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`shrink-0 px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer ${
                     activeSubFilter === sub.id
                       ? 'bg-[#35b9f1] text-[#0D1117]'
                       : 'text-[#9CA3AF] hover:text-[#E5E7EB]'
@@ -275,11 +267,11 @@ export function Leaderboard({ user }) {
           </div>
         )}
 
-        <div className={`space-y-3 max-h-[600px] overflow-y-auto pr-2 relative min-h-[150px] transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
+        <div className={`space-y-3 relative min-h-[150px] transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
 
           <AnimatePresence mode="popLayout">
-            {displayLeaderboard.length > 0 ? (
-              displayLeaderboard.map((u) => (
+            {leaderboardData.length > 0 ? (
+              leaderboardData.map((u) => (
                 <motion.div
                   key={u.id}
                   layout

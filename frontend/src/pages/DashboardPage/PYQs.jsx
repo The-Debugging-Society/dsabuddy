@@ -1,15 +1,13 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  BRANCHES,
+  BRANCH_CODE_MAP,
   BRANCH_SHORT_NAMES,
-  CIRCUITAL_BRANCHES_LABEL,
 } from "@/config/constants";
 import {
   ArrowLeft,
   ExternalLink,
   Search,
-  Award,
   ChevronRight,
   ChevronLeft,
   SlidersHorizontal,
@@ -21,13 +19,6 @@ import {
   ChevronUp,
   ChevronDown,
   ShieldAlert,
-  Bold,
-  Italic,
-  Heading1,
-  Heading2,
-  List,
-  Link,
-  Code,
   Image as ImageIcon,
   Trash2,
 } from "lucide-react";
@@ -1842,7 +1833,7 @@ export function PYQs({ companies, onSelectQuestion }) {
   const getDetailedEligibility = () => {
     const base = custom.detailedEligibility || {
       degrees: "B.Tech / M.Tech / Dual Degree",
-      branches: CIRCUITAL_BRANCHES_LABEL,
+      branches: "CSE, IT, ECE, EE, ICE, and related branches",
       criteria:
         metadata.eligibility_criteria &&
         metadata.eligibility_criteria !== "Not specified"
@@ -2008,15 +1999,11 @@ export function PYQs({ companies, onSelectQuestion }) {
                   className="w-full bg-[#0D1117] border border-[#1F2937] text-xs text-neutral-200 rounded-lg p-2.5 focus:outline-none focus:border-[#35b9f1]/40 focus:ring-1 focus:ring-[#35b9f1]/40 transition-all cursor-pointer"
                 >
                   <option value="all">ALL BRANCHES</option>
-                  {BRANCHES.map((b) => {
-                    const match = b.match(/\(([^)]+)\)/);
-                    const abbr = match ? match[1] : b;
-                    return (
-                      <option key={b} value={abbr}>
-                        {b}
-                      </option>
-                    );
-                  })}
+                  {Object.entries(BRANCH_CODE_MAP).map(([name, code]) => (
+                    <option key={code} value={code}>
+                      {name} ({code})
+                    </option>
+                  ))}
                 </select>
               </div>
 

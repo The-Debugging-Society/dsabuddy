@@ -3,17 +3,7 @@ import { UserSnapshotCard, PlatformCard, ConsistencyHeatmap } from './components
 import { platformService } from '@/api/services';
 import { Zap, Smile } from 'lucide-react';
 
-import leetcodeLogo from "@/assets/leetcode.png";
-import codeforcesLogo from "@/assets/codeforces.png";
-import codechefLogo from "@/assets/codechef.png";
-import gfgLogo from "@/assets/gfg.png";
-
-const PLATFORMS_CONFIG = [
-  { id: "leetcode", name: "LeetCode", logo: leetcodeLogo },
-  { id: "codechef", name: "CodeChef", logo: codechefLogo },
-  { id: "codeforces", name: "Codeforces", logo: codeforcesLogo },
-  { id: "gfg", name: "GFG", logo: gfgLogo },
-];
+import { PLATFORMS } from "@/config/constants";
 
 export function Dashboard({ user, platforms, analytics, leaderboard, onUpdate }) {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -52,7 +42,7 @@ export function Dashboard({ user, platforms, analytics, leaderboard, onUpdate })
     points: user?.points !== undefined && user?.points !== null ? user.points : 0,
   };
 
-  const displayPlatforms = PLATFORMS_CONFIG.map(defaultPlatform => {
+  const displayPlatforms = PLATFORMS.map(defaultPlatform => {
     const conn = (platforms || []).find(
       c => c.platform?.toLowerCase() === defaultPlatform.id?.toLowerCase()
     );

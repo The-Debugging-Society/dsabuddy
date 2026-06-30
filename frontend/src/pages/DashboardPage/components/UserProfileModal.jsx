@@ -5,10 +5,7 @@ import { getInitials } from './LeaderboardRow';
 import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, Link2 } from 'lucide-react';
 import { useUserStore } from '@/store/useUserStore';
 
-import leetcodeLogo from '@/assets/leetcode.png';
-import codeforcesLogo from '@/assets/codeforces.png';
-import codechefLogo from '@/assets/codechef.png';
-import gfgLogo from '@/assets/gfg.png';
+import { PLATFORMS } from '@/config/constants';
 
 export function UserProfileModal({ isOpen, onClose, userName }) {
   const { user: currentUser } = useUserStore();
@@ -64,12 +61,7 @@ export function UserProfileModal({ isOpen, onClose, userName }) {
   const rankColor = rankColors[profile?.overallRank] || '#6B7280';
   const showInitials = imgError || !profile?.avatarUrl;
 
-  const allPlatforms = [
-    { id: 'leetcode', name: 'LeetCode', color: '#FFA116', key: 'LEETCODE', logo: leetcodeLogo },
-    { id: 'codeforces', name: 'Codeforces', color: '#1F8ACB', key: 'CODEFORCES', logo: codeforcesLogo },
-    { id: 'codechef', name: 'CodeChef', color: '#5B4638', key: 'CODECHEF', logo: codechefLogo },
-    { id: 'gfg', name: 'GeeksforGeeks', color: '#2F8D46', key: 'GFG', logo: gfgLogo }
-  ];
+  const allPlatforms = PLATFORMS;
 
   const isSelf = profile && currentUser && (profile.id === currentUser.id || profile.userName === currentUser.userName);
 

@@ -3,24 +3,19 @@ import { activityService } from "@/api/services";
 import { ConsistencyHeatmap } from "./components";
 import { StatCard } from "@/components/common";
 import { Code, TrendingUp, Trophy, Flame } from "lucide-react";
+import { PLATFORMS } from "@/config/constants";
 
 // Define color system constants matching the rest of the application
 const COLORS = {
   bg: "#000000",
   surface: "#161B22",
   border: "#1F2937",
-  accent: "#35b9f1", // Cyan
+  accent: "#35b9f1",
   textPrimary: "#E5E7EB",
   textMuted: "#9CA3AF"
 };
 
-// Platform-specific brand colors
-const PLATFORM_COLORS = {
-  leetcode: "#FFA116",
-  codeforces: "#1F8ACB",
-  codechef: "#B97A57",
-  gfg: "#2F8D46"
-};
+const PLATFORM_COLORS = Object.fromEntries(PLATFORMS.map(p => [p.id, p.color]));
 
 // Months helper
 const MONTH_LABELS = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"];

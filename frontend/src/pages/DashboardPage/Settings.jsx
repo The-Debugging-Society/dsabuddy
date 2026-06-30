@@ -1,28 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, User, Link2 } from 'lucide-react';
 import { Card, Button, Input } from '@/components/common';
 import { userService, platformService } from '@/api/services';
-import { BRANCHES } from '@/config/constants';
-
-import leetcodeLogo from '@/assets/leetcode.png';
-import codeforcesLogo from '@/assets/codeforces.png';
-import codechefLogo from '@/assets/codechef.png';
-import gfgLogo from '@/assets/gfg.png';
-
-const platformLogos = {
-  leetcode: leetcodeLogo,
-  codeforces: codeforcesLogo,
-  codechef: codechefLogo,
-  gfg: gfgLogo,
-};
-
-const platformsData = [
-  { id: 'leetcode', name: 'LeetCode' },
-  { id: 'codechef', name: 'CodeChef' },
-  { id: 'codeforces', name: 'Codeforces' },
-  { id: 'gfg', name: 'GFG' },
-];
-
+import { BRANCHES, PLATFORMS } from '@/config/constants';
 import { useUserStore } from '@/store/useUserStore';
 import apiClient from '@/api/client';
 
@@ -48,7 +27,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
   });
 
   const getMappedPlatforms = (platList) => {
-    return platformsData.map(defaultPlatform => {
+    return PLATFORMS.map(defaultPlatform => {
       const conn = (platList || []).find(
         c => c.platform?.toLowerCase() === defaultPlatform.id?.toLowerCase()
       );
@@ -200,8 +179,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[#E5E7EB] text-4xl font-normal italic mb-2 font-serif flex items-center gap-3">
-          <SettingsIcon className="w-10 h-10 text-[#35b9f1]" />
+        <h1 className="text-[#E5E7EB] text-4xl font-normal italic mb-2 font-serif">
           Settings
         </h1>
         <p className="text-[#9CA3AF] font-mono">Manage your account and preferences</p>
@@ -210,14 +188,9 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Profile Settings Card */}
         <Card variant="default" className="rounded-xl p-6 border border-[#21262D] bg-[#161B22] hover:border-[#35b9f1]/10">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#21262D]">
-            <div className="w-10 h-10 bg-[#35b9f1]/10 rounded-lg flex items-center justify-center shrink-0">
-              <User className="w-5 h-5 text-[#35b9f1]" />
-            </div>
-            <div>
-              <h3 className="text-[#E5E7EB] font-bold text-lg">Profile Settings</h3>
-              <p className="text-[#6B7280] text-xs font-mono">Update your personal information</p>
-            </div>
+          <div className="mb-6 pb-4 border-b border-[#21262D]">
+            <h3 className="text-[#E5E7EB] font-bold text-lg">Profile Settings</h3>
+            <p className="text-[#6B7280] text-xs font-mono">Update your personal information</p>
           </div>
 
           <div className="space-y-4">
@@ -322,14 +295,9 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
 
         {/* Connected Platforms Card */}
         <Card variant="default" className="rounded-xl p-6 border border-[#21262D] bg-[#161B22] hover:border-[#35b9f1]/10">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#21262D]">
-            <div className="w-10 h-10 bg-[#35b9f1]/10 rounded-lg flex items-center justify-center shrink-0">
-              <Link2 className="w-5 h-5 text-[#35b9f1]" />
-            </div>
-            <div>
-              <h3 className="text-[#E5E7EB] font-bold text-lg">Connected Platforms</h3>
-              <p className="text-[#6B7280] text-xs font-mono">Manage your coding platform connections</p>
-            </div>
+          <div className="mb-6 pb-4 border-b border-[#21262D]">
+            <h3 className="text-[#E5E7EB] font-bold text-lg">Connected Platforms</h3>
+            <p className="text-[#6B7280] text-xs font-mono">Manage your coding platform connections</p>
           </div>
 
           <div className="space-y-4">
@@ -338,7 +306,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#161B22] border border-[#1F2937] overflow-hidden">
                     <img
-                      src={platformLogos[platform.id]}
+                      src={platform.logo}
                       alt={platform.name}
                       className={`w-6 h-6 object-contain ${platform.synced ? '' : 'grayscale opacity-40'}`}
                     />
