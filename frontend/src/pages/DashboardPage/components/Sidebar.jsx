@@ -1,8 +1,8 @@
-import { LayoutDashboard, BarChart3, Code, Trophy, MessageSquare, LogOut, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Code, Trophy, MessageSquare, LogOut, Settings, Menu, X, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dsaLogo from '../../../assets/DSABuddy Logo.png';
+import dsaLogo from '../../../assets/logo.png';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -135,35 +135,48 @@ export function Sidebar({ activeSection, onSectionChange, onLogout, user }) {
 
               {/* Bottom Profile / Settings / Logout */}
               <div className="border-t border-neutral-900 pt-4 mt-auto">
-                {user && (
-                  <div className="mb-4 px-2">
-                    <p className="text-sm font-semibold text-white truncate font-Spline-Sans">{user.name}</p>
-                    <p className="text-xs text-neutral-500 truncate font-mono mt-0.5">{user.email}</p>
-                  </div>
-                )}
-                
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onSectionChange('settings');
-                    navigate('/dashboard/settings');
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-400 hover:text-white hover:bg-neutral-900 transition-colors text-left cursor-pointer"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="font-Spline-Sans">Settings</span>
-                </button>
+                {user ? (
+                  <>
+                    <div className="mb-4 px-2">
+                      <p className="text-sm font-semibold text-white truncate font-Spline-Sans">{user.name}</p>
+                      <p className="text-xs text-neutral-500 truncate font-mono mt-0.5">{user.email}</p>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onSectionChange('settings');
+                        navigate('/dashboard/settings');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-400 hover:text-white hover:bg-neutral-900 transition-colors text-left cursor-pointer"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="font-Spline-Sans">Settings</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onLogout();
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-left cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="font-Spline-Sans">Logout</span>
-                </button>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onLogout();
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-left cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="font-Spline-Sans">Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/login');
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-neutral-400 hover:text-white hover:bg-neutral-900 transition-colors text-left cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="font-Spline-Sans">Login</span>
+                  </button>
+                )}
               </div>
             </motion.div>
             {/* Backdrop Click */}
@@ -221,29 +234,33 @@ export function Sidebar({ activeSection, onSectionChange, onLogout, user }) {
         {/* Bottom Profile with Menu */}
         <div className="flex flex-col items-center w-full relative" ref={menuRef}>
           {/* User profile avatar/initials button */}
-          <button 
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="w-full h-14 flex items-center justify-center relative border-t border-neutral-900 pt-3 mt-1 cursor-pointer hover:bg-neutral-900/40"
-          >
-            {user ? (
-              <>
-                {showInitials ? (
-                  <div className="w-8 h-8 rounded-full border border-[#35b9f1] flex items-center justify-center bg-gradient-to-br from-[#35b9f1]/20 to-[#35b9f1]/5 text-[#35b9f1] font-bold text-xs select-none">
-                    {getInitials(user.name)}
-                  </div>
-                ) : (
-                  <img
-                    src={avatarUrl}
-                    alt={user.name}
-                    onError={() => setImgError(true)}
-                    className="w-8 h-8 rounded-full border border-[#35b9f1] object-cover"
-                  />
-                )}
-              </>
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 animate-pulse" />
-            )}
-          </button>
+          {user ? (
+            <button 
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="w-full h-14 flex items-center justify-center relative border-t border-neutral-900 pt-3 mt-1 cursor-pointer hover:bg-neutral-900/40"
+            >
+              {showInitials ? (
+                <div className="w-8 h-8 rounded-full border border-[#35b9f1] flex items-center justify-center bg-gradient-to-br from-[#35b9f1]/20 to-[#35b9f1]/5 text-[#35b9f1] font-bold text-xs select-none">
+                  {getInitials(user.name)}
+                </div>
+              ) : (
+                <img
+                  src={avatarUrl}
+                  alt={user.name}
+                  onError={() => setImgError(true)}
+                  className="w-8 h-8 rounded-full border border-[#35b9f1] object-cover"
+                />
+              )}
+            </button>
+          ) : (
+            <button 
+              onClick={() => navigate('/login')}
+              className="w-full h-14 flex items-center justify-center relative border-t border-neutral-900 pt-3 mt-1 cursor-pointer hover:bg-neutral-900/40 text-neutral-400 hover:text-white"
+              title="Login"
+            >
+              <LogIn className="w-5 h-5" />
+            </button>
+          )}
 
           {/* Profile Menu Popup */}
           {menuOpen && user && (

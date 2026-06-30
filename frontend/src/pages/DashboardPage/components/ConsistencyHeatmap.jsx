@@ -424,7 +424,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
   }
 
   return (
-    <div className="bg-[#161B22] rounded-xl border border-[#21262D] p-6 relative pb-11 heatmap-wrapper">
+    <div className="bg-[#161B22] rounded-xl border border-[#21262D] p-6 relative pb-11 heatmap-wrapper h-full flex flex-col justify-between">
       
       {/* ── Top bar: title / pills / year ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">

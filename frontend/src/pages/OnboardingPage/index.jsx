@@ -18,7 +18,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { Button, Input } from '@/components/common';
 import apiClient from '@/api/client';
 import { BRANCHES } from '@/config/constants';
-import LogoImg from "@/assets/DSABuddy Logo.png";
+import LogoImg from "@/assets/logo.png";
 
 export default function OnboardingPage() {
   const navigate = useNavigate();

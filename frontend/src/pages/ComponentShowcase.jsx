@@ -26,7 +26,7 @@ import {
   CloudSync,
   Code,
 } from 'lucide-react';
-import GoogleLogo from '@/assets/Google.png';
+import GoogleLogo from '@/assets/google.png';
 
 export default function ComponentShowcase() {
   const [inputValue, setInputValue] = useState('');

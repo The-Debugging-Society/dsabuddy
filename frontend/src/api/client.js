@@ -18,7 +18,16 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       useUserStore.getState().setUser(null);
       localStorage.removeItem('dsabuddy_dashboard_cache');
-      window.location.href = '/login';
+      
+      const isPublicPath = 
+        window.location.pathname === '/' || 
+        window.location.pathname.startsWith('/about') || 
+        window.location.pathname.startsWith('/profile') ||
+        window.location.pathname === '/showcase';
+        
+      if (!isPublicPath) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -5,10 +5,10 @@ import { getInitials } from './LeaderboardRow';
 import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, Link2 } from 'lucide-react';
 import { useUserStore } from '@/store/useUserStore';
 
-import leetcodeLogo from '@/assets/Leetcode Icon 24 copy.png';
-import codeforcesLogo from '@/assets/Codeforces Icon 24.png';
-import codechefLogo from '@/assets/Codechef Icon 48.png';
-import gfgLogo from '@/assets/Geeksforgeeks Icon 48.png';
+import leetcodeLogo from '@/assets/leetcode.png';
+import codeforcesLogo from '@/assets/codeforces.png';
+import codechefLogo from '@/assets/codechef.png';
+import gfgLogo from '@/assets/gfg.png';
 
 export function UserProfileModal({ isOpen, onClose, userName }) {
   const { user: currentUser } = useUserStore();

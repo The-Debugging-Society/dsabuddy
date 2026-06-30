@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button, Divider } from "@/components/common";
 import { FormField, SocialButton } from "@/components/layout";
-import GoogleLogo from "@/assets/Google.png";
+import GoogleLogo from "@/assets/google.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { authService } from "@/api/services";

@@ -7,11 +7,11 @@ import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, Arrow
 import { motion } from 'framer-motion';
 import { Button, StatCard } from '@/components/common';
 
-import leetcodeLogo from '@/assets/Leetcode Icon 24 copy.png';
-import codeforcesLogo from '@/assets/Codeforces Icon 24.png';
-import codechefLogo from '@/assets/Codechef Icon 48.png';
-import gfgLogo from '@/assets/Geeksforgeeks Icon 48.png';
-import dsaLogo from '@/assets/DSABuddy Logo.png';
+import leetcodeLogo from '@/assets/leetcode.png';
+import codeforcesLogo from '@/assets/codeforces.png';
+import codechefLogo from '@/assets/codechef.png';
+import gfgLogo from '@/assets/gfg.png';
+import dsaLogo from '@/assets/logo.png';
 
 // Dynamic rating history generator (adapted from Analytics.jsx)
 const getHistoryForFilter = (conn, filter) => {

@@ -3,22 +3,16 @@ import { UserSnapshotCard, PlatformCard, ConsistencyHeatmap } from './components
 import { platformService } from '@/api/services';
 import { Zap, Smile } from 'lucide-react';
 
-import leetcodeLogo from "@/assets/Leetcode Icon 24 copy.png";
-import codeforcesLogo from "@/assets/Codeforces Icon 24.png";
-import codechefLogo from "@/assets/Codechef Icon 48.png";
-import gfgLogo from "@/assets/Geeksforgeeks Icon 48.png";
+import leetcodeLogo from "@/assets/leetcode.png";
+import codeforcesLogo from "@/assets/codeforces.png";
+import codechefLogo from "@/assets/codechef.png";
+import gfgLogo from "@/assets/gfg.png";
 
 const PLATFORMS_CONFIG = [
   { id: "leetcode", name: "LeetCode", logo: leetcodeLogo },
   { id: "codechef", name: "CodeChef", logo: codechefLogo },
   { id: "codeforces", name: "Codeforces", logo: codeforcesLogo },
   { id: "gfg", name: "GFG", logo: gfgLogo },
-];
-
-const LEADERBOARD_FILTERS = [
-  { id: "college", label: "College" },
-  { id: "branch", label: "Branch" },
-  { id: "year", label: "Year" },
 ];
 
 export function Dashboard({ user, platforms, analytics, leaderboard, onUpdate }) {
@@ -123,9 +117,9 @@ export function Dashboard({ user, platforms, analytics, leaderboard, onUpdate })
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         <UserSnapshotCard user={displayUser} />
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 h-full">
           <ConsistencyHeatmap data={displayHeatmap} />
         </div>
       </div>
@@ -134,7 +128,7 @@ export function Dashboard({ user, platforms, analytics, leaderboard, onUpdate })
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-[#E5E7EB] text-3xl font-normal italic font-Instrument-Serif flex items-center gap-2">
-              <Zap className="w-5.5 h-5.5 text-[#35b9f1] shrink-0" /> Platform Tracker
+              Platform Tracker
             </h2>
           </div>
           <button 

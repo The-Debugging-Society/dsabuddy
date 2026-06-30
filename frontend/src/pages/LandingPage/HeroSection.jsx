@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button, Divider } from "@/components/common";
 import { StatItem } from "@/components/layout";
-import DashboardImg from "@/assets/Dashboard.png";
+import DashboardImg from "@/assets/dashboard.png";
 
 export const HeroSection = ({ onStartTracking = () => {} }) => {
   return (

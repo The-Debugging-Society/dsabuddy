@@ -41,8 +41,9 @@ const featuresList = [
   {
     icon: BookOpen,
     iconVariant: "primary",
-    title: "Zero to Offer Book",
+    title: "From Zero to Offer Book",
     description: "Fully integrated step-by-step placement preparation guide to take you from coding basics to top tech offers.",
+    link: "https://drive.google.com/file/d/17LP8EJoSGUn-w7meqU45M2neezMIn8U6/view?usp=sharing",
   },
   {
     icon: Building2,
@@ -109,6 +110,7 @@ export const FeaturesSection = memo(() => {
             title={feature.title}
             description={feature.description}
             delay={index * 0.08}
+            link={feature.link}
           />
         ))}
       </div>

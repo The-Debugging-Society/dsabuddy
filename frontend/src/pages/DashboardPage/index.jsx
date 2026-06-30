@@ -62,6 +62,23 @@ export function DashboardPage() {
   }, [location.pathname]);
 
   const fetchData = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError(null);
+      setUser(null);
+      setPlatforms([]);
+      setAnalytics(null);
+      try {
+        const compRes = await apiClient.get('/companies');
+        const companiesArray = Array.isArray(compRes) ? compRes : compRes.companies || [];
+        setCompanies(companiesArray);
+      } catch (e) {
+        console.error("Failed to fetch companies", e);
+      }
+      setFirstLoad(false);
+      return;
+    }
+
     try {
       setError(null);
 

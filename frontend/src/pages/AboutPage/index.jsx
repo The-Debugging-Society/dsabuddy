@@ -2,15 +2,18 @@ import { motion } from "framer-motion";
 import { Header, Footer } from "@/components/layout";
 import { useEffect, useRef } from "react";
 import Lenis from "lenis";
+import teamImg from "@/assets/team.png";
 
 const mentors = [
   {
     name: "Tanmay",
     image: "/Tanmay.webp",
+    batch: "2027",
   },
   {
     name: "Aman Mishra",
     image: "/Aman.webp",
+    batch: "2027",
   }
 ];
 
@@ -18,14 +21,17 @@ const developers = [
   {
     name: "Saransh",
     image: "/Saransh.webp",
+    batch: "2028",
   },
   {
     name: "Bhoomi",
-    image: "/Bhoomi.webp"
+    image: "/Bhoomi.webp",
+    batch: "2028",
   },
   {
     name: "Keshav",
     image: "/Keshav.webp",
+    batch: "2029",
   }
 ];
 
@@ -33,6 +39,7 @@ const prTeam = [
   {
     name: "Komal",
     image: "/Komal.webp",
+    batch: "2028",
   }
 ];
 
@@ -81,9 +88,14 @@ const FullCard = ({ member, type, index = 0 }) => {
 
 
       <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8 z-20 flex flex-col justify-end translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-        <h3 className="font-bold tracking-tight text-white font-SF-Pro mb-2 text-2xl sm:text-3xl lg:text-4xl">
+        <h3 className="font-bold tracking-tight text-white font-SF-Pro text-2xl sm:text-3xl lg:text-4xl leading-tight">
           {member.name}
         </h3>
+        {member.batch && (
+          <span className="text-[#35b9f1] font-JetBrains-Mono text-xs mt-1 block">
+            Batch of {member.batch}
+          </span>
+        )}
         <div className="w-8 sm:w-12 h-1 bg-[#35b9f1] rounded-full mt-2 sm:mt-4 group-hover:w-16 sm:group-hover:w-24 group-hover:bg-cyan-300 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(53,185,241,0.5)]" />
       </div>
 
@@ -213,6 +225,23 @@ export function AboutPage() {
           </div>
           <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0">
             <DynamicGrid items={prTeam} type="PR & Events" />
+          </div>
+        </section>
+
+        <section className="sticky top-0 h-screen w-full flex flex-col xl:flex-row items-center bg-[#0c0c0c] border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] z-[45] px-4 sm:px-8 xl:px-16">
+          <div className="w-full xl:w-1/4 shrink-0 flex flex-col justify-center py-8 xl:py-0 xl:pr-12">
+            <span className="text-[#35b9f1] font-JetBrains-Mono text-[10px] uppercase tracking-[0.2em] mb-4 block">04 // Team Photo</span>
+            <h2 className="font-Instrument-Serif italic text-5xl sm:text-6xl lg:text-7xl text-white">TDS Family</h2>
+          </div>
+          <div className="w-full xl:w-3/4 h-[50vh] xl:h-[65vh] pb-8 xl:pb-0 flex items-center justify-center">
+            <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 group">
+              <img 
+                src={teamImg} 
+                alt="The Debugging Society Team" 
+                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            </div>
           </div>
         </section>
 

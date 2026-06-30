@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import LogoImg from "@/assets/DSABuddy Logo.png";
+import LogoImg from "@/assets/logo.png";
 
 export const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -48,10 +48,10 @@ export const Header = () => {
             <Link to="/about">
               <li className="hover:text-gray-600 transition-colors">About</li>
             </Link>
-            <Link to={localStorage.getItem("token") ? "/dashboard/leaderboard" : "/login"}>
+            <Link to="/dashboard/leaderboard">
               <li className="hover:text-gray-600 transition-colors">Leaderboard</li>
             </Link>
-            <Link to={localStorage.getItem("token") ? "/dashboard" : "/login"}>
+            <Link to="/dashboard">
               <li className="hover:text-gray-600 transition-colors">Dashboard</li>
             </Link>
           </ul>

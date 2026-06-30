@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, Badge } from "@/components/common";
 import StruggleImg from "@/assets/struggle.png";
-import DashboardImg from "@/assets/Dashboard.png";
+import DashboardImg from "@/assets/dashboard.png";
 
 export const ComparisonSection = () => {
   return (

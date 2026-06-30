@@ -42,7 +42,7 @@ function App() {
     <Router>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/forum" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
