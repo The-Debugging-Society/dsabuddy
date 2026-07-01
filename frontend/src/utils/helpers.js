@@ -28,6 +28,11 @@ export const truncateText = (text, maxLength) => {
 export function getErrorMessage(error) {
   if (!error) return "";
   if (typeof error === "string") return error;
+  if (error.response?.status === 429) {
+    const apiError = error.response?.data?.error;
+    if (typeof apiError === "string") return apiError;
+    return "Too many requests. Please try again later.";
+  }
   if (error.response?.data?.error) {
     const apiError = error.response.data.error;
     if (typeof apiError === "string") return apiError;

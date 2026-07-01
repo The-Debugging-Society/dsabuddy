@@ -1,9 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
-import {
-  getCache,
-  setCache,
-  deleteCacheByPattern,
-} from "../utils/cache.js";
+import { getCache, setCache, deleteCacheByPattern } from "../utils/cache.js";
+
 // Platform enum map: frontend sortBy value -> DB platform enum value
 const PLATFORM_SORT_MAP = {
   leetcode: "LEETCODE",
@@ -51,13 +48,6 @@ export const getLeaderboard = async (req, res) => {
   const filter = req.query.filter;   // 'college' | 'branch' | 'year'
   const sortBy = req.query.sortBy;   // 'all' | 'leetcode' | 'codeforces' | 'codechef'
   const requestingUserId = req.user?.userId ?? req.user?._id;
-  const cacheKey = `leaderboard:${filter ?? "all"}:${sortBy ?? "points"}:${take}:${skip}`;
-
-const cachedLeaderboard = await getCache(cacheKey);
-
-if (cachedLeaderboard) {
-  return res.status(200).json(cachedLeaderboard);
-}
 
   // Build where clause based on filter + requesting user's profile
   let whereClause = {};
@@ -69,14 +59,25 @@ if (cachedLeaderboard) {
     });
   }
 
+  let filterValue = null;
   if (filter && requestingUser) {
     if (filter === "college" && requestingUser.college) {
       whereClause.college = requestingUser.college;
+      filterValue = requestingUser.college;
     } else if (filter === "branch" && requestingUser.branch) {
       whereClause.branch = requestingUser.branch;
+      filterValue = requestingUser.branch;
     } else if (filter === "year" && requestingUser.year) {
       whereClause.year = requestingUser.year;
+      filterValue = requestingUser.year;
     }
+  }
+  const cacheKey = `leaderboard:${filter ?? "all"}:${filterValue ?? "none"}:${sortBy ?? "points"}:${take}:${skip}`;
+
+  const cachedLeaderboard = await getCache(cacheKey);
+
+  if (cachedLeaderboard) {
+    return res.status(200).json(cachedLeaderboard);
   }
 
   const platformKey = PLATFORM_SORT_MAP[sortBy]; // undefined when sortBy is 'all' or absent

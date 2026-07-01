@@ -11,6 +11,9 @@ import { useUserStore } from "@/store/useUserStore";
 import apiClient from "@/api/client";
 import { authService } from "@/api/services";
 
+let lastDashboardFetchAt = 0;
+const DASHBOARD_REFRESH_MS = 60 * 1000;
+
 export function DashboardPage() {
   const location = useLocation();
   const [activeSection, setActiveSection] = useState(() => {
@@ -39,6 +42,7 @@ export function DashboardPage() {
     }
     setUser(null);
     localStorage.removeItem("dsabuddy_dashboard_cache");
+    lastDashboardFetchAt = 0; // force a fresh fetch on next login
     window.location.href = "/login";
   };
 
@@ -57,19 +61,23 @@ export function DashboardPage() {
     }
   }, [location.pathname]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (force = false) => {
+    // Skip if we refreshed recently (e.g. switching dashboard tabs) unless forced.
+    if (!force && Date.now() - lastDashboardFetchAt < DASHBOARD_REFRESH_MS) {
+      setFirstLoad(false);
+      return;
+    }
+
     try {
       setError(null);
 
-      const [userRes, platRes, analyticsRes, compRes] = await Promise.all([
-        apiClient.get('/auth/me'),
+      const u = useUserStore.getState().user;
+
+      const [platRes, analyticsRes, compRes] = await Promise.all([
         apiClient.get('/platform-connections'),
         apiClient.get('/daily-activity/analytics'),
         apiClient.get('/companies'),
       ]);
-
-      const u = userRes.user || userRes;
-      setUser(u);
 
       const p = platRes.platformConnections || platRes;
       setPlatforms(p);
@@ -94,6 +102,8 @@ export function DashboardPage() {
       } catch (e) {
         console.error("Failed to write dashboard cache", e);
       }
+
+      lastDashboardFetchAt = Date.now();
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
       setError("Failed to fetch some dashboard data. Please try again later.");

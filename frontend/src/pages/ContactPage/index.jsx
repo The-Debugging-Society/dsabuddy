@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navbar, Footer } from "@/components/layout";
 import { useEffect, useRef, useState } from "react";
 import Lenis from "lenis";
+import apiClient from "@/api/client";
 
 const BackgroundGrid = () => (
   <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black">
@@ -43,6 +44,8 @@ const contactLinks = [
 export default function ContactPage() {
   const lenisRef = useRef(null);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
@@ -52,9 +55,18 @@ export default function ContactPage() {
     return () => lenisRef.current?.destroy();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+    try {
+      await apiClient.post("/contact", form);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err?.response?.data?.error || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,7 +120,7 @@ export default function ContactPage() {
                     Thanks for reaching out. We'll get back to you at <span className="text-white">{form.email}</span> soon.
                   </p>
                   <button
-                    onClick={() => { setSubmitted(false); setForm({ name: "", email: "", message: "" }); }}
+                    onClick={() => { setSubmitted(false); setError(null); setForm({ name: "", email: "", message: "" }); }}
                     className="mt-6 text-[#35b9f1] text-sm font-mono hover:underline"
                   >
                     Send another
@@ -155,11 +167,16 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {error && (
+                    <p className="text-red-400 text-xs font-mono">{error}</p>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full bg-[#35b9f1] hover:bg-[#35b9f1]/90 text-black font-bold py-3 rounded-xl transition-colors text-sm"
+                    disabled={loading}
+                    className="w-full bg-[#35b9f1] hover:bg-[#35b9f1]/90 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3 rounded-xl transition-colors text-sm"
                   >
-                    Send Message
+                    {loading ? "Sending…" : "Send Message"}
                   </button>
                 </form>
               )}

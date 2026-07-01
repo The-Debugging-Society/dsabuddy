@@ -3,6 +3,7 @@ import {
   getPosts,
   getPostById,
   createPost,
+  updatePost,
   votePost,
   addComment,
   deletePost,
@@ -20,6 +21,9 @@ router.get("/posts/:id", authMiddleware, getPostById);
 
 // Publish new experience (requires authentication)
 router.post("/posts", authMiddleware, ensureAuthenticated, createPost);
+
+// Update experience post (requires authentication & authorship)
+router.patch("/posts/:id", authMiddleware, ensureAuthenticated, updatePost);
 
 // Delete experience post (requires authentication & authorship)
 router.delete("/posts/:id", authMiddleware, ensureAuthenticated, deletePost);

@@ -1,4 +1,5 @@
 import { prisma } from "../config/prismaClient.js";
+import { deleteCacheByPattern } from "./cache.js";
 
 export async function recalculateUserPoints(userId) {
   try {
@@ -58,6 +59,8 @@ export async function recalculateUserPoints(userId) {
       where: { id: userId },
       data: { points: Math.round(totalPoints) },
     });
+
+    await deleteCacheByPattern("leaderboard:*");
 
     console.log(`Recalculated points for user ${userId}: ${totalPoints}`);
     return totalPoints;

@@ -1,10 +1,5 @@
 import { prisma } from "../config/prismaClient.js";
-import {
-  getCache,
-  setCache,
-  deleteCache,
-  deleteCacheByPattern,
-} from "../utils/cache.js";
+import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../utils/cache.js";
 
 export const listCompanies = async (req, res) => {
   const take = Number(req.query.take ?? 100);
@@ -186,11 +181,11 @@ export const listCompanyQuestions = async (req, res) => {
   const { slug } = req.params;
   const cacheKey = `companyQuestions:${slug}`;
 
-const cachedQuestions = await getCache(cacheKey);
+  const cachedQuestions = await getCache(cacheKey);
 
-if (cachedQuestions) {
-  return res.status(200).json(cachedQuestions);
-}
+  if (cachedQuestions) {
+    return res.status(200).json(cachedQuestions);
+  }
 
   const company = await prisma.company.findUnique({
     where: { slug },
@@ -231,9 +226,9 @@ if (cachedQuestions) {
 
   const response = { companyQuestions };
 
-await setCache(cacheKey, response, 300);
+  await setCache(cacheKey, response, 300);
 
-return res.status(200).json(response);
+  return res.status(200).json(response);
 };
 
 export const upsertCompanyQuestion = async (req, res) => {

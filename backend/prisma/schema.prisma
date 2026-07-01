@@ -373,3 +373,15 @@ model Vote {
   @@id([userId, postId])
   @@index([postId])
 }
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  name      String
+  email     String
+  message   String
+
+  @@index([createdAt])
+  @@map("contact_submissions")
+}

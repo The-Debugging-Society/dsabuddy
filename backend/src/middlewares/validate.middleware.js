@@ -9,7 +9,7 @@ export const validate = (schemas = {}) => {
       if (params) {
         const parsed = await params.safeParseAsync(req.params);
         if (!parsed.success) {
-          return res.status(400).json({ error: parsed.error.format() });
+          return res.status(422).json({ error: parsed.error.format() });
         }
         Object.defineProperty(req, 'params', {
           value: parsed.data,
@@ -22,7 +22,7 @@ export const validate = (schemas = {}) => {
       if (query) {
         const parsed = await query.safeParseAsync(req.query);
         if (!parsed.success) {
-          return res.status(400).json({ error: parsed.error.format() });
+          return res.status(422).json({ error: parsed.error.format() });
         }
         Object.defineProperty(req, 'query', {
           value: parsed.data,
@@ -35,7 +35,7 @@ export const validate = (schemas = {}) => {
       if (body) {
         const parsed = await body.safeParseAsync(req.body);
         if (!parsed.success) {
-          return res.status(400).json({ error: parsed.error.format() });
+          return res.status(422).json({ error: parsed.error.format() });
         }
         req.body = parsed.data;
       }

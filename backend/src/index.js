@@ -26,9 +26,12 @@ import syncRoutes from "./routes/sync.routes.js";
 import forumRoutes from "./routes/forum.routes.js";
 import leetcodeRoutes from "./routes/leetcode.routes.js";
 import uploadRoutes from "./routes/upload.js";
+import contactRoutes from "./routes/contact.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+app.set("trust proxy", 1);
 
 const allowedOrigins = new Set([
   "https://dsabuddy.xyz",
@@ -137,6 +140,7 @@ app.use("/api/sync", syncRoutes);
 app.use("/api/forum", forumRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/contact", contactRoutes);
 
 
 app.get("/", (req, res) => res.send("Server running"));

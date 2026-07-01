@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, Search, Plus, ArrowLeft, Calendar, Send, X, ShieldAlert, ChevronUp, ChevronDown, Bold, Italic, Heading1, Heading2, List, Link, Code, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { MessageSquare, Search, Plus, ArrowLeft, Calendar, Send, X, ShieldAlert, ChevronUp, ChevronDown, Bold, Italic, Heading1, Heading2, List, Link, Code, Image as ImageIcon, Trash2, Pencil } from 'lucide-react';
 import { forumService } from '@/api/services/forumService';
 import { Badge, Button, Card, Input } from '@/components/common';
 import apiClient from '@/api/client';
 import { useUserStore } from '@/store/useUserStore';
 import { getErrorMessage } from '@/utils';
+import DOMPurify from 'dompurify';
 
 // Recursive Comment Node Component
 // Recursive Comment Node Component
@@ -275,6 +276,20 @@ const parseMarkdownToHTML = (text) => {
   return html;
 };
 
+// Posts created by an older rich-text editor store raw HTML (e.g. <div>, <br>)
+// instead of the markdown this editor produces, so we detect and sanitize
+// that case directly rather than running it through the markdown parser
+// (which would escape the tags into visible text).
+const isLikelyHtml = (text) => /<\/?[a-z][\s\S]*>/i.test(text);
+
+const renderPostContent = (text) => {
+  if (!text) return '';
+  if (isLikelyHtml(text)) {
+    return DOMPurify.sanitize(text);
+  }
+  return DOMPurify.sanitize(parseMarkdownToHTML(text));
+};
+
 export function InterviewForum() {
   const navigate = useNavigate();
   const loggedInUser = useUserStore((state) => state.user);
@@ -287,7 +302,8 @@ export function InterviewForum() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  
+  const [editingPostId, setEditingPostId] = useState(null);
+
   // Post form state
   const [postTitle, setPostTitle] = useState('');
   const [postContent, setPostContent] = useState('');
@@ -489,8 +505,8 @@ export function InterviewForum() {
     }
   };
 
-  // Create Post
-  const handleCreatePost = async (e) => {
+  // Create or Update Post
+  const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!postTitle.trim() || !postContent.trim()) {
       setPostError('Title and Content are required.');
@@ -500,26 +516,68 @@ export function InterviewForum() {
     try {
       setSubmittingPost(true);
       setPostError('');
-      const data = await forumService.createPost({
-        title: postTitle,
-        content: postContent,
-        tags: postTags
-      });
 
-      // Insert new post at top of list
-      setPosts(prev => [data.post, ...prev]);
-      
+      if (editingPostId) {
+        const data = await forumService.updatePost(editingPostId, {
+          title: postTitle,
+          content: postContent,
+          tags: postTags
+        });
+
+        setPosts(prev => prev.map(p => (p.id === editingPostId ? data.post : p)));
+        setSelectedPost(prev => (prev?.id === editingPostId ? { ...prev, ...data.post } : prev));
+      } else {
+        const data = await forumService.createPost({
+          title: postTitle,
+          content: postContent,
+          tags: postTags
+        });
+
+        // Insert new post at top of list
+        setPosts(prev => [data.post, ...prev]);
+      }
+
       // Reset state and close modal
       setPostTitle('');
       setPostContent('');
       setPostTags('');
+      setEditingPostId(null);
       setShowCreateModal(false);
     } catch (err) {
-      console.error('Failed to publish post:', err);
+      console.error('Failed to save post:', err);
       setPostError(getErrorMessage(err));
     } finally {
       setSubmittingPost(false);
     }
+  };
+
+  const handleEditClick = (post) => {
+    setEditingPostId(post.id);
+    setPostTitle(post.title || '');
+    setPostContent(post.content || '');
+    setPostTags(Array.isArray(post.tags) ? post.tags.join(', ') : (post.tags || ''));
+    setPostError('');
+    setActiveTab('write');
+    setShowCreateModal(true);
+  };
+
+  const closePostModal = () => {
+    setShowCreateModal(false);
+    setEditingPostId(null);
+    setPostTitle('');
+    setPostContent('');
+    setPostTags('');
+    setPostError('');
+  };
+
+  const handleNewPostClick = () => {
+    setEditingPostId(null);
+    setPostTitle('');
+    setPostContent('');
+    setPostTags('');
+    setPostError('');
+    setActiveTab('write');
+    setShowCreateModal(true);
   };
 
   const handleDeletePost = async (postId) => {
@@ -628,8 +686,12 @@ export function InterviewForum() {
 
   const getPostPreviewText = (text) => {
     if (!text) return '';
+    // Strip raw HTML tags (from posts saved by an older rich-text editor)
+    let clean = isLikelyHtml(text)
+      ? DOMPurify.sanitize(text, { ALLOWED_TAGS: [] })
+      : text;
     // Strip image links
-    let clean = text.replace(/!\[.*?\]\(.*?\)/g, '[Image]');
+    clean = clean.replace(/!\[.*?\]\(.*?\)/g, '[Image]');
     // Strip standard links
     clean = clean.replace(/\[(.*?)\]\(.*?\)/g, '$1');
     // Strip code blocks
@@ -693,6 +755,16 @@ export function InterviewForum() {
                   <Calendar className="w-4 h-4" />
                   {formatDate(selectedPost.createdAt)}
                 </div>
+                {loggedInUser?.id === selectedPost.author?.id && (
+                  <button
+                    onClick={() => handleEditClick(selectedPost)}
+                    className="text-[#9CA3AF] hover:text-white p-2 rounded-xl bg-[#0D1117] border border-[#1F2937] hover:bg-neutral-900 hover:border-neutral-800 transition-all cursor-pointer flex items-center gap-1.5 font-bold text-xs"
+                    title="Edit Post"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </button>
+                )}
                 {(loggedInUser?.id === selectedPost.author?.id || loggedInUser?.role === 'admin') && (
                   <button
                     onClick={() => {
@@ -731,7 +803,7 @@ export function InterviewForum() {
             {/* Post Content */}
             <div 
               className="text-[#E5E7EB] text-base leading-relaxed space-y-4 font-medium"
-              dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(selectedPost.content) }}
+              dangerouslySetInnerHTML={{ __html: renderPostContent(selectedPost.content) }}
             />
 
             {/* Voting and Comments Footer */}
@@ -842,7 +914,7 @@ export function InterviewForum() {
                 </p>
               </div>
               <Button
-                onClick={() => setShowCreateModal(true)}
+                onClick={handleNewPostClick}
                 className="bg-[#35b9f1] hover:bg-[#10a3e0] text-[#0D1117] font-extrabold rounded-xl px-5 py-3 flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-[#35b9f1]/10 transition-all"
               >
                 <Plus className="w-5 h-5" />
@@ -1033,7 +1105,7 @@ export function InterviewForum() {
               <div className="col-span-full text-center py-20 bg-[#161B22]/30 rounded-2xl border border-dashed border-[#1F2937]">
                 <p className="text-[#6B7280] font-mono text-sm">No experiences found matching filters.</p>
                 <Button
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={handleNewPostClick}
                   className="mt-4 bg-[#35b9f1] hover:bg-[#10a3e0] text-[#0D1117] font-extrabold rounded-xl px-4 py-2 transition-all text-xs"
                 >
                   Share Your Experience
@@ -1051,7 +1123,7 @@ export function InterviewForum() {
             
             <div className="flex items-center justify-between border-b border-[#1F2937] px-6 py-4">
               <div className="flex items-center gap-4">
-                <h3 className="text-white font-extrabold text-lg">Share Interview Experience</h3>
+                <h3 className="text-white font-extrabold text-lg">{editingPostId ? 'Edit Interview Experience' : 'Share Interview Experience'}</h3>
                 
                 {/* Write vs Preview Tabs */}
                 <div className="flex bg-[#0D1117] border border-[#1F2937] rounded-lg p-0.5 ml-2">
@@ -1080,14 +1152,14 @@ export function InterviewForum() {
                 </div>
               </div>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={closePostModal}
                 className="text-[#6B7280] hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreatePost} className="flex-1 flex flex-col overflow-hidden">
+            <form onSubmit={handleSubmitPost} className="flex-1 flex flex-col overflow-hidden">
               
               <div className="p-6 space-y-5 flex-1 overflow-y-auto flex flex-col min-h-0">
                 {postError && (
@@ -1262,7 +1334,7 @@ export function InterviewForum() {
                       {postContent.trim() ? (
                         <div 
                           className="text-[#E5E7EB] text-sm leading-relaxed space-y-4 font-medium"
-                          dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(postContent) }}
+                          dangerouslySetInnerHTML={{ __html: renderPostContent(postContent) }}
                         />
                       ) : (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -1279,7 +1351,7 @@ export function InterviewForum() {
               <div className="flex gap-3 justify-end p-6 border-t border-[#1F2937] bg-[#161B22] shrink-0">
                 <Button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={closePostModal}
                   variant="outline"
                   size="sm"
                   className="px-5 py-2.5 rounded-xl border-[#1F2937] text-sm font-extrabold text-[#9CA3AF] hover:text-white transition-all"
@@ -1293,7 +1365,9 @@ export function InterviewForum() {
                   size="sm"
                   className="rounded-xl px-6 py-2.5 font-extrabold"
                 >
-                  {submittingPost ? 'Publishing...' : 'Publish Experience'}
+                  {submittingPost
+                    ? (editingPostId ? 'Saving...' : 'Publishing...')
+                    : (editingPostId ? 'Save Changes' : 'Publish Experience')}
                 </Button>
               </div>
 

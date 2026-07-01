@@ -327,6 +327,78 @@ export const addComment = async (req, res) => {
   }
 };
 
+export const updatePost = async (req, res) => {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { id } = req.params;
+    const { title, content, tags } = req.body;
+
+    const existingPost = await prisma.forumPost.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+    if (!existingPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    if (existingPost.userId !== req.user.userId) {
+      return res.status(403).json({ error: "Forbidden: You are not the author of this post" });
+    }
+
+    if (!title || !content) {
+      return res.status(400).json({ error: "Title and content are required" });
+    }
+
+    const post = await prisma.forumPost.update({
+      where: { id },
+      data: {
+        title,
+        content,
+        tags: Array.isArray(tags) ? tags : [],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            userName: true,
+            avatarUrl: true,
+            college: true,
+            branch: true,
+          },
+        },
+        comments: { select: { id: true } },
+        votes: { select: { userId: true, value: true } },
+      },
+    });
+
+    const userVoteObj = post.votes.find((v) => v.userId === req.user.userId);
+    const userVote = userVoteObj ? userVoteObj.value : 0;
+    const score = post.votes.reduce((sum, v) => sum + v.value, 0);
+
+    return res.status(200).json({
+      post: {
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        tags: post.tags,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        author: post.user,
+        commentCount: post.comments.length,
+        score,
+        userVote,
+        upvoteCount: score,
+        isUpvoted: userVote === 1,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const deletePost = async (req, res) => {
   try {
     if (!req.user?.userId) {
@@ -340,7 +412,7 @@ export const deletePost = async (req, res) => {
     if (!post) {
       return res.status(404).json({ error: "Post not found" });
     }
-    if (post.userId !== req.user.userId && req.user.role !== 'admin') {
+    if (post.userId !== req.user.userId) {
       return res.status(403).json({ error: "Forbidden: You are not the author of this post" });
     }
     await prisma.forumPost.delete({
@@ -366,7 +438,7 @@ export const deleteComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
     }
-    if (comment.userId !== req.user.userId && req.user.role !== 'admin') {
+    if (comment.userId !== req.user.userId) {
       return res.status(403).json({ error: "Forbidden: You are not the author of this comment" });
     }
     await prisma.comment.delete({
