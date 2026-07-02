@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { useUserStore } from './store/useUserStore'
 import { userService } from './api/services'
 
@@ -61,6 +62,7 @@ function App() {
           <Route path="/showcase" element={<ComponentShowcase />} />
         </Routes>
       </Suspense>
+      <Analytics />
     </Router>
   )
 }
