@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Navbar, Footer } from "@/components/layout";
+import { Seo } from "@/components/common";
+import { breadcrumbSchema } from "@/config/seo";
 import { useEffect, useRef } from "react";
 import Lenis from "lenis";
 import teamImg from "@/assets/team.png";
@@ -191,6 +193,15 @@ export function AboutPage() {
 
   return (
     <div className="bg-black text-white relative w-full">
+      <Seo
+        title="About DSABuddy — The Team Behind Your DSA Tracker"
+        description="Meet the team building DSABuddy, the platform that unifies your DSA practice across LeetCode, Codeforces, CodeChef, and GeeksforGeeks to help you ace coding interviews."
+        path="/about"
+        jsonLd={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "About", path: "/about" },
+        ])}
+      />
       <BackgroundGrid />
 
       <div className="fixed top-0 w-full z-[100] pointer-events-none">

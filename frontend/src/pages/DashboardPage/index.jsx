@@ -8,6 +8,7 @@ import { Settings } from "./Settings";
 import { InterviewForum } from "./InterviewForum";
 import { QuestionView } from "./QuestionView";
 import { useUserStore } from "@/store/useUserStore";
+import { Seo } from "@/components/common";
 import apiClient from "@/api/client";
 import { authService } from "@/api/services";
 
@@ -180,6 +181,7 @@ export function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-[#000000]">
+      <Seo title="Dashboard" noindex />
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}

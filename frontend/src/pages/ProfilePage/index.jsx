@@ -4,9 +4,10 @@ import { userService, activityService, authService } from '@/api/services';
 import { Sidebar, ConsistencyHeatmap } from '../DashboardPage/components';
 import { useUserStore } from '@/store/useUserStore';
 import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
-import { Button, StatCard } from '@/components/common';
+import { Button, StatCard, Seo } from '@/components/common';
 
 import { PLATFORMS } from '@/config/constants';
+import { SITE, absoluteUrl } from '@/config/seo';
 
 // Dynamic rating history generator (adapted from Analytics.jsx)
 const getHistoryForFilter = (conn, filter) => {
@@ -331,8 +332,38 @@ export default function ProfilePage() {
 
   const isLoggedIn = !!loggedInUser;
 
+  const displayName = profile?.name || username;
+
   return (
     <div className="flex min-h-screen bg-[#000000] text-[#E5E7EB] selection:bg-[#35b9f1]/30 selection:text-white">
+      <Seo
+        title={profile ? `${displayName} (@${username}) — DSA Profile` : 'DSA Profile'}
+        description={
+          profile
+            ? `View ${displayName}'s DSA practice profile on DSABuddy — combined stats, ratings, and streaks across LeetCode, Codeforces, CodeChef, and GeeksforGeeks.`
+            : undefined
+        }
+        path={`/profile/${username}`}
+        image={profile?.avatarUrl}
+        type="profile"
+        noindex={!profile}
+        jsonLd={
+          profile
+            ? {
+                '@context': 'https://schema.org',
+                '@type': 'ProfilePage',
+                mainEntity: {
+                  '@type': 'Person',
+                  name: displayName,
+                  alternateName: username,
+                  url: absoluteUrl(`/profile/${username}`),
+                  ...(profile.avatarUrl ? { image: profile.avatarUrl } : {}),
+                },
+                isPartOf: { '@type': 'WebSite', name: SITE.name, url: SITE.url },
+              }
+            : undefined
+        }
+      />
       {/* Sidebar Navigation */}
       <Sidebar
         activeSection="profile"

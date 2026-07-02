@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navbar } from "@/components/layout";
+import { Seo } from "@/components/common";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 
@@ -8,6 +9,12 @@ export default function LoginPage() {
 
   return (
     <div className="bg-[#000000] min-h-screen pt-24 sm:pt-32 md:pt-40">
+      <Seo
+        title={isLogin ? "Login" : "Create Your Account"}
+        description="Log in or create your DSABuddy account to start tracking your DSA practice across LeetCode, Codeforces, CodeChef, and GeeksforGeeks."
+        path={isLogin ? "/login" : "/register"}
+        noindex
+      />
       <Navbar />
       {isLogin ? (
         <div className="flex flex-col justify-center items-center">

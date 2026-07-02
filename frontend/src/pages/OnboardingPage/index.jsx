@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { userService, platformService } from '@/api/services';
 import { useUserStore } from '@/store/useUserStore';
-import { Button, Input } from '@/components/common';
+import { Button, Input, Seo } from '@/components/common';
 import apiClient from '@/api/client';
 import { BRANCHES } from '@/config/constants';
 import LogoImg from "@/assets/logo.png";
@@ -246,7 +246,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="bg-[#000000] min-h-screen text-white flex flex-col selection:bg-[#35b9f1] selection:text-black">
-      
+      <Seo title="Get Started" noindex />
+
       {/* ── Navbar ── */}
       <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-gray-800 shrink-0">
         <div className="flex items-center gap-3">

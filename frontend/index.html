@@ -4,21 +4,72 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/logo.png" />
-    
-    <meta name="description" content="DSABuddy - One place to track all your practice. Integrate with your favourite DSA practice websites. Your comprehensive platform for mastering Data Structures and Algorithms." />
+
+    <title>DSABuddy — Track Your DSA Practice Across LeetCode, Codeforces, CodeChef & GFG</title>
+    <meta name="description" content="DSABuddy is one place to track all your DSA practice. Connect LeetCode, Codeforces, CodeChef, and GeeksforGeeks to see unified stats, streaks, and leaderboards while you prepare for coding interviews." />
     <meta name="author" content="DSABuddy" />
-    
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="canonical" href="https://dsabuddy.com/" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="DSABuddy - Track Your DSA Practice" />
+    <meta property="og:title" content="DSABuddy — Track Your DSA Practice" />
     <meta property="og:description" content="Your one platform to track all your Data Structures and Algorithm practice from your favourite websites." />
-    <meta property="og:url" content="https://dsabuddy.com" />
+    <meta property="og:url" content="https://dsabuddy.com/" />
     <meta property="og:image" content="https://dsabuddy.com/logo.png" />
     <meta property="og:site_name" content="DSABuddy" />
-    
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@dsabuddy" />
+    <meta name="twitter:title" content="DSABuddy — Track Your DSA Practice" />
+    <meta name="twitter:description" content="Your one platform to track all your Data Structures and Algorithm practice from your favourite websites." />
+    <meta name="twitter:image" content="https://dsabuddy.com/logo.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>DSABuddy</title>
+
+    <!-- Structured data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DSABuddy",
+      "url": "https://dsabuddy.com",
+      "logo": "https://dsabuddy.com/logo.png",
+      "description": "DSABuddy is one place to track all your DSA practice across LeetCode, Codeforces, CodeChef, and GeeksforGeeks."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "DSABuddy",
+      "url": "https://dsabuddy.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://dsabuddy.com/leaderboard?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DSABuddy",
+      "url": "https://dsabuddy.com",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

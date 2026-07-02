@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Navbar, Footer } from "@/components/layout";
+import { Seo } from "@/components/common";
+import { breadcrumbSchema } from "@/config/seo";
 import { useEffect, useRef, useState } from "react";
 import Lenis from "lenis";
 import apiClient from "@/api/client";
@@ -71,6 +73,15 @@ export default function ContactPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white overflow-x-hidden">
+      <Seo
+        title="Contact DSABuddy"
+        description="Get in touch with the DSABuddy team. Questions, feedback, partnership ideas, or bug reports — we'd love to hear from you."
+        path="/contact"
+        jsonLd={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Contact", path: "/contact" },
+        ])}
+      />
       <BackgroundGrid />
       <div className="relative z-10">
         <Navbar />
