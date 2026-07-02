@@ -7,6 +7,7 @@ import { PYQs } from "./PYQs";
 import { Settings } from "./Settings";
 import { InterviewForum } from "./InterviewForum";
 import { QuestionView } from "./QuestionView";
+import ProfilePage from "../ProfilePage";
 import { useUserStore } from "@/store/useUserStore";
 import { Seo } from "@/components/common";
 import apiClient from "@/api/client";
@@ -23,6 +24,7 @@ export function DashboardPage() {
     if (path.startsWith("/dashboard/analytics")) return "analytics";
     if (path.startsWith("/dashboard/pyqs")) return "pyqs";
     if (path.startsWith("/dashboard/settings")) return "settings";
+    if (path.startsWith("/dashboard/profile")) return "profile";
     return "dashboard";
   });
   const [selectedQuestionSlug, setSelectedQuestionSlug] = useState("two-sum");
@@ -57,6 +59,8 @@ export function DashboardPage() {
       setActiveSection("pyqs");
     } else if (path.startsWith("/dashboard/settings")) {
       setActiveSection("settings");
+    } else if (path.startsWith("/dashboard/profile")) {
+      setActiveSection("profile");
     } else {
       setActiveSection("dashboard");
     }
@@ -167,6 +171,8 @@ export function DashboardPage() {
         return <Settings platforms={platforms} onUpdate={fetchData} />;
       case "forum":
         return <InterviewForum />;
+      case "profile":
+        return <ProfilePage embedded username={storeUser?.userName} />;
       default:
         return (
           <Dashboard

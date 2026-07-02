@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { userService, activityService, authService } from '@/api/services';
 import { Sidebar, ConsistencyHeatmap } from '../DashboardPage/components';
 import { useUserStore } from '@/store/useUserStore';
-import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, CheckCircle2 } from 'lucide-react';
 import { Button, StatCard, Seo } from '@/components/common';
 
 import { PLATFORMS } from '@/config/constants';
@@ -64,8 +64,9 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export default function ProfilePage() {
-  const { username } = useParams();
+export default function ProfilePage({ embedded = false, username: usernameProp }) {
+  const params = useParams();
+  const username = usernameProp ?? params.username;
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +80,7 @@ export default function ProfilePage() {
 
   // Chart States
   const [timeFilter, setTimeFilter] = useState("1y");
-  const [comparePlatforms, setComparePlatforms] = useState(false);
+  const [comparePlatforms, setComparePlatforms] = useState(true);
   const [activePlatformTab, setActivePlatformTab] = useState("leetcode");
   const [hoveredChartPoint, setHoveredChartPoint] = useState(null);
   const [heatmapData, setHeatmapData] = useState([]);
@@ -335,8 +336,8 @@ export default function ProfilePage() {
   const displayName = profile?.name || username;
 
   return (
-    <div className="flex min-h-screen bg-[#000000] text-[#E5E7EB] selection:bg-[#35b9f1]/30 selection:text-white">
-      <Seo
+    <div className={embedded ? 'text-[#E5E7EB]' : 'flex min-h-screen bg-[#000000] text-[#E5E7EB] selection:bg-[#35b9f1]/30 selection:text-white'}>
+      {!embedded && <Seo
         title={profile ? `${displayName} (@${username}) — DSA Profile` : 'DSA Profile'}
         description={
           profile
@@ -363,9 +364,9 @@ export default function ProfilePage() {
               }
             : undefined
         }
-      />
+      />}
       {/* Sidebar Navigation */}
-      <Sidebar
+      {!embedded && <Sidebar
         activeSection="profile"
         onSectionChange={(section) => {
           if (section === 'dashboard') navigate('/dashboard');
@@ -374,13 +375,13 @@ export default function ProfilePage() {
         }}
         user={loggedInUser}
         onLogout={handleLogout}
-      />
+      />}
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-0 md:ml-20 flex flex-col h-screen overflow-hidden pt-16 md:pt-0">
+      <div className={embedded ? '' : 'flex-1 ml-0 md:ml-20 flex flex-col h-screen overflow-hidden pt-16 md:pt-0'}>
         
         {/* Header Action Bar */}
-        <header className="border-b border-neutral-900/60 bg-black/45 backdrop-blur-md sticky top-0 z-40 shrink-0">
+        {!embedded && <header className="border-b border-neutral-900/60 bg-black/45 backdrop-blur-md sticky top-0 z-40 shrink-0">
           <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-white font-bold text-sm tracking-wide">Student Profile</span>
@@ -396,12 +397,12 @@ export default function ProfilePage() {
                 {copied ? (
                   <>
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                    Copied!
+                    <span className="hidden sm:inline">Copied!</span>
                   </>
                 ) : (
                   <>
                     <Share2 className="w-3.5 h-3.5" />
-                    Share Profile
+                    <span className="hidden sm:inline">Share Profile</span>
                   </>
                 )}
               </Button>
@@ -428,10 +429,10 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-        </header>
+        </header>}
 
         {/* Scrollable Main Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className={embedded ? '' : 'flex-1 overflow-y-auto p-4 md:p-8'}>
           <div className="max-w-7xl mx-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-32 space-y-4">
@@ -560,7 +561,6 @@ export default function ProfilePage() {
                   {/* Left Column: Platform Selector & Stats */}
                   <div className="space-y-4 lg:col-span-1">
                     <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#35b9f1]" />
                       Connected Platforms
                     </h3>
 
@@ -622,7 +622,6 @@ export default function ProfilePage() {
                   <div className="lg:col-span-2 space-y-4">
                     <div className="flex justify-between items-center">
                       <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#35b9f1]" />
                         Rating Progression
                       </h3>
                       <div className="flex items-center gap-3">
@@ -657,6 +656,23 @@ export default function ProfilePage() {
                         )}
                       </div>
                     </div>
+
+                    {comparePlatforms && (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                        {[
+                          { key: 'leetcode', name: 'LeetCode', color: '#FFA116' },
+                          { key: 'codeforces', name: 'Codeforces', color: '#1F8ACB' },
+                          { key: 'codechef', name: 'CodeChef', color: '#5B4638' },
+                        ]
+                          .filter((p) => chartCoordinates[p.key] && chartCoordinates[p.key].length > 0)
+                          .map((p) => (
+                            <div key={p.key} className="flex items-center gap-1.5">
+                              <span className="w-3 h-0.5 rounded-full" style={{ backgroundColor: p.color }} />
+                              <span className="text-[10px] font-mono text-[#9CA3AF]">{p.name}</span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
 
                     <div
                       className="border border-neutral-900 bg-neutral-950/40 p-4 rounded-2xl h-[300px] flex items-center justify-center relative"
@@ -857,7 +873,6 @@ export default function ProfilePage() {
                 {/* Submission consistency heatmap */}
                 <div className="space-y-4">
                   <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-[#35b9f1]" />
                     Coding Consistency
                   </h3>
                   
