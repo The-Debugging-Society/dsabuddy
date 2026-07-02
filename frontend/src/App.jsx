@@ -7,7 +7,6 @@ import { userService } from './api/services'
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
-const ComponentShowcase = lazy(() => import('./pages/ComponentShowcase'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
@@ -60,7 +59,6 @@ function App() {
           <Route path="/register" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-          <Route path="/showcase" element={<ComponentShowcase />} />
         </Routes>
       </Suspense>
       <Analytics />

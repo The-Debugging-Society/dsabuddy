@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronDown, Activity, Calendar, Zap } from 'lucide-react';
+import { Activity, Calendar, Zap } from 'lucide-react';
 import { activityService } from '@/api/services';
 
 // ─── Platform themes ──────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ const THEMES = {
     ring:       'hover:ring-amber-500/50',
     badge:      'text-amber-300 bg-amber-500/10 border-amber-500/20',
     yearActive: 'bg-amber-500/10 text-amber-300 border border-amber-500/40 hover:bg-amber-500/20',
-    pillActive: 'bg-amber-500 text-[#0D1117] border-amber-500 font-bold shadow-[0_0_12px_rgba(245,158,11,0.3)]',
+    pillActive: 'bg-amber-500 text-[#0D1117] border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]',
     pillIdle:   'border-[#21262D] text-[#8B949E] hover:text-[#E6EDF3] hover:bg-amber-500/10 hover:border-amber-500/30',
   },
   codeforces: {
@@ -35,7 +35,6 @@ const THEMES = {
 
 const CELL   = 12;   // px – cell width & height
 const GAP    = 3;    // px – gap between cells
-const STEP   = CELL + GAP; // 15px per column
 const MONTH_GAP = 10;      // extra px gap between month groups
 
 const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -44,9 +43,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
   const [heatmapData,      setHeatmapData]      = useState(initialData);
   const [loading,          setLoading]          = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState(platform || 'all');
-  const [selectedYear,     setSelectedYear]     = useState(new Date().getUTCFullYear());
-  const [availableYears,   setAvailableYears]   = useState([new Date().getUTCFullYear()]);
-  const [yearDropdown,     setYearDropdown]     = useState(false);
+  const [selectedYear]     = useState(new Date().getUTCFullYear());
 
   // Tooltip tracking state
   const [hoveredDay, setHoveredDay] = useState(null);
@@ -83,7 +80,6 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
         const res = await activityService.getAnalytics({ platform: selectedPlatform, year: selectedYear });
         if (cancelled) return;
         if (res?.heatmap)     setHeatmapData(res.heatmap);
-        if (res?.activeYears) setAvailableYears(res.activeYears);
       } catch (e) {
         console.error('Heatmap fetch failed:', e);
       } finally {
@@ -173,7 +169,6 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
         if (mo) prevMonth = mo;
       } else {
         // Two months in one week → split into two columns
-        const oldMo = months[0];
         const newMo = months[months.length - 1];
 
         // Col A: only OLD month's days visible
@@ -429,11 +424,11 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
       {/* ── Top bar: title / pills / year ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
-          <h3 className="text-[#E6EDF3] font-black text-lg tracking-tight">
+          <h3 className="text-[#E6EDF3] text-lg tracking-tight">
             Consistency Visualizer
           </h3>
           {loading && (
-            <span className={`text-[10px] font-bold font-mono border px-2.5 py-1 rounded-md animate-pulse ${theme.badge}`}>
+            <span className={`text-[10px] font-mono border px-2.5 py-1 rounded-md animate-pulse ${theme.badge}`}>
               syncing…
             </span>
           )}
@@ -451,7 +446,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
               <button
                 key={id}
                 onClick={() => setSelectedPlatform(id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono border
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-mono border
                             transition-all duration-150 cursor-pointer
                             ${selectedPlatform === id ? t.pillActive : `bg-[#0D1117] ${t.pillIdle}`}`}
               >
@@ -469,11 +464,11 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
           return (
             <div key={i} className="bg-[#0D1117]/60 border border-[#21262D] rounded-xl p-4 flex items-center justify-between hover:border-gray-700/80 transition-all duration-300">
               <div className="space-y-1">
-                <span className="text-[11px] font-bold font-mono text-[#8B949E] uppercase tracking-wider block">
+                <span className="text-[11px] font-mono text-[#8B949E] uppercase tracking-wider block">
                   {card.label}
                 </span>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black tracking-tight" style={{ color: card.color }}>
+                  <span className="text-2xl tracking-tight" style={{ color: card.color }}>
                     {card.value}
                   </span>
                   <span className="text-[10px] font-medium font-mono text-[#484F58]">
@@ -515,11 +510,11 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
             {/* Weekday labels perfectly aligned */}
             <div className="flex flex-col shrink-0 select-none text-[10px] text-[#8B949E] font-mono text-right pr-2 w-8 gap-[3px]">
               <div className="h-[12px] flex items-center justify-end text-transparent select-none pointer-events-none">Sun</div>
-              <div className="h-[12px] flex items-center justify-end font-semibold text-[#8B949E]">Mon</div>
+              <div className="h-[12px] flex items-center justify-end text-[#8B949E]">Mon</div>
               <div className="h-[12px] flex items-center justify-end text-transparent select-none pointer-events-none">Tue</div>
-              <div className="h-[12px] flex items-center justify-end font-semibold text-[#8B949E]">Wed</div>
+              <div className="h-[12px] flex items-center justify-end text-[#8B949E]">Wed</div>
               <div className="h-[12px] flex items-center justify-end text-transparent select-none pointer-events-none">Thu</div>
-              <div className="h-[12px] flex items-center justify-end font-semibold text-[#8B949E]">Fri</div>
+              <div className="h-[12px] flex items-center justify-end text-[#8B949E]">Fri</div>
               <div className="h-[12px] flex items-center justify-end text-transparent select-none pointer-events-none">Sat</div>
             </div>
 
@@ -602,7 +597,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
             marginTop: '-4px'
           }}
         >
-          <div className="font-bold border-b border-[#30363D] pb-1.5 mb-1.5 text-xs text-white">
+          <div className="border-b border-[#30363D] pb-1.5 mb-1.5 text-xs text-white">
             {formatTooltipDate(hoveredDay.date)}
           </div>
           <div className="space-y-1.5 font-mono text-[11px]">
@@ -610,7 +605,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
               <span className="text-[#8B949E]">
                 {selectedPlatform === 'all' ? 'Submissions' : selectedPlatform === 'leetcode' ? 'LeetCode' : 'Codeforces'}:
               </span>
-              <span className="font-bold text-white bg-[#21262D] px-2 py-0.5 rounded text-[10px]">
+              <span className="text-white bg-[#21262D] px-2 py-0.5 rounded text-[10px]">
                 {hoveredDay.count}
               </span>
             </div>

@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import LogoImg from "@/assets/logo.png";
+import { useUserStore } from "@/store/useUserStore";
 
 export const Navbar = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const user = useUserStore((state) => state.user);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,9 +50,9 @@ export const Navbar = () => {
           </ul>
         </div>
         <div className="bg-(--primary-color) p-1 rounded-full font-bold border-b-2 sm:border-b-4 border-black active:border-b-0 active:translate-y-0.5 sm:active:translate-y-1 transition-all">
-          <Link to="/register">
+          <Link to={user ? "/dashboard" : "/register"}>
             <button className="cursor-pointer rounded-full px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base hover:opacity-90 transition-opacity">
-              Start Coding
+              {user ? "Dashboard" : "Start Coding"}
             </button>
           </Link>
         </div>

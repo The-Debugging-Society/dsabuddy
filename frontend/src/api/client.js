@@ -22,8 +22,7 @@ apiClient.interceptors.response.use(
       const isPublicPath = 
         window.location.pathname === '/' || 
         window.location.pathname.startsWith('/about') || 
-        window.location.pathname.startsWith('/profile') ||
-        window.location.pathname === '/showcase';
+        window.location.pathname.startsWith('/profile');
         
       if (!isPublicPath) {
         window.location.href = '/login';

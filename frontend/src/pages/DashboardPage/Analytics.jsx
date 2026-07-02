@@ -3,22 +3,6 @@ import { activityService } from "@/api/services";
 import { ConsistencyHeatmap } from "./components";
 import { StatCard } from "@/components/common";
 import { Code, TrendingUp, Trophy, Flame } from "lucide-react";
-import { PLATFORMS } from "@/config/constants";
-
-// Define color system constants matching the rest of the application
-const COLORS = {
-  bg: "#000000",
-  surface: "#161B22",
-  border: "#1F2937",
-  accent: "#35b9f1",
-  textPrimary: "#E5E7EB",
-  textMuted: "#9CA3AF"
-};
-
-const PLATFORM_COLORS = Object.fromEntries(PLATFORMS.map(p => [p.id, p.color]));
-
-// Months helper
-const MONTH_LABELS = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
 // Dynamic timeline generator for ratings
 const getHistoryForFilter = (conn, filter) => {
@@ -500,23 +484,6 @@ export function Analytics({ analytics: initialAnalytics }) {
       {/* Page Header */}
       <div>
         <h1 className="text-[#E5E7EB] text-4xl font-normal italic mb-2 font-serif flex items-center gap-3">
-          {/* Tabler ti-chart-bar representation */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-10 h-10 text-[#35b9f1]"
-            viewBox="0 0 24 24"
-            strokeWidth="1.75"
-            stroke="currentColor"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <rect x="3" y="12" width="4" height="8" rx="0" />
-            <rect x="10" y="8" width="4" height="12" rx="0" />
-            <rect x="17" y="4" width="4" height="16" rx="0" />
-            <line x1="2" y1="20" x2="22" y2="20" />
-          </svg>
           Analytics
         </h1>
         <p className="text-[#9CA3AF] font-mono text-xs">View your coding performance across connected platforms</p>

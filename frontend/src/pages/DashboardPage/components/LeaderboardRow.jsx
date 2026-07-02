@@ -55,18 +55,18 @@ export function LeaderboardRow({ user, rank, isCurrentUser, onClick }) {
     <div 
       onClick={onClick}
       className={`
-        flex items-center justify-between p-4 rounded-xl transition-all cursor-pointer select-none border
-        ${isCurrentUser 
+        flex items-center justify-between gap-3 p-3 sm:p-4 rounded-xl transition-all cursor-pointer select-none border
+        ${isCurrentUser
           ? 'bg-[#35b9f1]/5 border-[#35b9f1] hover:bg-[#35b9f1]/10' 
           : 'bg-[#161B22]/30 border-[#1F2937]/50 hover:border-[#35b9f1]/30 hover:bg-[#1C232E]/40'
         }
       `}
     >
-      <div className="flex items-center gap-4 flex-1">
-        {renderRankBadge()}
+      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+        <div className="shrink-0">{renderRankBadge()}</div>
 
         {showInitials ? (
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#161B22] border border-[#1F2937] text-[#9CA3AF] font-bold text-sm select-none">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full flex items-center justify-center bg-[#161B22] border border-[#1F2937] text-[#9CA3AF] font-bold text-xs sm:text-sm select-none">
             {getInitials(user?.name)}
           </div>
         ) : (
@@ -74,22 +74,22 @@ export function LeaderboardRow({ user, rank, isCurrentUser, onClick }) {
             src={avatarUrl}
             alt={user?.name}
             onError={() => setImgError(true)}
-            className="w-10 h-10 rounded-full object-cover border border-[#1F2937]"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full object-cover border border-[#1F2937]"
           />
         )}
-        <div>
-          <p className="text-[#E5E7EB] font-semibold">
+        <div className="min-w-0">
+          <p className="text-[#E5E7EB] font-semibold text-sm sm:text-base leading-tight truncate">
             {user?.name}
             {isCurrentUser && <span className="ml-2 text-[#35b9f1] text-xs font-mono">(You)</span>}
           </p>
           {user?.branch && (
-            <p className="text-[#6B7280] text-xs font-mono mt-0.5">{getBranchCode(user.branch)}</p>
+            <p className="text-[#6B7280] text-xs font-mono mt-0.5 truncate">{getBranchCode(user.branch)}</p>
           )}
         </div>
       </div>
 
-      <div className="text-right">
-        <p className="text-[#35b9f1] text-xl font-bold">
+      <div className="text-right shrink-0 pl-2">
+        <p className="text-[#35b9f1] text-lg sm:text-xl font-bold leading-tight">
           {(() => {
             if (user?.displayLabel && user.displayLabel !== 'points') {
               if (user.displayValue === undefined || user.displayValue === null) {

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { userService, activityService, authService } from '@/api/services';
 import { Sidebar, ConsistencyHeatmap } from '../DashboardPage/components';
 import { useUserStore } from '@/store/useUserStore';
-import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, CheckCircle2 } from 'lucide-react';
+import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, CheckCircle2, Link2 } from 'lucide-react';
 import { Button, StatCard, Seo } from '@/components/common';
 
 import { PLATFORMS } from '@/config/constants';
@@ -384,7 +384,7 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
         {!embedded && <header className="border-b border-neutral-900/60 bg-black/45 backdrop-blur-md sticky top-0 z-40 shrink-0">
           <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold text-sm tracking-wide">Student Profile</span>
+              <span className="text-white font-semibold text-sm tracking-wide">Student Profile</span>
             </div>
 
              <div className="flex items-center gap-3">
@@ -457,10 +457,24 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                 {/* Elegant Header Section */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-neutral-950 to-neutral-900/40 border border-neutral-800/60 p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6">
                   {/* Aurora background glow */}
-                  <div 
+                  <div
                     className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[120px] opacity-10 pointer-events-none transition-all duration-1000"
                     style={{ backgroundColor: rankColor }}
                   />
+
+                  {/* Rank badge — top right */}
+                  {profile.overallRank && (
+                    <span
+                      className="absolute top-4 right-4 md:top-6 md:right-6 px-2.5 py-0.5 rounded text-[10px] font-bold font-mono border uppercase tracking-wider select-none z-10"
+                      style={{
+                        color: rankColor,
+                        backgroundColor: `${rankColor}10`,
+                        borderColor: `${rankColor}25`
+                      }}
+                    >
+                      Rank {getRankBadge(profile.overallRank)}
+                    </span>
+                  )}
 
                   {/* Avatar block */}
                   <div className="relative flex-shrink-0">
@@ -486,19 +500,7 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                   <div className="space-y-4 flex-1">
                     <div>
                       <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                        <h1 className="text-white text-3xl font-bold tracking-tight">{profile.name}</h1>
-                        {profile.overallRank && (
-                          <span 
-                            className="px-2.5 py-0.5 rounded text-[10px] font-bold font-mono border uppercase tracking-wider select-none"
-                            style={{
-                              color: rankColor,
-                              backgroundColor: `${rankColor}10`,
-                              borderColor: `${rankColor}25`
-                            }}
-                          >
-                            Rank {getRankBadge(profile.overallRank)}
-                          </span>
-                        )}
+                        <h1 className="text-white text-3xl font-sans font-bold tracking-tight">{profile.name}</h1>
                       </div>
                       <p className="text-[#9CA3AF] text-sm font-mono mt-1">@{profile.userName}</p>
                     </div>
@@ -561,11 +563,20 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                   {/* Left Column: Platform Selector & Stats */}
                   <div className="space-y-4 lg:col-span-1">
                     <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                      Connected Platforms
+                      Platforms
                     </h3>
 
                     <div className="flex flex-col gap-3">
-                      {displayConnections.map((conn) => {
+                      {displayConnections.filter((conn) => conn.connected).length === 0 && (
+                        <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-950/40 p-6 text-center">
+                          <Link2 className="w-6 h-6 text-neutral-600 mx-auto mb-2" />
+                          <p className="text-neutral-400 text-sm font-medium">No platforms connected</p>
+                          <p className="text-neutral-600 text-xs font-mono mt-1">
+                            This profile hasn't linked any coding platforms yet.
+                          </p>
+                        </div>
+                      )}
+                      {displayConnections.filter((conn) => conn.connected).map((conn) => {
                         const isActive = activePlatformTab === conn.id;
                         return (
                           <div 
@@ -877,11 +888,11 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                   </h3>
                   
                   <div className="border border-neutral-900 bg-neutral-950/40 rounded-2xl p-5 md:p-6">
-                    <ConsistencyHeatmap 
-                      data={heatmapData} 
-                      platform={activePlatformTab} 
-                      isAnalytics={true} 
-                      isReadOnly={true} 
+                    <ConsistencyHeatmap
+                      data={displayHeatmap}
+                      platform={activePlatformTab}
+                      isAnalytics={true}
+                      isReadOnly={true}
                     />
                   </div>
                 </div>

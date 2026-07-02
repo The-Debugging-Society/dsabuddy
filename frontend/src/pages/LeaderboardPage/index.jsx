@@ -2,6 +2,7 @@ import { Navbar, Footer } from "@/components/layout";
 import { Seo } from "@/components/common";
 import { breadcrumbSchema } from "@/config/seo";
 import { Leaderboard } from "../DashboardPage/Leaderboard";
+import { ShareStatsCard } from "../DashboardPage/components";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function LeaderboardPage() {
@@ -21,7 +22,17 @@ export default function LeaderboardPage() {
       <Navbar />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 pt-32 pb-16">
-        <Leaderboard user={loggedInUser} />
+        <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+          <div className="flex-1 min-w-0">
+            <Leaderboard user={loggedInUser} />
+          </div>
+
+          {loggedInUser && (
+            <aside className="w-full lg:w-80 shrink-0 lg:sticky lg:top-32">
+              <ShareStatsCard user={loggedInUser} />
+            </aside>
+          )}
+        </div>
       </main>
 
       <Footer />

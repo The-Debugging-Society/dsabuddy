@@ -23,10 +23,10 @@ export function Sidebar({ activeSection, onSectionChange, onLogout, user }) {
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'profile', icon: User, label: 'Profile' },
-    { id: 'leaderboard', icon: Trophy, label: 'Leaderboard' },
     { id: 'pyqs', icon: Code, label: 'PYQs' },
     { id: 'forum', icon: MessageSquare, label: 'Interview Forum' },
     { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+    { id: 'leaderboard', icon: Trophy, label: 'Leaderboard' },
   ];
 
   const handleMenuClick = (itemId) => {

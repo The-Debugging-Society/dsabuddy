@@ -3,6 +3,7 @@ export { getInitials } from './LeaderboardRow';
 export { PlatformCard } from './PlatformCard';
 export { LeaderboardRow } from './LeaderboardRow';
 export { ConsistencyHeatmap } from './ConsistencyHeatmap';
+export { ShareStatsCard } from './ShareStatsCard';
 export { Sidebar } from './Sidebar';
 export { Topbar } from './Topbar';
 export { DashboardSkeleton } from './DashboardSkeleton';
