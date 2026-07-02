@@ -5,3 +5,5 @@ export { companyService } from './companyService';
 export { activityService } from './activityService';
 export { leetcodeService } from './leetcodeService';
 export { forumService } from './forumService';
+export { sheetService } from './sheetService';
+export { questionService } from './questionService';

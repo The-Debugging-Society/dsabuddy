@@ -4,6 +4,8 @@ import { Sidebar, DashboardSkeleton } from "./components";
 import { Dashboard } from "./Dashboard";
 import { Analytics } from "./Analytics";
 import { PYQs } from "./PYQs";
+import { Sheets } from "./Sheets";
+import { Revision } from "./Revision";
 import { Settings } from "./Settings";
 import { InterviewForum } from "./InterviewForum";
 import { QuestionView } from "./QuestionView";
@@ -23,6 +25,8 @@ export function DashboardPage() {
     if (path.startsWith("/dashboard/forum")) return "forum";
     if (path.startsWith("/dashboard/analytics")) return "analytics";
     if (path.startsWith("/dashboard/pyqs")) return "pyqs";
+    if (path.startsWith("/dashboard/sheets")) return "sheets";
+    if (path.startsWith("/dashboard/revision")) return "revision";
     if (path.startsWith("/dashboard/settings")) return "settings";
     if (path.startsWith("/dashboard/profile")) return "profile";
     return "dashboard";
@@ -57,6 +61,10 @@ export function DashboardPage() {
       setActiveSection("analytics");
     } else if (path.startsWith("/dashboard/pyqs")) {
       setActiveSection("pyqs");
+    } else if (path.startsWith("/dashboard/sheets")) {
+      setActiveSection("sheets");
+    } else if (path.startsWith("/dashboard/revision")) {
+      setActiveSection("revision");
     } else if (path.startsWith("/dashboard/settings")) {
       setActiveSection("settings");
     } else if (path.startsWith("/dashboard/profile")) {
@@ -167,6 +175,10 @@ export function DashboardPage() {
         return (
           <PYQs companies={companies} onSelectQuestion={handleSelectQuestion} />
         );
+      case "sheets":
+        return <Sheets />;
+      case "revision":
+        return <Revision />;
       case "settings":
         return <Settings platforms={platforms} onUpdate={fetchData} />;
       case "forum":

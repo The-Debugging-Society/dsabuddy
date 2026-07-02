@@ -384,7 +384,7 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
         {!embedded && <header className="border-b border-neutral-900/60 bg-black/45 backdrop-blur-md sticky top-0 z-40 shrink-0">
           <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-white font-semibold text-sm tracking-wide">Student Profile</span>
+              <span className="text-white font-normal italic font-serif text-2xl md:text-3xl leading-none">Student Profile</span>
             </div>
 
              <div className="flex items-center gap-3">

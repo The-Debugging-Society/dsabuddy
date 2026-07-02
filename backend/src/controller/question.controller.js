@@ -66,6 +66,51 @@ export const listQuestions = async (req, res) => {
   return res.status(200).json({ questions });
 };
 
+export const getRevisionQuestions = async (req, res) => {
+  const userId = getAuthUserId(req);
+  const limit = Math.min(Number(req.query.limit ?? 100), 200);
+
+  // Random sample of ids via Postgres RANDOM(); then hydrate with relations.
+  const randomRows = await prisma.$queryRaw`
+    SELECT "id" FROM "Question" ORDER BY RANDOM() LIMIT ${limit}
+  `;
+  const ids = randomRows.map((r) => r.id);
+
+  if (ids.length === 0) return res.status(200).json({ questions: [] });
+
+  const questions = await prisma.question.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true,
+      title: true,
+      displayName: true,
+      difficulty: true,
+      leetcodeUrl: true,
+      sourcePlatform: true,
+      sourceUrl: true,
+      sourceRating: true,
+      acceptanceRate: true,
+      frequency: true,
+      tags: {
+        select: { tag: { select: { id: true, name: true } } },
+      },
+      companies: {
+        select: { company: { select: { id: true, name: true, slug: true } } },
+      },
+      ...(userId
+        ? {
+            userStatuses: {
+              where: { userId },
+              select: { status: true, solvedAt: true, updatedAt: true },
+            },
+          }
+        : {}),
+    },
+  });
+
+  return res.status(200).json({ questions });
+};
+
 export const getQuestionById = async (req, res) => {
   const { id } = req.params;
   const userId = getAuthUserId(req);

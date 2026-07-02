@@ -11,6 +11,7 @@ import {
   createQuestion,
   deleteQuestion,
   getQuestionById,
+  getRevisionQuestions,
   listQuestions,
   updateQuestion,
 } from "../controller/question.controller.js";
@@ -19,6 +20,8 @@ const router = Router();
 
 // Public endpoints with optional auth (for returning userStatuses)
 router.get("/", authMiddleware, validate({ query: listQuestionsQuerySchema }), listQuestions);
+// "Last minute revision" random set — declared before "/:id" to avoid capture.
+router.get("/revision", authMiddleware, getRevisionQuestions);
 router.get("/:id", authMiddleware, validate({ params: questionIdParamSchema }), getQuestionById);
 
 // Protected (data-management)

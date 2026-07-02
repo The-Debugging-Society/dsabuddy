@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Code, Trophy, MessageSquare, LogOut, Settings, Menu, X, LogIn, User } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Code, Trophy, MessageSquare, LogOut, Settings, Menu, X, LogIn, User, BookOpen, Repeat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +24,8 @@ export function Sidebar({ activeSection, onSectionChange, onLogout, user }) {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'profile', icon: User, label: 'Profile' },
     { id: 'pyqs', icon: Code, label: 'PYQs' },
+    { id: 'sheets', icon: BookOpen, label: 'Sheets' },
+    { id: 'revision', icon: Repeat, label: 'Revision' },
     { id: 'forum', icon: MessageSquare, label: 'Interview Forum' },
     { id: 'analytics', icon: BarChart3, label: 'Analytics' },
     { id: 'leaderboard', icon: Trophy, label: 'Leaderboard' },

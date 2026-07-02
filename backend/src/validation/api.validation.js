@@ -152,6 +152,27 @@ export const listUserQuestionsQuerySchema = z
   })
   .strict();
 
+// ---- Sheets ----
+export const sheetSlugParamSchema = z.object({
+  slug: z.string().min(1),
+});
+
+export const sheetProblemIdParamSchema = z.object({
+  problemId: cuidSchema,
+});
+
+export const upsertSheetProgressBodySchema = z
+  .object({
+    status: z.enum(["UNSOLVED", "IN_PROGRESS", "SOLVED"]).optional(),
+    starred: z.boolean().optional(),
+    note: z.string().max(5000).nullable().optional(),
+  })
+  .strict()
+  .refine(
+    (v) => v.status !== undefined || v.starred !== undefined || v.note !== undefined,
+    { message: "At least one of status, starred, or note is required" }
+  );
+
 export const platformParamSchema = z.object({
   platform: z.enum(["LEETCODE", "CODECHEF", "CODEFORCES", "GFG"]),
 });
