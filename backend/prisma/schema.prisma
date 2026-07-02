@@ -73,6 +73,7 @@ model User {
   forumPosts          ForumPost[]
   comments            Comment[]
   votes               Vote[]
+  sheetProgress       UserSheetProblem[]
 }
 
 model Account {
@@ -238,6 +239,7 @@ model Question {
   relatedFrom     RelatedQuestion[] @relation("RelatedFrom")
   relatedTo       RelatedQuestion[] @relation("RelatedTo")
   userStatuses    UserQuestion[]
+  sheetProblems   SheetProblem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -384,4 +386,103 @@ model ContactSubmission {
 
   @@index([createdAt])
   @@map("contact_submissions")
+}
+
+// ---------------------------------------------------------------------------
+// Practice Sheets (e.g. Striver A2Z). Generic so any number of sheets can be
+// added and tracked per-user. A Sheet has nested Sections (self-referential
+// parent/child) and Problems; users track status / notes / revision per problem.
+// ---------------------------------------------------------------------------
+
+model Sheet {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  author      String? // e.g. "Striver"
+  sourceUrl   String? // canonical link to the original sheet
+  coverImage  String?
+  order       Int     @default(0)
+  isPublished Boolean @default(true)
+
+  // Denormalized count for quick listing (kept in sync by seed/admin ops)
+  totalProblems Int @default(0)
+
+  sections SheetSection[]
+  problems SheetProblem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SheetSection {
+  id      String @id @default(cuid())
+  sheetId String
+  sheet   Sheet  @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  title String
+  order Int    @default(0)
+
+  // Self-referential for subsections (e.g. Arrays > Easy / Medium / Hard)
+  parentId String?
+  parent   SheetSection?  @relation("SectionChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children SheetSection[] @relation("SectionChildren")
+
+  problems SheetProblem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sheetId])
+  @@index([parentId])
+}
+
+model SheetProblem {
+  id        String @id @default(cuid())
+  sheetId   String
+  sheet     Sheet  @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+  sectionId String
+  section   SheetSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  title      String
+  order      Int         @default(0)
+  difficulty Difficulty?
+
+  // Resource columns shown in the sheet UI
+  articleUrl   String?
+  youtubeUrl   String?
+  practiceUrl  String? // LeetCode / GFG practice link
+  plusUrl      String? // premium / "plus" resource
+  editorialUrl String?
+
+  // Optional link to a Question in our DB (opens in QuestionView)
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  userProgress UserSheetProblem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sheetId])
+  @@index([sectionId])
+  @@index([questionId])
+}
+
+model UserSheetProblem {
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sheetProblemId String
+  sheetProblem   SheetProblem @relation(fields: [sheetProblemId], references: [id], onDelete: Cascade)
+
+  status   UserQuestionStatus @default(UNSOLVED)
+  starred  Boolean            @default(false) // "Revision" column
+  note     String?
+  solvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, sheetProblemId])
+  @@index([sheetProblemId])
 }

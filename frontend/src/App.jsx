@@ -51,6 +51,9 @@ function App() {
           <Route path="/dashboard/analytics" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/pyqs" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/pyqs/:companyName" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard/sheets" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard/sheets/:slug" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard/revision" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

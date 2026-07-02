@@ -27,6 +27,7 @@ import forumRoutes from "./routes/forum.routes.js";
 import leetcodeRoutes from "./routes/leetcode.routes.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.routes.js";
+import sheetRoutes from "./routes/sheet.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -141,6 +142,7 @@ app.use("/api/forum", forumRoutes);
 app.use("/api/leetcode", leetcodeRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/sheets", sheetRoutes);
 
 
 app.get("/", (req, res) => res.send("Server running"));
