@@ -47,7 +47,7 @@ export const getLeaderboard = async (req, res) => {
   const skip = parseInt(req.query.skip ?? 0, 10);
   const filter = req.query.filter;   // 'college' | 'branch' | 'year'
   const sortBy = req.query.sortBy;   // 'all' | 'leetcode' | 'codeforces' | 'codechef'
-  const requestingUserId = req.user?.userId ?? req.user?._id;
+  const requestingUserId = req.user?.userId;
 
   // Build where clause based on filter + requesting user's profile
   let whereClause = {};
@@ -227,7 +227,7 @@ export const getUserByUserName = async (req, res) => {
 
 export const updateMe = async (req, res) => {
   if (!req.user) return res.status(401).json({ error: "Unauthorized" });
-  const userId = req.user.userId ?? req.user._id;
+  const userId = req.user.userId;
 
   const currentUser = await prisma.user.findUnique({
     where: { id: userId },

@@ -3,7 +3,7 @@ import { syncUserStats } from "../ingestion/index.js";
 import { recalculateUserPoints } from "../utils/points.js";
 import { clearAnalyticsCache } from "./dailyActivity.controller.js";
 
-const getAuthUserId = (req) => req.user?.userId ?? req.user?._id ?? null;
+const getAuthUserId = (req) => req.user?.userId ?? null;
 
 export const listMyPlatformConnections = async (req, res) => {
   const userId = getAuthUserId(req);

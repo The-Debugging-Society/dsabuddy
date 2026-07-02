@@ -110,7 +110,6 @@ passport.use(
         const token = jwt.sign(
           {
             userId: user.id,
-            _id: user.id,
             email: user.email,
             userName: user.userName,
           },

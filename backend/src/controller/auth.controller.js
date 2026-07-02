@@ -67,7 +67,6 @@ export const signup = async (req, res) => {
   const token = jwt.sign(
     {
       userId: user.id,
-      _id: user.id, // backward-compat for old code paths
       email: user.email,
       userName: user.userName,
     },
@@ -135,7 +134,6 @@ export const login = async (req, res) => {
 
   const payload = {
     userId: existingUser.id,
-    _id: existingUser.id, // backward-compat for old code paths
     email: existingUser.email,
     userName: existingUser.userName,
   };
@@ -175,7 +173,7 @@ export const me = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const userId = req.user.userId ?? req.user._id;
+  const userId = req.user.userId;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -216,7 +214,7 @@ export const updatePassword = async (req, res) => {
         .json({ error: "New password must be at least 6 characters long" });
     }
 
-    const userId = req.user.userId ?? req.user._id;
+    const userId = req.user.userId;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

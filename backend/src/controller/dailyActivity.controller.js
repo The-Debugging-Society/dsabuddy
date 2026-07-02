@@ -23,7 +23,7 @@ const getCachedOrFetch = async (key, fetchFn, ttlMs = 15 * 60 * 1000) => {
   return data;
 };
 
-const getAuthUserId = (req) => req.user?.userId ?? req.user?._id ?? null;
+const getAuthUserId = (req) => req.user?.userId ?? null;
 
 const toMidnightUTC = (d) => {
   const date = new Date(d);

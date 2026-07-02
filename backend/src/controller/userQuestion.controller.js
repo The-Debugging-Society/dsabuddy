@@ -1,7 +1,7 @@
 import { prisma } from "../config/prismaClient.js";
 import { recalculateUserPoints } from "../utils/points.js";
 
-const getAuthUserId = (req) => req.user?.userId ?? req.user?._id ?? null;
+const getAuthUserId = (req) => req.user?.userId ?? null;
 
 export const listMyQuestionStatuses = async (req, res) => {
   const userId = getAuthUserId(req);

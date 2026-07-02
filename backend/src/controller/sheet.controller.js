@@ -1,6 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
 
-const getAuthUserId = (req) => req.user?.userId ?? req.user?._id ?? null;
+const getAuthUserId = (req) => req.user?.userId ?? null;
 
 export const listSheets = async (req, res) => {
   const userId = getAuthUserId(req);
