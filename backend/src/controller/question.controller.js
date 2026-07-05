@@ -23,47 +23,58 @@ export const listQuestions = async (req, res) => {
     ...(companyId ? { companies: { some: { companyId } } } : {}),
   };
 
-  const questions = await prisma.question.findMany({
-    where,
-    take,
-    skip,
-    orderBy: [{ createdAt: "desc" }],
-    select: {
-      id: true,
-      title: true,
-      displayName: true,
-      difficulty: true,
-      leetcodeUrl: true,
-      sourcePlatform: true,
-      sourceId: true,
-      sourceSlug: true,
-      sourceUrl: true,
-      sourceRating: true,
-      paidOnly: true,
-      acceptanceRate: true,
-      frequency: true,
-      acceptedCount: true,
-      submissionCount: true,
-      tags: {
-        select: { tag: { select: { id: true, name: true } } },
+  const [questions, total] = await Promise.all([
+    prisma.question.findMany({
+      where,
+      take,
+      skip,
+      orderBy: [{ createdAt: "desc" }],
+      select: {
+        id: true,
+        title: true,
+        displayName: true,
+        difficulty: true,
+        leetcodeUrl: true,
+        sourcePlatform: true,
+        sourceId: true,
+        sourceSlug: true,
+        sourceUrl: true,
+        sourceRating: true,
+        paidOnly: true,
+        acceptanceRate: true,
+        frequency: true,
+        acceptedCount: true,
+        submissionCount: true,
+        tags: {
+          select: { tag: { select: { id: true, name: true } } },
+        },
+        companies: {
+          select: { company: { select: { id: true, name: true, slug: true } } },
+        },
+        ...(userId
+          ? {
+              userStatuses: {
+                where: { userId },
+                select: { status: true, solvedAt: true, updatedAt: true },
+              },
+            }
+          : {}),
+        createdAt: true,
+        updatedAt: true,
       },
-      companies: {
-        select: { company: { select: { id: true, name: true, slug: true } } },
-      },
-      ...(userId
-        ? {
-            userStatuses: {
-              where: { userId },
-              select: { status: true, solvedAt: true, updatedAt: true },
-            },
-          }
-        : {}),
-      createdAt: true,
-      updatedAt: true,
+    }),
+    prisma.question.count({ where }),
+  ]);
+
+  return res.status(200).json({
+    questions,
+    pagination: {
+      total,
+      take,
+      skip,
+      hasMore: skip + questions.length < total,
     },
   });
-
-  return res.status(200).json({ questions });
 };
 
 export const getRevisionQuestions = async (req, res) => {

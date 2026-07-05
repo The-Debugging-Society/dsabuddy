@@ -12,6 +12,7 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function ProtectedRoute({ children }) {
   const user = useUserStore((state) => state.user);
@@ -62,6 +63,7 @@ function App() {
           <Route path="/register" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
       <Analytics />

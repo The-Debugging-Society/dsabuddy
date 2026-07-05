@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Camera, CheckCircle2, AlertCircle, User, Link2, GraduationCap } from 'lucide-react';
 import { Card, Button, Input } from '@/components/common';
 import { userService, platformService } from '@/api/services';
 import { BRANCHES, PLATFORMS } from '@/config/constants';
@@ -176,6 +177,8 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
     }
   };
 
+  const connectedCount = platformData.filter((p) => p.synced).length;
+
   return (
     <div className="space-y-6">
       <div>
@@ -185,12 +188,74 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
         <p className="text-[#9CA3AF] font-mono">Manage your account and preferences</p>
       </div>
 
+      {/* Profile hero */}
+      <Card
+        variant="default"
+        hoverable={false}
+        className="rounded-xl p-6 border border-[#21262D] bg-gradient-to-br from-[#161B22] to-[#0D1117]"
+      >
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          <div className="relative shrink-0 group">
+            <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-[#0D1117] border-2 border-[#1F2937] group-hover:border-[#35b9f1]/40 transition-colors">
+              {profileData.avatar ? (
+                <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-bold text-2xl text-[#35b9f1]">
+                  {getInitials(profileData.name || user?.name)}
+                </span>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+              id="settings-avatar-input"
+              disabled={uploadingAvatar}
+            />
+            <label
+              htmlFor="settings-avatar-input"
+              className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#35b9f1] text-black flex items-center justify-center border-2 border-[#0D1117] cursor-pointer hover:bg-[#35b9f1]/90 transition-colors ${uploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}
+              title="Change avatar"
+            >
+              <Camera size={14} strokeWidth={2.5} />
+            </label>
+          </div>
+
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-[#E5E7EB] text-xl font-bold">{profileData.name || 'Unnamed'}</h2>
+            <p className="text-[#6B7280] text-sm font-mono mt-0.5">{profileData.email}</p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+              {profileData.branch && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D1117] border border-[#1F2937] text-xs font-mono text-[#9CA3AF]">
+                  <GraduationCap size={12} className="text-[#35b9f1]" />
+                  {profileData.branch}
+                </span>
+              )}
+              {profileData.year && (
+                <span className="px-3 py-1 rounded-full bg-[#0D1117] border border-[#1F2937] text-xs font-mono text-[#9CA3AF]">
+                  {profileData.year}
+                </span>
+              )}
+              <span className="px-3 py-1 rounded-full bg-[#0D1117] border border-[#1F2937] text-xs font-mono text-[#9CA3AF]">
+                {connectedCount}/{platformData.length} platforms connected
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Profile Settings Card */}
         <Card variant="default" className="rounded-xl p-6 border border-[#21262D] bg-[#161B22] hover:border-[#35b9f1]/10">
-          <div className="mb-6 pb-4 border-b border-[#21262D]">
-            <h3 className="text-[#E5E7EB] font-bold text-lg">Profile Settings</h3>
-            <p className="text-[#6B7280] text-xs font-mono">Update your personal information</p>
+          <div className="mb-6 pb-4 border-b border-[#21262D] flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#0D1117] border border-[#1F2937] flex items-center justify-center text-[#35b9f1] shrink-0">
+              <User size={16} />
+            </div>
+            <div>
+              <h3 className="text-[#E5E7EB] font-bold text-lg leading-tight">Profile Settings</h3>
+              <p className="text-[#6B7280] text-xs font-mono">Update your personal information</p>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -210,37 +275,6 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
               labelClassName="font-medium text-[#E5E7EB] normal-case text-sm mb-2 block"
               inputClassName="py-2.5 border-[#1F2937] opacity-60 cursor-not-allowed"
             />
-
-            <div>
-              <label className="block text-[#E5E7EB] text-sm font-medium mb-2">Avatar</label>
-              <div className="flex items-center gap-4 bg-[#0D1117] border border-[#1F2937] rounded-lg p-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-[#161B22] border border-[#1F2937] shrink-0">
-                  {profileData.avatar ? (
-                    <img src={profileData.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="font-bold text-lg text-[#35b9f1]">
-                      {getInitials(profileData.name || user?.name)}
-                    </span>
-                  )}
-                </div>
-                
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                  id="settings-avatar-input"
-                  disabled={uploadingAvatar}
-                />
-                
-                <label 
-                  htmlFor="settings-avatar-input"
-                  className={`px-4 py-2 bg-[#161B22] hover:bg-[#1F2937] text-white border border-[#1F2937] text-xs font-semibold rounded-lg cursor-pointer transition-colors font-mono ${uploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}
-                >
-                  {uploadingAvatar ? 'Uploading...' : 'Choose File'}
-                </label>
-              </div>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -276,16 +310,24 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
               />
             </div>
 
-            {profileError && <p className="text-red-500 text-sm mt-2 font-mono">{profileError}</p>}
-            {profileSuccess && <p className="text-green-500 text-sm mt-2 font-mono">{profileSuccess}</p>}
+            {profileError && (
+              <p className="flex items-center gap-1.5 text-red-400 text-sm font-mono">
+                <AlertCircle size={14} className="shrink-0" /> {profileError}
+              </p>
+            )}
+            {profileSuccess && (
+              <p className="flex items-center gap-1.5 text-[#10B981] text-sm font-mono">
+                <CheckCircle2 size={14} className="shrink-0" /> {profileSuccess}
+              </p>
+            )}
 
-            <div className="pt-4 flex justify-end">
+            <div className="pt-4 flex justify-end border-t border-[#1F2937]/60">
               <Button
                 onClick={handleSaveProfile}
                 disabled={profileSaving}
                 variant="accent"
                 size="sm"
-                className="w-full md:w-auto font-mono text-sm rounded-lg px-6 py-2.5"
+                className="w-full md:w-auto font-mono text-sm rounded-lg px-6 py-2.5 mt-4"
               >
                 {profileSaving ? 'Saving...' : 'Save Profile'}
               </Button>
@@ -295,27 +337,38 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
 
         {/* Connected Platforms Card */}
         <Card variant="default" className="rounded-xl p-6 border border-[#21262D] bg-[#161B22] hover:border-[#35b9f1]/10">
-          <div className="mb-6 pb-4 border-b border-[#21262D]">
-            <h3 className="text-[#E5E7EB] font-bold text-lg">Connected Platforms</h3>
-            <p className="text-[#6B7280] text-xs font-mono">Manage your coding platform connections</p>
+          <div className="mb-6 pb-4 border-b border-[#21262D] flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#0D1117] border border-[#1F2937] flex items-center justify-center text-[#35b9f1] shrink-0">
+              <Link2 size={16} />
+            </div>
+            <div>
+              <h3 className="text-[#E5E7EB] font-bold text-lg leading-tight">Connected Platforms</h3>
+              <p className="text-[#6B7280] text-xs font-mono">Manage your coding platform connections</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {platformData.map((platform) => (
-              <div key={platform.id} className="bg-[#0D1117] border border-[#1F2937] rounded-lg p-4">
+              <div
+                key={platform.id}
+                className={`bg-[#0D1117] border rounded-lg p-4 transition-colors ${
+                  platform.synced ? 'border-[#35b9f1]/25' : 'border-[#1F2937]'
+                }`}
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#161B22] border border-[#1F2937] overflow-hidden">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#161B22] border border-[#1F2937] overflow-hidden shrink-0">
                     <img
                       src={platform.logo}
                       alt={platform.name}
                       className={`w-6 h-6 object-contain ${platform.synced ? '' : 'grayscale opacity-40'}`}
                     />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-[#E5E7EB] font-semibold">{platform.name}</h4>
-                    <p className={`text-xs font-mono ${
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[#E5E7EB] font-semibold truncate">{platform.name}</h4>
+                    <p className={`text-xs font-mono flex items-center gap-1.5 ${
                       platform.synced ? 'text-[#10B981]' : 'text-[#6B7280]'
                     }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${platform.synced ? 'bg-[#10B981]' : 'bg-[#6B7280]'}`} />
                       {platform.synced ? 'Connected' : 'Not Connected'}
                     </p>
                   </div>
@@ -346,16 +399,24 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
               </div>
             ))}
 
-            {platformsError && <p className="text-red-500 text-sm mt-2 font-mono">{platformsError}</p>}
-            {platformsSuccess && <p className="text-green-500 text-sm mt-2 font-mono">{platformsSuccess}</p>}
+            {platformsError && (
+              <p className="flex items-center gap-1.5 text-red-400 text-sm font-mono">
+                <AlertCircle size={14} className="shrink-0" /> {platformsError}
+              </p>
+            )}
+            {platformsSuccess && (
+              <p className="flex items-center gap-1.5 text-[#10B981] text-sm font-mono">
+                <CheckCircle2 size={14} className="shrink-0" /> {platformsSuccess}
+              </p>
+            )}
 
-            <div className="pt-4 flex justify-end">
+            <div className="pt-4 flex justify-end border-t border-[#1F2937]/60">
               <Button
                 onClick={handleSavePlatforms}
                 disabled={platformsSaving}
                 variant="accent"
                 size="sm"
-                className="w-full md:w-auto font-mono text-sm rounded-lg px-6 py-2.5"
+                className="w-full md:w-auto font-mono text-sm rounded-lg px-6 py-2.5 mt-4"
               >
                 {platformsSaving ? 'Saving...' : 'Save Connections'}
               </Button>
