@@ -1,13 +1,12 @@
 {
-  "name": "backend",
+  "name": "dsabuddy-backend",
   "version": "1.0.0",
-  "description": "Backend project with Auth and Cloudinary/Multer integration",
+  "description": "Backend project for DSA buddy",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "sync:problems": "node scripts/syncProblems.js",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate deploy",
     "db:push": "npx prisma db push",
@@ -24,7 +23,6 @@
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "crypto": "^1.0.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
