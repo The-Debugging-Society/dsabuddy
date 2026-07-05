@@ -126,8 +126,24 @@ export const getSheetBySlug = async (req, res) => {
   const problemsBySection = {};
   for (const p of sheet.problems) {
     const prog = progressByProblem[p.id];
+    
+    let platform = "leetcode";
+    let needsReview = false;
+    if (p.practiceUrl) {
+      if (p.practiceUrl.includes("leetcode.com")) {
+        platform = "leetcode";
+      } else if (p.practiceUrl.includes("geeksforgeeks.org")) {
+        platform = "gfg";
+      } else if (p.practiceUrl.includes("github.com/Codensity30")) {
+        platform = "leetcode";
+        needsReview = true;
+      }
+    }
+
     const merged = {
       ...p,
+      platform,
+      needsReview,
       status: prog?.status ?? "UNSOLVED",
       starred: prog?.starred ?? false,
       note: prog?.note ?? null,
