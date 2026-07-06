@@ -1,8 +1,12 @@
 import re, json, os
 
-scratch_dir = r"C:\Users\797000235\.gemini\antigravity-ide\brain\6e6c5882-d3f8-4671-a928-c3bab854bb2b\scratch"
-content_path = r"C:\Users\797000235\.gemini\antigravity-ide\brain\6e6c5882-d3f8-4671-a928-c3bab854bb2b\.system_generated\steps\466\content.md"
-mapping_path = os.path.join(scratch_dir, "striver_a2z_mapping.json")
+# Paths are relative to this script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(script_dir, "output")
+os.makedirs(output_dir, exist_ok=True)
+
+content_path = os.path.join(script_dir, "striver_a2z_content.md")
+mapping_path = os.path.join(script_dir, "striver_a2z_mapping.json")
 
 with open(content_path, "r", encoding="utf-8") as f:
     text = f.read()
@@ -171,8 +175,8 @@ mock_sheets_list = {
     ]
 }
 
-out_detail_path = os.path.join(scratch_dir, "mock_striver_detail.json")
-out_list_path = os.path.join(scratch_dir, "mock_sheets_list.json")
+out_detail_path = os.path.join(output_dir, "mock_striver_detail.json")
+out_list_path = os.path.join(output_dir, "mock_sheets_list.json")
 
 with open(out_detail_path, "w", encoding="utf-8") as f:
     json.dump(mock_sheet_detail, f, indent=2)
