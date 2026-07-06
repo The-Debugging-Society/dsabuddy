@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/config/constants';
 import { useUserStore } from '@/store/useUserStore';
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -17,12 +18,12 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       useUserStore.getState().setUser(null);
       localStorage.removeItem('dsabuddy_dashboard_cache');
-      
-      const isPublicPath = 
-        window.location.pathname === '/' || 
-        window.location.pathname.startsWith('/about') || 
+
+      const isPublicPath =
+        window.location.pathname === '/' ||
+        window.location.pathname.startsWith('/about') ||
         window.location.pathname.startsWith('/profile');
-        
+
       if (!isPublicPath) {
         window.location.href = '/login';
       }
