@@ -310,7 +310,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
         </div>
 
         {/* Heatmap Grid container */}
-        <div className="overflow-x-auto scrollbar-thin pb-2 pt-4 px-2 heatmap-container relative">
+        <div className="overflow-x-auto overflow-y-visible scrollbar-thin pb-2 pt-4 px-2 heatmap-container relative">
           <div style={{ width: gridWidth + 32, minWidth: gridWidth + 32 }} className="relative">
             
             {/* Month labels sitting directly above first columns */}
@@ -344,11 +344,11 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
               </div>
 
               {/* Squares Columns */}
-              <div className="flex">
+              <div className="flex overflow-visible">
                 {columns.map((col, ci) => (
                   <div
                     key={ci}
-                    className="flex flex-col gap-[3px]"
+                    className="flex flex-col gap-[3px] overflow-visible"
                     style={{ marginLeft: ci === 0 ? 0 : monthBoundarySet.has(ci) ? MONTH_GAP : GAP }}
                   >
                     {col.map(day => {
@@ -484,7 +484,7 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
       </div>
 
       {/* ── Heatmap container with scroll & horizontal alignment ── */}
-      <div className="overflow-x-auto scrollbar-thin pb-1 pt-10 px-2 heatmap-container relative">
+      <div className="overflow-x-auto overflow-y-visible scrollbar-thin pb-1 pt-10 px-2 heatmap-container relative">
         <div style={{ width: gridWidth + 32, minWidth: gridWidth + 32 }} className="relative">
           
           {/* Month labels sitting directly above first columns */}
@@ -518,11 +518,11 @@ export function ConsistencyHeatmap({ data: initialData = [], platform, isAnalyti
             </div>
 
             {/* Squares Columns */}
-            <div className="flex">
+            <div className="flex overflow-visible">
               {columns.map((col, ci) => (
                 <div
                   key={ci}
-                  className="flex flex-col gap-[3px]"
+                  className="flex flex-col gap-[3px] overflow-visible"
                   style={{ marginLeft: ci === 0 ? 0 : monthBoundarySet.has(ci) ? MONTH_GAP : GAP }}
                 >
                   {col.map(day => {

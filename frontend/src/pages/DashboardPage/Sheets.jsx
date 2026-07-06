@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { sheetService } from "@/api/services";
 import { Spinner } from "@/components/common";
+import { getPlatformFromUrl, PlatformIcon, PLATFORMS } from "@/utils/platformUtils";
 
 const DIFF_STYLES = {
   EASY: "text-[#10B981] bg-[#10B981]/10",
@@ -127,28 +128,37 @@ function SheetList() {
 /* ---------------------------- Detail view ---------------------------- */
 
 function ResourceIcons({ problem }) {
-  const items = [
-    problem.articleUrl && { url: problem.articleUrl, icon: FileText, title: "Article", cls: "text-neutral-400 hover:text-white" },
-  ].filter(Boolean);
+  const platformKey = getPlatformFromUrl(problem.practiceUrl);
+  const platform = platformKey ? PLATFORMS[platformKey] : null;
 
-  if (items.length === 0) return <span className="text-neutral-700">—</span>;
+  if (!platform) {
+    // Fallback: article link with FileText icon
+    if (!problem.articleUrl) return <span className="text-neutral-700">—</span>;
+    return (
+      <a
+        href={problem.articleUrl}
+        target="_blank"
+        rel="noreferrer"
+        title="Article"
+        className="text-neutral-400 hover:text-white transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <FileText className="w-4 h-4" />
+      </a>
+    );
+  }
 
   return (
-    <div className="flex items-center gap-2">
-      {items.map(({ url, icon: Icon, title, cls }) => (
-        <a
-          key={title}
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          title={title}
-          className={`${cls} transition-colors`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon className="w-4 h-4" />
-        </a>
-      ))}
-    </div>
+    <a
+      href={problem.practiceUrl}
+      target="_blank"
+      rel="noreferrer"
+      title={platform.name}
+      className="transition-opacity hover:opacity-70"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <PlatformIcon url={problem.practiceUrl} className="w-4 h-4" />
+    </a>
   );
 }
 

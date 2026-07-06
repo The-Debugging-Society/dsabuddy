@@ -1117,10 +1117,7 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                     </div>
 
                     {/* Skill Profile */}
-                    <div className="md:col-span-3 space-y-4">
-                      <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                        Skill Profile
-                      </h3>
+                    <div className="md:col-span-3">
                       <div className="border border-neutral-900 bg-neutral-950/40 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 h-[320px]">
                         <div className="flex-1 space-y-2 text-center sm:text-left max-w-sm">
                           <h4 className="text-lg font-bold text-white">DSA Mastery Index</h4>
