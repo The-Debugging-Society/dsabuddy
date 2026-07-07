@@ -11,7 +11,7 @@ export const listMyQuestionStatuses = async (req, res) => {
   const take = Number(req.query.take ?? 200);
   const skip = Number(req.query.skip ?? 0);
 
-  const items = await prisma.userQuestion.findMany({
+  const items = await prisma.userQuestionBank.findMany({
     where: { userId, ...(status ? { status } : {}) },
     take,
     skip,
@@ -46,7 +46,7 @@ export const upsertMyQuestionStatus = async (req, res) => {
 
   const solvedAt = status === "SOLVED" ? new Date() : null;
 
-  const record = await prisma.userQuestion.upsert({
+  const record = await prisma.userQuestionBank.upsert({
     where: {
       userId_questionId: { userId, questionId },
     },
@@ -70,7 +70,7 @@ export const deleteMyQuestionStatus = async (req, res) => {
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   const { questionId } = req.params;
-  await prisma.userQuestion.delete({
+  await prisma.userQuestionBank.delete({
     where: { userId_questionId: { userId, questionId } },
   });
 

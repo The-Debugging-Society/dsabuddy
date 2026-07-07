@@ -118,8 +118,6 @@ export const createQuestionBodySchema = z
     acceptedCount: z.number().int().min(0).optional().nullable(),
     submissionCount: z.number().int().min(0).optional().nullable(),
     tags: z.array(z.string()).optional(),
-    companyIds: z.array(cuidSchema).optional(),
-    relatedQuestionIds: z.array(cuidSchema).optional(),
   })
   .strict();
 
@@ -130,7 +128,6 @@ export const listQuestionsQuerySchema = z
     q: z.string().optional(),
     difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
     tag: z.string().optional(),
-    companyId: cuidSchema.optional(),
     take: z.coerce.number().int().min(1).max(100).optional(),
     skip: z.coerce.number().int().min(0).optional(),
   })

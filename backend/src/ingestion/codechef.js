@@ -1,4 +1,7 @@
-import { fetchJson } from "./http.js";
+import { fetchJson, sleep } from "./http.js";
+import { mapDifficultyFromCodechefRating } from "./mappers.js";
+
+const CODECHEF_PROBLEMS_LIST_URL = "https://www.codechef.com/api/list/problems";
 
 function parseStars(starsStr) {
   if (!starsStr) return null;
@@ -15,6 +18,84 @@ function parseStars(starsStr) {
     return parseInt(digitMatch[1], 10);
   }
   return null;
+}
+
+function buildCodechefProblemUrl(code) {
+  if (!code) return null;
+  return `https://www.codechef.com/problems/${code}`;
+}
+
+export async function fetchAllCodechefProblems({
+  maxItems = 25000,
+  pageSize = 200,
+  maxPages = 500,
+} = {}) {
+  const results = [];
+  const seenCodes = new Set();
+  let page = 1;
+  let totalCount = null;
+
+  while (page <= maxPages && results.length < maxItems) {
+    await sleep(600);
+
+    const url = `${CODECHEF_PROBLEMS_LIST_URL}?page=${page}&limit=${pageSize}`;
+    let json;
+    try {
+      json = await fetchJson(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+        timeoutMs: 10000,
+      });
+    } catch (err) {
+      console.warn(`[codechef:local] page=${page} failed: ${err.message}`);
+      break;
+    }
+
+    if (json?.status !== "success" || !Array.isArray(json?.data)) {
+      console.warn(`[codechef:local] page=${page} unexpected response, stopping`);
+      break;
+    }
+
+    totalCount = typeof json.count === "number" ? json.count : totalCount;
+    const items = json.data;
+
+    for (const p of items) {
+      if (results.length >= maxItems) break;
+      const code = p.code;
+      if (!code || seenCodes.has(code)) continue;
+      seenCodes.add(code);
+
+      const ratingRaw = p.difficulty_rating != null ? parseInt(p.difficulty_rating, 10) : null;
+      const rating = Number.isFinite(ratingRaw) && ratingRaw > 0 ? ratingRaw : null;
+      const difficulty = mapDifficultyFromCodechefRating(rating);
+      const title = p.name ?? code;
+      const url = buildCodechefProblemUrl(code);
+
+      results.push({
+        title,
+        displayName: title,
+        difficulty,
+        sourcePlatform: "CODECHEF",
+        sourceId: code,
+        sourceSlug: code,
+        slug: `cc-${code.toLowerCase()}`,
+        sourceUrl: url,
+        sourceRating: rating,
+        paidOnly: false,
+        tags: [],
+      });
+    }
+
+    console.log(
+      `[codechef:local] page=${page} fetched=${items.length} collected=${results.length}/${maxItems} total=${totalCount ?? "?"}`,
+    );
+
+    if (items.length === 0) break;
+    if (totalCount != null && page * pageSize >= totalCount) break;
+
+    page += 1;
+  }
+
+  return { problems: results, pages: page };
 }
 
 export async function fetchCodechefUserStats({ username }) {

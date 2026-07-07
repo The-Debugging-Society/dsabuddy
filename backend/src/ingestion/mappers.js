@@ -20,3 +20,10 @@ export function mapDifficultyFromLeetCode(difficulty) {
   return "MEDIUM";
 }
 
+export function mapDifficultyFromCodechefRating(rating) {
+  if (typeof rating !== "number" || rating <= 0) return "MEDIUM";
+  if (rating <= 1400) return "EASY";
+  if (rating <= 1800) return "MEDIUM";
+  return "HARD";
+}
+

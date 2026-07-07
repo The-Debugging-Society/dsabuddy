@@ -242,7 +242,7 @@ export const getUserByUserName = async (req, res) => {
     user.year
       ? prisma.user.count({ where: { year: user.year, points: { gt: user.points } } }).then(n => n + 1)
       : Promise.resolve(null),
-    prisma.userQuestion.count({ where: { userId: user.id, status: "SOLVED" } }),
+    prisma.userQuestionBank.count({ where: { userId: user.id, status: "SOLVED" } }),
     prisma.userSheetProblem.count({ where: { userId: user.id, status: "SOLVED" } }),
   ]);
 

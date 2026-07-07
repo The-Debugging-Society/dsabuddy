@@ -63,6 +63,7 @@ model User {
   comments            Comment[]
   votes               Vote[]
   sheetProgress       UserSheetProblem[]
+  questionBankStatuses UserQuestionBank[]
 }
 
 model PlatformConnection {
@@ -421,4 +422,64 @@ model UserSheetProblem {
 
   @@id([userId, sheetProblemId])
   @@index([sheetProblemId])
+}
+
+// ---------------------------------------------------------------------------
+// General Questions Bank (the public /questions page). Deliberately NOT
+// linked to Company/CompanyQuestion so it can be reseeded independently of
+// company PYQ data. Sourced from LeetCode and Codeforces (see
+// backend/scripts/seedQuestionBank.js).
+// ---------------------------------------------------------------------------
+
+model QuestionBank {
+  id String @id @default(cuid())
+
+  title       String
+  displayName String?
+  difficulty  Difficulty
+  leetcodeUrl String?
+
+  sourcePlatform Platform
+  sourceId       String
+  sourceSlug     String?
+  slug           String? @unique
+  sourceUrl      String?
+  sourceRating   Int?
+  paidOnly       Boolean?
+
+  acceptanceRate Float?
+  frequency      Frequency?
+
+  statement   String?
+  examples    Json?
+  constraints Json?
+
+  acceptedCount   Int?
+  submissionCount Int?
+
+  tags String[]
+
+  userStatuses UserQuestionBank[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sourcePlatform, sourceId])
+  @@index([sourcePlatform])
+}
+
+model UserQuestionBank {
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   QuestionBank @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  status   UserQuestionStatus @default(UNSOLVED)
+  solvedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, questionId])
+  @@index([questionId])
 }

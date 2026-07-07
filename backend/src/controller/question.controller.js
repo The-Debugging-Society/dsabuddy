@@ -3,7 +3,7 @@ import { prisma } from "../config/prismaClient.js";
 const getAuthUserId = (req) => req.user?.userId ?? null;
 
 export const listQuestions = async (req, res) => {
-  const { q, difficulty, tag, companyId } = req.query;
+  const { q, difficulty, tag } = req.query;
   const take = Number(req.query.take ?? 50);
   const skip = Number(req.query.skip ?? 0);
 
@@ -20,11 +20,10 @@ export const listQuestions = async (req, res) => {
       : {}),
     ...(difficulty ? { difficulty } : {}),
     ...(tag ? { tags: { has: tag } } : {}),
-    ...(companyId ? { companies: { some: { companyId } } } : {}),
   };
 
   const [questions, total] = await Promise.all([
-    prisma.question.findMany({
+    prisma.questionBank.findMany({
       where,
       take,
       skip,
@@ -47,9 +46,6 @@ export const listQuestions = async (req, res) => {
         acceptedCount: true,
         submissionCount: true,
         tags: true,
-        companies: {
-          select: { company: { select: { id: true, name: true, slug: true } } },
-        },
         ...(userId
           ? {
               userStatuses: {
@@ -62,7 +58,7 @@ export const listQuestions = async (req, res) => {
         updatedAt: true,
       },
     }),
-    prisma.question.count({ where }),
+    prisma.questionBank.count({ where }),
   ]);
 
   return res.status(200).json({
@@ -82,13 +78,13 @@ export const getRevisionQuestions = async (req, res) => {
 
   // Random sample of ids via Postgres RANDOM(); then hydrate with relations.
   const randomRows = await prisma.$queryRaw`
-    SELECT "id" FROM "Question" ORDER BY RANDOM() LIMIT ${limit}
+    SELECT "id" FROM "QuestionBank" ORDER BY RANDOM() LIMIT ${limit}
   `;
   const ids = randomRows.map((r) => r.id);
 
   if (ids.length === 0) return res.status(200).json({ questions: [] });
 
-  const questions = await prisma.question.findMany({
+  const questions = await prisma.questionBank.findMany({
     where: { id: { in: ids } },
     select: {
       id: true,
@@ -102,9 +98,6 @@ export const getRevisionQuestions = async (req, res) => {
       acceptanceRate: true,
       frequency: true,
       tags: true,
-      companies: {
-        select: { company: { select: { id: true, name: true, slug: true } } },
-      },
       ...(userId
         ? {
             userStatuses: {
@@ -123,7 +116,7 @@ export const getQuestionById = async (req, res) => {
   const { slug } = req.params;
   const userId = getAuthUserId(req);
 
-  const question = await prisma.question.findUnique({
+  const question = await prisma.questionBank.findUnique({
     where: { slug },
     select: {
       id: true,
@@ -146,25 +139,6 @@ export const getQuestionById = async (req, res) => {
       acceptedCount: true,
       submissionCount: true,
       tags: true,
-      companies: {
-        select: {
-          company: {
-            select: { id: true, name: true, slug: true, logoUrl: true },
-          },
-          frequency: true,
-          order: true,
-        },
-      },
-      relatedFrom: {
-        select: {
-          to: { select: { id: true, slug: true, title: true, difficulty: true } },
-        },
-      },
-      relatedTo: {
-        select: {
-          from: { select: { id: true, slug: true, title: true, difficulty: true } },
-        },
-      },
       ...(userId
         ? {
             userStatuses: {
@@ -183,30 +157,12 @@ export const getQuestionById = async (req, res) => {
 };
 
 export const createQuestion = async (req, res) => {
-  const { tags, companyIds, relatedQuestionIds, ...data } = req.body;
+  const { tags, ...data } = req.body;
 
-  const created = await prisma.question.create({
+  const created = await prisma.questionBank.create({
     data: {
       ...data,
       tags: Array.isArray(tags) ? tags : [],
-      ...(companyIds?.length
-        ? {
-            companies: {
-              create: companyIds.map((companyId) => ({
-                company: { connect: { id: companyId } },
-              })),
-            },
-          }
-        : {}),
-      ...(relatedQuestionIds?.length
-        ? {
-            relatedFrom: {
-              create: relatedQuestionIds.map((toId) => ({
-                to: { connect: { id: toId } },
-              })),
-            },
-          }
-        : {}),
     },
     select: { id: true },
   });
@@ -216,33 +172,13 @@ export const createQuestion = async (req, res) => {
 
 export const updateQuestion = async (req, res) => {
   const { id } = req.params;
-  const { tags, companyIds, relatedQuestionIds, ...data } = req.body;
+  const { tags, ...data } = req.body;
 
-  const updated = await prisma.question.update({
+  const updated = await prisma.questionBank.update({
     where: { id },
     data: {
       ...data,
       ...(Array.isArray(tags) ? { tags } : {}),
-      ...(Array.isArray(companyIds)
-        ? {
-            companies: {
-              deleteMany: {},
-              create: companyIds.map((companyId) => ({
-                company: { connect: { id: companyId } },
-              })),
-            },
-          }
-        : {}),
-      ...(Array.isArray(relatedQuestionIds)
-        ? {
-            relatedFrom: {
-              deleteMany: {},
-              create: relatedQuestionIds.map((toId) => ({
-                to: { connect: { id: toId } },
-              })),
-            },
-          }
-        : {}),
     },
     select: { id: true, updatedAt: true },
   });
@@ -252,7 +188,6 @@ export const updateQuestion = async (req, res) => {
 
 export const deleteQuestion = async (req, res) => {
   const { id } = req.params;
-  await prisma.question.delete({ where: { id } });
+  await prisma.questionBank.delete({ where: { id } });
   return res.status(204).send();
 };
-
