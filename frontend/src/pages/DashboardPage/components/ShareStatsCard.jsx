@@ -20,7 +20,7 @@ const WhatsAppIcon = (props) => (
   </svg>
 );
 
-export function ShareStatsCard({ user }) {
+export function ShareStatsCard({ user, activeRank, activeFilter }) {
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -29,11 +29,22 @@ export function ShareStatsCard({ user }) {
   const avatarUrl = user.avatarUrl || user.avatar;
   const showInitials = imgError || !avatarUrl;
 
-  const rank = user.overallRank ? `#${user.overallRank}` : '—';
+  const displayRank = activeRank !== undefined
+    ? (activeRank === '-' || activeRank === '—' ? '—' : `#${activeRank}`)
+    : (user.overallRank ? `#${user.overallRank}` : '—');
   const points = typeof user.points === 'number' ? user.points.toLocaleString() : String(user.points ?? 0);
 
   const profileUrl = absoluteUrl(`/profile/${user.userName}`);
-  const shareText = `I'm ranked ${rank} with ${points} DSA points on DSABuddy! Track your competitive programming progress across LeetCode, Codeforces, CodeChef & GFG.`;
+  
+  let cohortText = '';
+  if (activeFilter === 'college') cohortText = ' in my college cohort';
+  else if (activeFilter === 'branch') cohortText = ' in my branch cohort';
+  else if (activeFilter === 'year') cohortText = ' in my year cohort';
+  else if (activeFilter === 'class') cohortText = ' in my class cohort';
+
+  const shareText = displayRank !== '—'
+    ? `I'm ranked ${displayRank}${cohortText} with ${points} DSA points on DSABuddy! Track your competitive programming progress across LeetCode, Codeforces, CodeChef & GFG.`
+    : `Track my competitive programming progress on DSABuddy!`;
 
   const shareTargets = [
     {
@@ -104,9 +115,9 @@ export function ShareStatsCard({ user }) {
           <div className="rounded-lg bg-[#161B22] border border-[#1F2937] p-3">
             <div className="flex items-center gap-1.5 text-[#6B7280] text-[10px] font-mono uppercase tracking-wider mb-1">
               <Trophy className="w-3.5 h-3.5 text-[#35b9f1]" />
-              Rank
+              {activeFilter && activeFilter !== 'all' ? `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Rank` : 'Rank'}
             </div>
-            <p className="text-white text-xl font-bold">{rank}</p>
+            <p className="text-white text-xl font-bold">{displayRank}</p>
           </div>
           <div className="rounded-lg bg-[#161B22] border border-[#1F2937] p-3">
             <div className="flex items-center gap-1.5 text-[#6B7280] text-[10px] font-mono uppercase tracking-wider mb-1">
@@ -117,6 +128,7 @@ export function ShareStatsCard({ user }) {
           </div>
         </div>
       </div>
+
 
       {/* Share buttons */}
       <div className="flex items-center gap-2">

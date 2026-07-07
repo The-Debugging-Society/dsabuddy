@@ -12,7 +12,7 @@ const LEADERBOARD_FILTERS = [
   { id: "class", label: "Class" },
 ];
 
-export function Leaderboard({ user }) {
+export function Leaderboard({ user, onRankChange }) {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('college');
   const [activeSubFilter, setActiveSubFilter] = useState('all');
@@ -78,10 +78,18 @@ export function Leaderboard({ user }) {
       : activeFilter === 'year' ? currentUser.yearRank
       : activeFilter === 'class' ? currentUser.classRank
       : currentUser.overallRank) ?? '-';
+
+  useEffect(() => {
+    if (onRankChange) {
+      onRankChange({ rank: currentUserRank, filter: activeFilter });
+    }
+  }, [currentUserRank, activeFilter, onRankChange]);
+
   const currentUserDisplayValue = matchedUser
     ? (matchedUser.displayValue !== undefined && matchedUser.displayValue !== null ? matchedUser.displayValue : (matchedUser.points || 0))
     : (currentUser.points || 0);
   const currentUserDisplayLabel = matchedUser ? (matchedUser.displayLabel || 'points') : 'points';
+
 
   return (
     <div className="space-y-6">
