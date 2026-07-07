@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -37,10 +31,6 @@ enum UserQuestionStatus {
   SOLVED
 }
 
-enum AuthProvider {
-  GOOGLE
-}
-
 model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -69,32 +59,10 @@ model User {
   platformConnections PlatformConnection[]
   dailyActivity       DailyActivity[]
   questionStatuses    UserQuestion[]
-  accounts            Account[]
   forumPosts          ForumPost[]
   comments            Comment[]
   votes               Vote[]
   sheetProgress       UserSheetProblem[]
-}
-
-model Account {
-  id String @id @default(cuid())
-
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider AuthProvider
-
-  // For Google this is the "sub" (subject) id
-  providerAccountId String
-
-  accessToken   String?
-  refreshToken  String?
-  tokenExpiresAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
 }
 
 model PlatformConnection {
@@ -217,7 +185,8 @@ model Question {
   // Source tracking (for ingestion from multiple platforms)
   sourcePlatform Platform?
   sourceId       String? // stable id per platform (e.g. "1234A", "two-sum")
-  sourceSlug     String? // optional human slug
+  sourceSlug     String? // optional human slug (not guaranteed globally unique, e.g. Codeforces problem index)
+  slug           String? @unique // globally unique, URL-safe slug used for routing
   sourceUrl      String? // canonical URL to open the problem
   sourceRating   Int?    // e.g. Codeforces rating
   paidOnly       Boolean?
@@ -289,21 +258,6 @@ model UserQuestion {
 
   @@id([userId, questionId])
   @@index([questionId])
-}
-
-model CompanyPyq {
-  id          Int       @id @default(autoincrement())
-  question_id Int?
-  frequency   Float?
-  created_at  DateTime? @db.Timestamp(6)
-  difficulty  String?
-  company     String?
-  link        String?
-  title       String?
-  acceptance  String?
-
-  @@unique([question_id, company])
-  @@map("companypyq")
 }
 
 model ForumPost {

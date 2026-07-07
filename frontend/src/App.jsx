@@ -59,7 +59,7 @@ function App() {
           <Route path="/dashboard/revision" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/questions" element={<QuestionsPage />} />
-          <Route path="/questions/:id" element={<QuestionDetailPage />} />
+          <Route path="/questions/:slug" element={<QuestionDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/dashboard/profile" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

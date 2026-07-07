@@ -7,7 +7,7 @@ export const Spinner = ({ size = "md", className = "" }) => {
 
   return (
     <div className={`inline-block ${sizes[size]} ${className}`}>
-      <div className="w-full h-full border-4 border-gray-300 border-t-(--primary-color) rounded-full animate-spin"></div>
+      <div className="w-full h-full border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import {
   createQuestionBodySchema,
   listQuestionsQuerySchema,
   questionIdParamSchema,
+  questionSlugParamSchema,
   updateQuestionBodySchema,
 } from "../validation/api.validation.js";
 import {
@@ -22,7 +23,7 @@ const router = Router();
 router.get("/", authMiddleware, validate({ query: listQuestionsQuerySchema }), listQuestions);
 // "Last minute revision" random set — declared before "/:id" to avoid capture.
 router.get("/revision", authMiddleware, getRevisionQuestions);
-router.get("/:id", authMiddleware, validate({ params: questionIdParamSchema }), getQuestionById);
+router.get("/:slug", authMiddleware, validate({ params: questionSlugParamSchema }), getQuestionById);
 
 // Protected (data-management)
 router.post(

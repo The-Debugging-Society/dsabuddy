@@ -20,7 +20,7 @@ export const ComparisonSection = () => {
           </Badge>
           <div>
             <h3 className="font-bold text-2xl mt-4">Scattered DSA Effort</h3>
-            <p className="content-color mt-4 mb-16 leading-relaxed">
+            <p className="text-content mt-4 mb-16 leading-relaxed">
               Students code across multiple platforms, but progress remains fragmented. It is difficult to track daily consistency or see class standings.
             </p>
           </div>
@@ -43,7 +43,7 @@ export const ComparisonSection = () => {
         {/* Solution Card */}
         <Card variant="highlight" animated={true} hoverable={false} className="p-6 relative overflow-hidden border-[#35b9f1]">
           <motion.div 
-            className="group-hover:bg-(--primary-color) transition ease-in-out duration-300 bg-[#35b9f1] size-35 absolute blur-3xl ml-103 -mt-14"
+            className="group-hover:bg-primary transition ease-in-out duration-300 bg-[#35b9f1] size-35 absolute blur-3xl ml-103 -mt-14"
             animate={{ 
               scale: [1, 1.1, 1],
               opacity: [0.5, 0.7, 0.5]

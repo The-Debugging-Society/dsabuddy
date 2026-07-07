@@ -79,6 +79,10 @@ export const questionIdParamSchema = z.object({
   id: cuidSchema,
 });
 
+export const questionSlugParamSchema = z.object({
+  slug: z.string().min(1),
+});
+
 export const companyQuestionParamsSchema = z.object({
   companyId: cuidSchema,
   questionId: cuidSchema,

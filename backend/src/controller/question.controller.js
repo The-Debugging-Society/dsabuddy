@@ -38,6 +38,7 @@ export const listQuestions = async (req, res) => {
         sourcePlatform: true,
         sourceId: true,
         sourceSlug: true,
+        slug: true,
         sourceUrl: true,
         sourceRating: true,
         paidOnly: true,
@@ -119,11 +120,11 @@ export const getRevisionQuestions = async (req, res) => {
 };
 
 export const getQuestionById = async (req, res) => {
-  const { id } = req.params;
+  const { slug } = req.params;
   const userId = getAuthUserId(req);
 
   const question = await prisma.question.findUnique({
-    where: { id },
+    where: { slug },
     select: {
       id: true,
       title: true,
@@ -133,6 +134,7 @@ export const getQuestionById = async (req, res) => {
       sourcePlatform: true,
       sourceId: true,
       sourceSlug: true,
+      slug: true,
       sourceUrl: true,
       sourceRating: true,
       paidOnly: true,
@@ -155,12 +157,12 @@ export const getQuestionById = async (req, res) => {
       },
       relatedFrom: {
         select: {
-          to: { select: { id: true, title: true, difficulty: true } },
+          to: { select: { id: true, slug: true, title: true, difficulty: true } },
         },
       },
       relatedTo: {
         select: {
-          from: { select: { id: true, title: true, difficulty: true } },
+          from: { select: { id: true, slug: true, title: true, difficulty: true } },
         },
       },
       ...(userId

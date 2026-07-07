@@ -14,7 +14,7 @@ import {
 } from './components';
 
 export default function QuestionDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
 
@@ -29,7 +29,7 @@ export default function QuestionDetailPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    questionService.getById(id)
+    questionService.getById(slug)
       .then(data => {
         if (!cancelled) setQuestion(data.question);
       })
@@ -38,15 +38,15 @@ export default function QuestionDetailPage() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [id]);
+  }, [slug]);
 
   const handleSetStatus = async (status) => {
     if (!user) return navigate('/login');
     setStatusLoading(true);
     try {
-      await questionService.setStatus(id, status === currentStatus ? null : status);
+      await questionService.setStatus(question.id, status === currentStatus ? null : status);
       // Re-fetch to get updated status
-      const data = await questionService.getById(id);
+      const data = await questionService.getById(slug);
       setQuestion(data.question);
     } catch (e) {
       console.error(e);
@@ -68,11 +68,11 @@ export default function QuestionDetailPage() {
       <Seo
         title={question ? question.displayName || question.title : 'Question'}
         description={question ? `Solve ${question.title} on DSABuddy. Difficulty: ${question.difficulty}. Platform: ${question.sourcePlatform || 'LeetCode'}.` : ''}
-        path={`/questions/${id}`}
+        path={`/questions/${slug}`}
         jsonLd={question ? breadcrumbSchema([
           { name: 'Home', path: '/' },
           { name: 'Questions', path: '/questions' },
-          { name: question.displayName || question.title, path: `/questions/${id}` },
+          { name: question.displayName || question.title, path: `/questions/${slug}` },
         ]) : undefined}
       />
       <Navbar />
@@ -217,7 +217,7 @@ export default function QuestionDetailPage() {
                     {related.map(r => (
                       <Link
                         key={r.id}
-                        to={`/questions/${r.id}`}
+                        to={`/questions/${r.slug}`}
                         className="flex items-center gap-3 rounded-[10px] border border-[#1a1a2e] bg-[#0a0a14] px-4 py-3 no-underline transition-colors hover:border-violet-600"
                       >
                         <DifficultyBadge difficulty={r.difficulty} />

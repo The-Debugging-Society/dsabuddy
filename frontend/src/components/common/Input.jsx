@@ -14,7 +14,7 @@ export const Input = ({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className={`content-color uppercase block mb-2 text-sm ${labelClassName}`}>
+        <label className={`text-content uppercase block mb-2 text-sm ${labelClassName}`}>
           {label}
         </label>
       )}

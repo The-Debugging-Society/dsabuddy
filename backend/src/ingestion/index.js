@@ -15,6 +15,7 @@ export async function syncProblems({
   platforms = ["codeforces", "leetcode"],
   tagSlugs = [],
   maxItems = 200,
+  maxSkip = 2000,
   dryRun = false,
 } = {}) {
   const wanted = new Set(platforms.map((p) => String(p).toLowerCase()));
@@ -41,6 +42,7 @@ export async function syncProblems({
         prisma,
         tagSlugs,
         maxItems,
+        maxSkip,
         dryRun,
       });
     } catch (error) {

@@ -35,7 +35,7 @@ export const HeroSection = ({ onStartTracking = () => {} }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        <p className="content-color text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
+        <p className="text-primary text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
           Sync your profiles from LeetCode, Codeforces, and CodeChef. Track daily streaks and climb your college leaderboard.
         </p>
       </motion.div>

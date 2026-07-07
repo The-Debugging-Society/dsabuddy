@@ -66,12 +66,12 @@ export const RegisterForm = () => {
   };
   return (
     <div className="flex justify-center items-center w-full">
-      <div className="mt-6 sm:mt-10 w-full max-w-md border-t-(--primary-color) border-t-2 p-6 sm:p-10 rounded-2xl bg-[#0D1117] border border-[#1F2937] mx-auto">
+      <div className="mt-6 sm:mt-10 w-full max-w-md border-t-primary border-t-2 p-6 sm:p-10 rounded-2xl bg-[#0D1117] border border-[#1F2937] mx-auto">
         <div className="w-full text-center mx-auto mb-6">
           <h2 className="font-normal italic text-white font-serif text-3xl">
             Create Account
           </h2>
-          <p className="content-color text-sm mt-1">Initialize your profile to join the competition</p>
+          <p className="text-content text-sm mt-1">Initialize your profile to join the competition</p>
         </div>
 
         {error && (

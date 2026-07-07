@@ -11,7 +11,7 @@ export const Divider = ({
     return (
       <div className={`flex items-center gap-4 ${className}`}>
         <div className="flex-1 h-0.5 bg-neutral-800" />
-        <span className="text-sm text-(--content-color)">{text}</span>
+        <span className="text-sm text-content">{text}</span>
         <div className="flex-1 h-0.5 bg-neutral-800" />
       </div>
     );

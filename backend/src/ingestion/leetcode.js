@@ -99,6 +99,7 @@ export async function syncLeetCodeProblemsByTags({
   prisma,
   tagSlugs = [],
   maxItems = 200,
+  maxSkip = 2000,
   dryRun = false,
 }) {
   const cookies = buildLeetCodeCookiesFromEnv();
@@ -169,6 +170,7 @@ export async function syncLeetCodeProblemsByTags({
               sourcePlatform: "LEETCODE",
               sourceId: titleSlug,
               sourceSlug: titleSlug,
+              slug: titleSlug,
               sourceUrl: url,
               acceptanceRate:
                 typeof q.acRate === "number" ? q.acRate : (q.acRate ?? null),
@@ -180,6 +182,8 @@ export async function syncLeetCodeProblemsByTags({
               displayName: title,
               difficulty,
               leetcodeUrl: url,
+              sourceSlug: titleSlug,
+              slug: titleSlug,
               sourceUrl: url,
               acceptanceRate:
                 typeof q.acRate === "number" ? q.acRate : (q.acRate ?? null),
@@ -198,12 +202,92 @@ export async function syncLeetCodeProblemsByTags({
       skip += limit;
       if (skip >= total) break;
       if (questions.length === 0) break;
-      if (skip > 2000) break;
+      if (skip > maxSkip) break;
       if (processed >= maxItems) break;
     }
   }
 
   return { processed, upserted, tagLinks, pages, maxItems };
+}
+
+export async function fetchAllLeetCodeProblems({
+  tagSlugs = [],
+  maxItems = 15000,
+  maxSkip = 10000,
+} = {}) {
+  const cookies = buildLeetCodeCookiesFromEnv();
+  const results = [];
+  let pages = 0;
+
+  const uniqueTagSlugs = [...new Set(tagSlugs.map(normalizeTag))].filter(Boolean);
+  const targets = uniqueTagSlugs.length ? uniqueTagSlugs : [null];
+
+  for (const tagSlug of targets) {
+    let skip = 0;
+    const limit = 50;
+
+    while (true) {
+      pages += 1;
+      await sleep(900);
+
+      const variables = {
+        categorySlug: "",
+        limit,
+        skip,
+        filters: tagSlug ? { tags: [tagSlug] } : {},
+      };
+
+      const data = await leetcodeGraphqlRequest({
+        query: PROBLEMSET_QUERY,
+        variables,
+        cookies,
+      });
+
+      const block = data?.problemsetQuestionList;
+      const questions = block?.questions ?? [];
+      const total = block?.total ?? 0;
+
+      console.log(
+        `[leetcode:local] batch skip=${skip} limit=${limit} fetched=${questions.length} collected=${results.length}/${maxItems} total=${total}`,
+      );
+
+      for (const q of questions) {
+        if (results.length >= maxItems) break;
+        const titleSlug = q.titleSlug;
+        if (!titleSlug) continue;
+
+        const url = `https://leetcode.com/problems/${titleSlug}/`;
+        const difficulty = mapDifficultyFromLeetCode(q.difficulty);
+        const title = q.title ?? titleSlug;
+        const topicTags = Array.isArray(q.topicTags) ? q.topicTags : [];
+        const cleanTags = topicTags.map((t) => t?.name).filter(Boolean);
+
+        results.push({
+          title,
+          displayName: title,
+          difficulty,
+          leetcodeUrl: url,
+          sourcePlatform: "LEETCODE",
+          sourceId: titleSlug,
+          sourceSlug: titleSlug,
+          slug: titleSlug,
+          sourceUrl: url,
+          acceptanceRate:
+            typeof q.acRate === "number" ? q.acRate : (q.acRate ?? null),
+          paidOnly: Boolean(q.paidOnly),
+          tags: cleanTags,
+        });
+      }
+
+      skip += limit;
+      if (skip >= total) break;
+      if (questions.length === 0) break;
+      if (skip > maxSkip) break;
+      if (results.length >= maxItems) break;
+    }
+  }
+
+  return { problems: results, pages };
 }
 
 export async function fetchLeetCodeUserStats({ username }) {

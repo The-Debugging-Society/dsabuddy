@@ -203,7 +203,7 @@ export function Leaderboard({ user }) {
               <label className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider block font-semibold">FILTER COHORT</label>
               {loading && <div className="w-3.5 h-3.5 border-2 border-t-transparent border-[#35b9f1] rounded-full animate-spin" />}
             </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
               {LEADERBOARD_FILTERS.map((filter) => {
                 const isLocked = !user;
                 return (
@@ -238,7 +238,7 @@ export function Leaderboard({ user }) {
           {/* Sub Categories (Overall, LeetCode, Codeforces, CodeChef) */}
           <div className="space-y-2">
             <label className="text-[10px] text-[#6B7280] font-mono uppercase tracking-wider block font-semibold">RANK BY METRIC</label>
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
               {[
                 { id: 'all', label: 'Overall Points' },
                 { id: 'leetcode', label: 'LeetCode' },

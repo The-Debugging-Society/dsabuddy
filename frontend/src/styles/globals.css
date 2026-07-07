@@ -5,6 +5,10 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --font-serif: "Instrument Serif", serif;
+
+  --color-primary: #35b9f1;
+  --color-light-primary: rgba(53, 185, 241, 0.4);
+  --color-content: #a1a1aa;
 }
 
 body{
@@ -29,23 +33,6 @@ h1 {
 ::selection {
   background: #35b9f1; 
   color: black;      
-}
-
-
-.primary-color {
-	color: var(--primary-color);
-}
-
-.content-color {
-	color: var(--content-color);
-}
-
-.heading-color {
-	color: var(--heading-color);
-}
-
-.highlight-color {
-	color: var(--highlight-color);
 }
 
 @keyframes blink {
@@ -85,14 +72,14 @@ h1 {
 	background: #10a3e0;
 }
 
-/* Thin scrollbar variant for smaller containers */
-.scrollbar-thin::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-	border: 1px solid #000000;
+@utility scrollbar-thin {
+	&::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+	&::-webkit-scrollbar-thumb {
+		border: 1px solid #000000;
+	}
 }
 
 /* Firefox scrollbar */
@@ -106,46 +93,43 @@ html {
 	scroll-behavior: smooth;
 }
 
-/* Scrollbar variants for different use cases */
-.scrollbar-hide::-webkit-scrollbar {
-	display: none;
-}
-
-.scrollbar-hide {
+@utility scrollbar-hide {
+	&::-webkit-scrollbar {
+		display: none;
+	}
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
 
-/* Blue variant scrollbar (for Codeforces theme) */
-.scrollbar-blue::-webkit-scrollbar-thumb {
-	background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+@utility scrollbar-blue {
+	&::-webkit-scrollbar-thumb {
+		background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+		&:hover {
+			background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
+			box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+		}
+	}
 }
 
-.scrollbar-blue::-webkit-scrollbar-thumb:hover {
-	background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
-	box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+@utility scrollbar-green {
+	&::-webkit-scrollbar-thumb {
+		background: linear-gradient(180deg, #10B981 0%, #047857 100%);
+		&:hover {
+			background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
+			box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+		}
+	}
 }
 
-/* Green variant scrollbar (for GFG theme) */
-.scrollbar-green::-webkit-scrollbar-thumb {
-	background: linear-gradient(180deg, #10B981 0%, #047857 100%);
-}
-
-.scrollbar-green::-webkit-scrollbar-thumb:hover {
-	background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
-	box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-}
-
-/* Custom focus highlight for onboarding input cards */
-.onboarding-input-wrapper {
+@utility onboarding-input-wrapper {
 	transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-.onboarding-input-wrapper:hover {
-	border-color: #9ca3af !important;
-}
-.onboarding-input-wrapper:focus-within {
-	border-color: #35b9f1 !important;
-	box-shadow: 0 0 0 1px #35b9f1 !important;
+	&:hover {
+		border-color: #9ca3af !important;
+	}
+	&:focus-within {
+		border-color: #35b9f1 !important;
+		box-shadow: 0 0 0 1px #35b9f1 !important;
+	}
 }
 
 button,

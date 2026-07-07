@@ -9,7 +9,7 @@ export const FormField = ({
   value,
   onChange,
   labelIcon: LabelIcon,
-  iconColor = "primary-color",
+  iconColor = "text-primary",
   ...props 
 }) => {
   return (

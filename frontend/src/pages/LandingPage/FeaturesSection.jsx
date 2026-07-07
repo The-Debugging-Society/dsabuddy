@@ -40,7 +40,7 @@ export const FeaturesSection = memo(() => {
         >
           <h2 className="text-4xl sm:text-5xl font-serif italic text-white leading-tight">
             Why{' '}
-            <span className="text-(--primary-color) not-italic font-bold">DSABuddy</span>?
+            <span className="text-primary not-italic font-bold">DSABuddy</span>?
           </h2>
           <p className="mt-4 max-w-2xl text-gray-400 text-lg leading-relaxed">
             Stop chasing counts. Start building consistency. We built DSABuddy for the way college DSA actually works.

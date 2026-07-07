@@ -73,6 +73,7 @@ export async function syncCodeforcesProblemsByTags({
         sourcePlatform: "CODEFORCES",
         sourceId,
         sourceSlug: index,
+        slug: `cf-${sourceId.toLowerCase()}`,
         sourceUrl: url,
         sourceRating: p.rating ?? null,
         paidOnly: false,
@@ -82,6 +83,8 @@ export async function syncCodeforcesProblemsByTags({
         title,
         displayName: `${sourceId}. ${title}`,
         difficulty,
+        sourceSlug: index,
+        slug: `cf-${sourceId.toLowerCase()}`,
         sourceUrl: url,
         sourceRating: p.rating ?? null,
         tags: cleanTags,
@@ -95,6 +98,58 @@ export async function syncCodeforcesProblemsByTags({
   }
 
   return { matched, processed, upserted, tagLinks, maxItems };
+}
+
+export async function fetchAllCodeforcesProblemsMapped({
+  tagSlugs = [],
+  maxItems = 15000,
+} = {}) {
+  await sleep(2100);
+
+  const desired = new Set(tagSlugs.map(normalizeTag));
+  const problems = await fetchCodeforcesProblems();
+  console.log(`[codeforces:local] fetched ${problems.length} problems from API`);
+
+  const results = [];
+
+  for (const p of problems) {
+    if (results.length >= maxItems) break;
+
+    const problemTags = Array.isArray(p.tags) ? p.tags : [];
+    const normalized = problemTags.map(normalizeTag);
+    const keep = desired.size === 0 || normalized.some((t) => desired.has(t));
+    if (!keep) continue;
+
+    const contestId = p.contestId ?? null;
+    const index = p.index ?? null;
+    const sourceId = contestId && index ? `${contestId}${index}` : null;
+    if (!sourceId) continue;
+
+    const title = p.name ?? sourceId;
+    const url = buildProblemUrl(contestId, index);
+    const difficulty = mapDifficultyFromCodeforcesRating(p.rating);
+    const cleanTags = problemTags.filter(Boolean);
+
+    results.push({
+      title,
+      displayName: `${sourceId}. ${title}`,
+      difficulty,
+      sourcePlatform: "CODEFORCES",
+      sourceId,
+      sourceSlug: index,
+      slug: `cf-${sourceId.toLowerCase()}`,
+      sourceUrl: url,
+      sourceRating: p.rating ?? null,
+      paidOnly: false,
+      tags: cleanTags,
+    });
+
+    if (results.length % 500 === 0) {
+      console.log(`[codeforces:local] collected=${results.length}/${maxItems}`);
+    }
+  }
+
+  return { problems: results };
 }
 
 export async function fetchCodeforcesUserStats({ username }) {

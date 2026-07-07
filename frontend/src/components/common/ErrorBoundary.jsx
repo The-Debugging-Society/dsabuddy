@@ -23,7 +23,7 @@ export class ErrorBoundary extends Component {
             <p className="text-gray-400 mb-4">Something went wrong. Please refresh the page.</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-(--primary-color) px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
+              className="bg-primary px-6 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity"
             >
               Reload Page
             </button>

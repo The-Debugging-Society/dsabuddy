@@ -926,7 +926,7 @@ export function InterviewForum() {
           </div>
 
           {/* Quick Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[#161B22]">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-[#161B22]">
             <span className="text-[10px] font-bold font-mono text-[#6B7280] uppercase tracking-wider block shrink-0 mr-2">Quick Tags:</span>
             {popularTags.slice(0, 8).map(tag => {
               const isActive = selectedTag === tag;

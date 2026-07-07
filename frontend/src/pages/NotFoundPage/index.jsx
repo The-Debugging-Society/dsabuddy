@@ -20,7 +20,7 @@ export function NotFoundPage() {
             Error 404
           </p>
           <h1 className="text-7xl sm:text-8xl font-serif italic text-white leading-none">
-            Lost<span className="text-(--primary-color) not-italic font-bold">?</span>
+            Lost<span className="text-primary not-italic font-bold">?</span>
           </h1>
           <p className="mt-6 text-gray-400 text-lg leading-relaxed">
             This page doesn't exist — maybe it was moved, or the link's just wrong.

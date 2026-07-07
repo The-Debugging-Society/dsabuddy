@@ -14,6 +14,7 @@ async function main() {
   const tagSlugs = parseCsv(process.env.SYNC_TAGS || "");
   const dryRun = process.env.DRY_RUN === "true";
   const maxItems = Number(process.env.SYNC_MAX_ITEMS || 200);
+  const maxSkip = Number(process.env.SYNC_MAX_SKIP || 2000);
 
   console.log("[syncProblems] platforms =", platforms);
   console.log("[syncProblems] tags =", tagSlugs.length ? tagSlugs : "(all)");
@@ -25,6 +26,7 @@ async function main() {
       platforms,
       tagSlugs,
       maxItems,
+      maxSkip,
       dryRun,
     });
     console.log("[syncProblems] done:", JSON.stringify(result, null, 2));

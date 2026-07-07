@@ -227,7 +227,7 @@ export default function QuestionsPage() {
             return (
               <div
                 key={q.id}
-                onClick={() => navigate(`/questions/${q.id}`)}
+                onClick={() => navigate(`/questions/${q.slug}`)}
                 className={`${ROW_GRID} cursor-pointer items-center border-b border-[#111120] px-5 py-3.5 transition-colors hover:bg-[#0d0d1f]`}
               >
                 {/* Checklist */}
