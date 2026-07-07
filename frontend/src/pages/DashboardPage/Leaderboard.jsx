@@ -9,6 +9,7 @@ const LEADERBOARD_FILTERS = [
   { id: "college", label: "College" },
   { id: "branch", label: "Branch" },
   { id: "year", label: "Year" },
+  { id: "class", label: "Class" },
 ];
 
 export function Leaderboard({ user }) {
@@ -75,6 +76,7 @@ export function Leaderboard({ user }) {
     ?? (activeFilter === 'college' ? currentUser.collegeRank
       : activeFilter === 'branch' ? currentUser.branchRank
       : activeFilter === 'year' ? currentUser.yearRank
+      : activeFilter === 'class' ? currentUser.classRank
       : currentUser.overallRank) ?? '-';
   const currentUserDisplayValue = matchedUser
     ? (matchedUser.displayValue !== undefined && matchedUser.displayValue !== null ? matchedUser.displayValue : (matchedUser.points || 0))
@@ -151,7 +153,9 @@ export function Leaderboard({ user }) {
         <div className="bg-[#161B22] border border-[#1F2937] rounded-xl p-5 flex items-center justify-between gap-6">
           <div className="flex flex-col gap-1">
             <p className="text-[#6B7280] text-xs font-mono tracking-wider uppercase">YOUR POSITION</p>
-            <p className="text-xs text-gray-500 font-mono">In Active College Cohort</p>
+            <p className="text-xs text-gray-500 font-mono">
+              In Active {activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Cohort
+            </p>
             <div className="flex items-baseline gap-2 mt-2">
               <h2 className="text-white text-5xl font-bold">#{currentUserRank}</h2>
               <div className="flex items-center gap-1 text-[#10B981] text-sm font-mono">
@@ -195,8 +199,8 @@ export function Leaderboard({ user }) {
         </div>
       )}
 
-      <div className="bg-[#161B22] rounded-xl p-6 border border-[#1F2937]">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 border-b border-[#1F2937]/50 pb-6">
+      <div className="p-2">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 border-b border-[#1F2937]/50 pb-4">
           {/* Main Filters (College, Branch, Year) */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">

@@ -11,6 +11,18 @@ const PLATFORM_SORT_MAP = {
 export const enrichUserWithRanks = async (user) => {
   if (!user) return null;
   const points = user.points ?? 0;
+
+  if (points <= 0) {
+    return {
+      ...user,
+      overallRank: null,
+      collegeRank: null,
+      branchRank: null,
+      yearRank: null,
+      classRank: null,
+    };
+  }
+
   const cacheKey = `user:ranks:${user.id}:${points}`;
 
   try {
@@ -25,7 +37,7 @@ export const enrichUserWithRanks = async (user) => {
     console.error("Error reading user ranks cache:", err);
   }
 
-  const [overallRank, collegeRank, branchRank, yearRank] = await Promise.all([
+  const [overallRank, collegeRank, branchRank, yearRank, classRank] = await Promise.all([
     prisma.user.count({
       where: { points: { gt: points } },
     }).then(n => n + 1),
@@ -44,6 +56,16 @@ export const enrichUserWithRanks = async (user) => {
           where: { year: user.year, points: { gt: points } },
         }).then(n => n + 1)
       : Promise.resolve(null),
+    (user.branch && user.year)
+      ? prisma.user.count({
+          where: {
+            branch: user.branch,
+            year: user.year,
+            ...(user.college ? { college: user.college } : {}),
+            points: { gt: points },
+          },
+        }).then(n => n + 1)
+      : Promise.resolve(null),
   ]);
 
   const ranks = {
@@ -51,7 +73,9 @@ export const enrichUserWithRanks = async (user) => {
     collegeRank,
     branchRank,
     yearRank,
+    classRank,
   };
+
 
   try {
     await setCache(cacheKey, ranks, 300); // cache for 5 minutes
@@ -93,6 +117,13 @@ export const getLeaderboard = async (req, res) => {
     } else if (filter === "year" && requestingUser.year) {
       whereClause.year = requestingUser.year;
       filterValue = requestingUser.year;
+    } else if (filter === "class" && requestingUser.branch && requestingUser.year) {
+      whereClause.branch = requestingUser.branch;
+      whereClause.year = requestingUser.year;
+      if (requestingUser.college) {
+        whereClause.college = requestingUser.college;
+      }
+      filterValue = `${requestingUser.college || "none"}_${requestingUser.branch}_${requestingUser.year}`;
     }
   }
   const cacheKey = `leaderboard:${filter ?? "all"}:${filterValue ?? "none"}:${sortBy ?? "points"}:${take}:${skip}`;
@@ -234,13 +265,16 @@ export const getUserByUserName = async (req, res) => {
   if (!user) return res.status(404).json({ error: "User not found" });
 
   // Dynamically compute ranks via efficient COUNT queries
+  const points = user.points ?? 0;
   const [overallRank, branchRank, yearRank, solvedQuestionsCount, solvedSheetProblemsCount] = await Promise.all([
-    prisma.user.count({ where: { points: { gt: user.points } } }).then(n => n + 1),
-    user.branch
-      ? prisma.user.count({ where: { branch: user.branch, points: { gt: user.points } } }).then(n => n + 1)
+    points > 0
+      ? prisma.user.count({ where: { points: { gt: points } } }).then(n => n + 1)
       : Promise.resolve(null),
-    user.year
-      ? prisma.user.count({ where: { year: user.year, points: { gt: user.points } } }).then(n => n + 1)
+    (points > 0 && user.branch)
+      ? prisma.user.count({ where: { branch: user.branch, points: { gt: points } } }).then(n => n + 1)
+      : Promise.resolve(null),
+    (points > 0 && user.year)
+      ? prisma.user.count({ where: { year: user.year, points: { gt: points } } }).then(n => n + 1)
       : Promise.resolve(null),
     prisma.userQuestionBank.count({ where: { userId: user.id, status: "SOLVED" } }),
     prisma.userSheetProblem.count({ where: { userId: user.id, status: "SOLVED" } }),
@@ -252,7 +286,7 @@ export const getUserByUserName = async (req, res) => {
       overallRank, 
       branchRank, 
       yearRank,
-      solvedQuestionsCount: solvedQuestionsCount ?? 0, // wait, let's use the actual counts
+      solvedQuestionsCount: solvedQuestionsCount ?? 0,
       solvedSheetProblemsCount: solvedSheetProblemsCount ?? 0
     },
   });
