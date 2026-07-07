@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Camera, CheckCircle2, AlertCircle, User, Link2, GraduationCap } from 'lucide-react';
+import { Camera, CheckCircle2, AlertCircle, User, Link2, GraduationCap, Share2 } from 'lucide-react';
 import { Card, Button, Input } from '@/components/common';
 import { userService, platformService } from '@/api/services';
-import { BRANCHES, PLATFORMS } from '@/config/constants';
+import { BRANCHES, PLATFORMS, SOCIAL_LINKS } from '@/config/constants';
 import { PLATFORMS as PLATFORM_ICONS } from '@/utils/platformUtils';
+import { SocialIcon } from '@/utils/socialIcons';
 import { useUserStore } from '@/store/useUserStore';
 import apiClient from '@/api/client';
 
@@ -26,6 +27,16 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
     avatar: user?.avatarUrl || user?.avatar || '',
     branch: user?.branch || '',
   });
+
+  const getMappedSocialLinks = (links) => {
+    const source = links || {};
+    return SOCIAL_LINKS.reduce((acc, s) => {
+      acc[s.id] = source[s.id] || '';
+      return acc;
+    }, {});
+  };
+
+  const [socialLinksData, setSocialLinksData] = useState(() => getMappedSocialLinks(user?.socialLinks));
 
   const getMappedPlatforms = (platList) => {
     return PLATFORMS.map(defaultPlatform => {
@@ -97,6 +108,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
         avatar: user.avatarUrl || user.avatar || '',
         branch: user.branch || '',
       });
+      setSocialLinksData(getMappedSocialLinks(user.socialLinks));
     }
   }, [user]);
 
@@ -108,6 +120,10 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
 
   const handleProfileChange = (field, value) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSocialLinkChange = (id, value) => {
+    setSocialLinksData(prev => ({ ...prev, [id]: value }));
   };
 
   const handlePlatformChange = (platformId, field, value) => {
@@ -127,6 +143,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
         name: profileData.name,
         avatarUrl: profileData.avatar || null,
         branch: profileData.branch || null,
+        socialLinks: socialLinksData,
       });
       if (res?.user) {
         useUserStore.getState().setUser(res.user);
@@ -296,6 +313,31 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
                   Branch can only be changed once after onboarding.
                 </p>
               )}
+            </div>
+
+            <div className="pt-2 border-t border-[#1F2937]/60">
+              <div className="flex items-center gap-2 mb-3 mt-4">
+                <Share2 size={14} className="text-[#35b9f1]" />
+                <label className="block text-[#E5E7EB] text-sm font-medium">Social Links</label>
+              </div>
+              <div className="space-y-3">
+                {SOCIAL_LINKS.map((social) => (
+                  <div key={social.id} className="flex items-center gap-2.5">
+                    <div
+                      className="w-9 h-9 rounded-lg bg-[#0D1117] border border-[#1F2937] flex items-center justify-center shrink-0"
+                      style={{ color: social.color }}
+                    >
+                      <SocialIcon id={social.id} className="w-4 h-4" />
+                    </div>
+                    <Input
+                      value={socialLinksData[social.id]}
+                      onChange={(e) => handleSocialLinkChange(social.id, e.target.value)}
+                      placeholder={social.placeholder}
+                      inputClassName="py-2 px-3 border-[#1F2937] text-sm bg-[#0D1117]"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {profileError && (

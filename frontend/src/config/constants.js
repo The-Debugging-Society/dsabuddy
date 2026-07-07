@@ -97,6 +97,16 @@ export const STATUS_COLORS = {
   SKIPPED:   { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8',  border: 'rgba(148,163,184,0.3)' },
 };
 
+/** Single source of truth for all supported social/portfolio links shown on a profile. */
+export const SOCIAL_LINKS = [
+  { id: 'linkedin',  name: 'LinkedIn',  placeholder: 'https://linkedin.com/in/username',  color: '#0A66C2' },
+  { id: 'github',    name: 'GitHub',    placeholder: 'https://github.com/username',        color: '#E5E7EB' },
+  { id: 'twitter',   name: 'X (Twitter)', placeholder: 'https://x.com/username',           color: '#1DA1F2' },
+  { id: 'instagram', name: 'Instagram', placeholder: 'https://instagram.com/username',      color: '#E1306C' },
+  { id: 'youtube',   name: 'YouTube',   placeholder: 'https://youtube.com/@username',       color: '#FF0000' },
+  { id: 'portfolio', name: 'Portfolio', placeholder: 'https://yourwebsite.com',             color: '#35b9f1' },
+];
+
 /** Human-readable label for each source platform enum value. */
 export const PLATFORM_LABELS = {
   LEETCODE:   'LeetCode',

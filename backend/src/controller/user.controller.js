@@ -234,6 +234,7 @@ export const getUserByUserName = async (req, res) => {
       role: true,
       points: true,
       createdAt: true,
+      socialLinks: true,
       platformConnections: {
         select: {
           id: true,
@@ -305,6 +306,12 @@ export const updateMe = async (req, res) => {
 
   const updateData = { ...req.body };
 
+  if (updateData.socialLinks !== undefined) {
+    updateData.socialLinks = Object.fromEntries(
+      Object.entries(updateData.socialLinks).filter(([, value]) => value)
+    );
+  }
+
   if (updateData.branch !== undefined && updateData.branch !== currentUser.branch) {
     if (currentUser.branch) {
       if (currentUser.branchChangesCount >= 1) {
@@ -330,6 +337,7 @@ export const updateMe = async (req, res) => {
       points: true,
       overallRank: true,
       branchChangesCount: true,
+      socialLinks: true,
       updatedAt: true,
     },
   });

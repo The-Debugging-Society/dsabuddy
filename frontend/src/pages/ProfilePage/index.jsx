@@ -6,7 +6,8 @@ import { useUserStore } from '@/store/useUserStore';
 import { Trophy, Award, Calendar, School, BookOpen, Activity, AlertCircle, ArrowUpRight, Share2, CheckCircle2, Link2 } from 'lucide-react';
 import { Button, StatCard, Seo } from '@/components/common';
 
-import { PLATFORMS } from '@/config/constants';
+import { PLATFORMS, SOCIAL_LINKS } from '@/config/constants';
+import { SocialIcon } from '@/utils/socialIcons';
 import { SITE, absoluteUrl } from '@/config/seo';
 
 // Dynamic rating history generator
@@ -318,6 +319,11 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
   }, [activeConnection]);
 
   const hasTopics = useMemo(() => topics.some((t) => t.count > 0), [topics]);
+
+  const connectedSocialLinks = useMemo(() => {
+    const links = profile?.socialLinks || {};
+    return SOCIAL_LINKS.filter((s) => links[s.id]).map((s) => ({ ...s, url: links[s.id] }));
+  }, [profile]);
 
   // Skill Radar calculations
   const radarPoints = useMemo(() => {
@@ -654,6 +660,24 @@ export default function ProfilePage({ embedded = false, username: usernameProp }
                         <h1 className="text-white text-3xl font-sans font-bold tracking-tight">{profile.name}</h1>
                       </div>
                       <p className="text-[#9CA3AF] text-sm font-mono mt-1">@{profile.userName}</p>
+
+                      {connectedSocialLinks.length > 0 && (
+                        <div className="flex items-center justify-center md:justify-start gap-2 mt-3">
+                          {connectedSocialLinks.map((social) => (
+                            <a
+                              key={social.id}
+                              href={social.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={social.name}
+                              className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-[#9CA3AF] hover:text-white hover:border-neutral-700 transition-colors"
+                              style={{ color: social.color }}
+                            >
+                              <SocialIcon id={social.id} className="w-4 h-4" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 text-xs text-[#9CA3AF] font-mono">

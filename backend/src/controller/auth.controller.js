@@ -196,6 +196,7 @@ export const me = async (req, res) => {
       points: true,
       overallRank: true,
       branchChangesCount: true,
+      socialLinks: true,
     },
   });
 

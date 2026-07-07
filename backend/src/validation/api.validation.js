@@ -25,6 +25,19 @@ export const userNameParamSchema = z.object({
   userName: z.string().min(1),
 });
 
+const socialLinkUrlSchema = z.union([z.string().trim().url().max(300), z.literal("")]);
+
+export const socialLinksSchema = z
+  .object({
+    linkedin: socialLinkUrlSchema.optional(),
+    github: socialLinkUrlSchema.optional(),
+    twitter: socialLinkUrlSchema.optional(),
+    instagram: socialLinkUrlSchema.optional(),
+    youtube: socialLinkUrlSchema.optional(),
+    portfolio: socialLinkUrlSchema.optional(),
+  })
+  .strict();
+
 export const updateMeBodySchema = z
   .object({
     name: z.string().min(1).optional(),
@@ -32,6 +45,7 @@ export const updateMeBodySchema = z
     avatarUrl: z.string().url().or(z.string().startsWith("data:")).optional().nullable(),
     college: z.string().min(1).optional().nullable(),
     branch: z.string().min(1).optional().nullable(),
+    socialLinks: socialLinksSchema.optional(),
     // year is derived from email at signup and not user-editable
   })
   .strict();
