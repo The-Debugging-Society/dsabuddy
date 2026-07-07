@@ -1,56 +1,93 @@
 import { prisma } from "../config/prismaClient.js";
 import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../utils/cache.js";
 
-export const listCompanies = async (req, res) => {
-  const take = Number(req.query.take ?? 100);
-  const skip = Number(req.query.skip ?? 0);
+const DEFAULT_ELIGIBLE_BRANCHES = ["cs", "it", "ece", "mac"];
 
-  const cacheKey = `companies:${take}:${skip}`;
+const buildCompaniesWhere = ({ search, branch, cgpa }) => {
+  const andFilters = [
+    {
+      OR: [
+        { questionCount: { gt: 0 } },
+        { roundsInfo: { not: null } },
+      ],
+    },
+  ];
+
+  if (search) {
+    andFilters.push({ name: { contains: search, mode: "insensitive" } });
+  }
+
+  if (branch && branch !== "all") {
+    const targetCode = branch.toLowerCase();
+    const branchOr = [
+      { placements: { some: { eligibleBranches: { has: targetCode } } } },
+      { placements: { some: { eligibleBranches: { has: "all" } } } },
+    ];
+    if (DEFAULT_ELIGIBLE_BRANCHES.includes(targetCode)) {
+      branchOr.push({ placements: { none: {} } });
+    }
+    andFilters.push({ OR: branchOr });
+  }
+
+  if (cgpa !== undefined) {
+    andFilters.push({
+      OR: [
+        { placements: { none: {} } },
+        { placements: { some: { minCgpa: { lte: cgpa } } } },
+        { placements: { every: { minCgpa: null } } },
+      ],
+    });
+  }
+
+  return { AND: andFilters };
+};
+
+export const listCompanies = async (req, res) => {
+  const take = Number(req.query.take ?? 12);
+  const skip = Number(req.query.skip ?? 0);
+  const search = req.query.search;
+  const branch = req.query.branch;
+  const cgpa = req.query.cgpa;
+
+  const cacheKey = `companies:${take}:${skip}:${search ?? ""}:${branch ?? ""}:${cgpa ?? ""}`;
 
   const cachedCompanies = await getCache(cacheKey);
 
   if (cachedCompanies) {
     return res.status(200).json(cachedCompanies);
   }
-  const companies = await prisma.company.findMany({
-    take,
-    skip,
-    where: {
-      OR: [
-        {
-          questionCount: {
-            gt: 0,
-          },
-        },
-        {
-          roundsInfo: {
-            not: null,
-          },
-        },
-      ],
-    },
-    orderBy: [{ name: "asc" }],
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      questionCount: true,
-      logoUrl: true,
-      placements: {
-        select: {
-          eligibleBranches: true,
-          minCgpa: true,
-        },
-      },
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
 
-  const response = { companies };
+  const where = buildCompaniesWhere({ search, branch, cgpa });
+
+  const [companies, total] = await Promise.all([
+    prisma.company.findMany({
+      take,
+      skip,
+      where,
+      orderBy: [{ name: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        questionCount: true,
+        logoUrl: true,
+        placements: {
+          select: {
+            eligibleBranches: true,
+            minCgpa: true,
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
+    prisma.company.count({ where }),
+  ]);
+
+  const response = { companies, total, take, skip };
 
   await setCache(cacheKey, response, 300);
-  
+
   return res.status(200).json(response);
 };
 

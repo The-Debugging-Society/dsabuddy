@@ -13,6 +13,14 @@ export const paginationQuerySchema = z.object({
   sortBy: z.enum(["all", "leetcode", "codeforces", "codechef"]).optional(),
 });
 
+export const listCompaniesQuerySchema = z.object({
+  take: z.coerce.number().int().min(1).max(100).optional(),
+  skip: z.coerce.number().int().min(0).optional(),
+  search: z.string().trim().min(1).max(100).optional(),
+  branch: z.string().trim().min(1).max(20).optional(),
+  cgpa: z.coerce.number().min(0).max(10).optional(),
+});
+
 export const userNameParamSchema = z.object({
   userName: z.string().min(1),
 });

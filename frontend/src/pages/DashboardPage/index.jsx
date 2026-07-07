@@ -30,14 +30,13 @@ export function DashboardPage() {
     if (path.startsWith("/dashboard/profile")) return "profile";
     return "dashboard";
   });
-  const [selectedQuestionSlug, setSelectedQuestionSlug] = useState("two-sum");
+  const [selectedQuestionSlug] = useState("two-sum");
   const storeUser = useUserStore((state) => state.user);
   const [firstLoad, setFirstLoad] = useState(!storeUser);
 
   const setUser = useUserStore((state) => state.setUser);
   const [platforms, setPlatforms] = useState([]);
   const [analytics, setAnalytics] = useState(null);
-  const [companies, setCompanies] = useState([]);
   const [error, setError] = useState(null);
 
   const handleLogout = async () => {
@@ -86,10 +85,9 @@ export function DashboardPage() {
       const u = useUserStore.getState().user;
       const fetchUser = force || !u;
 
-      const [platRes, analyticsRes, compRes, userRes] = await Promise.all([
+      const [platRes, analyticsRes, userRes] = await Promise.all([
         apiClient.get('/platform-connections'),
         apiClient.get('/daily-activity/analytics'),
-        apiClient.get('/companies'),
         fetchUser ? apiClient.get('/auth/me') : Promise.resolve(null),
       ]);
 
@@ -97,9 +95,6 @@ export function DashboardPage() {
       setPlatforms(p);
 
       setAnalytics(analyticsRes);
-
-      const companiesArray = Array.isArray(compRes) ? compRes : compRes.companies || [];
-      setCompanies(companiesArray);
 
       const updatedUser = userRes ? (userRes.user || userRes) : u;
       if (updatedUser) {
@@ -110,7 +105,6 @@ export function DashboardPage() {
         user: updatedUser,
         platforms: p,
         analytics: analyticsRes,
-        companies: companiesArray,
       };
 
       try {
@@ -140,12 +134,6 @@ export function DashboardPage() {
         if (parsed.user) setUser(parsed.user);
         if (parsed.platforms) setPlatforms(parsed.platforms);
         if (parsed.analytics) setAnalytics(parsed.analytics);
-        if (parsed.companies) {
-          const companiesArray = Array.isArray(parsed.companies)
-            ? parsed.companies
-            : parsed.companies.companies || [];
-          setCompanies(companiesArray);
-        }
       }
     } catch (e) {
       console.error("Failed to load dashboard cache", e);
@@ -153,11 +141,6 @@ export function DashboardPage() {
 
     fetchData();
   }, [fetchData, setUser]);
-
-  const handleSelectQuestion = (slug) => {
-    setSelectedQuestionSlug(slug);
-    setActiveSection("problems");
-  };
 
   const renderSection = () => {
     if (firstLoad && !storeUser) {
@@ -176,9 +159,7 @@ export function DashboardPage() {
       case "problems":
         return <QuestionView titleSlug={selectedQuestionSlug} />;
       case "pyqs":
-        return (
-          <PYQs companies={companies} onSelectQuestion={handleSelectQuestion} />
-        );
+        return <PYQs />;
       case "sheets":
         return <Sheets />;
       case "revision":

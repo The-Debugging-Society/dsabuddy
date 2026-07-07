@@ -8,7 +8,7 @@ import {
   createCompanyBodySchema,
   createInterviewSetBodySchema,
   idParamSchema,
-  paginationQuerySchema,
+  listCompaniesQuerySchema,
   updateCompanyBodySchema,
   updateInterviewSetBodySchema,
   upsertCompanyQuestionBodySchema,
@@ -32,7 +32,7 @@ import {
 
 const router = Router();
 
-router.get("/", validate({ query: paginationQuerySchema }), listCompanies);
+router.get("/", validate({ query: listCompaniesQuerySchema }), listCompanies);
 router.get(
   "/:slug/questions",
   validate({ params: companySlugParamSchema }),

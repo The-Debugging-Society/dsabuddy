@@ -1,86 +1,27 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  BRANCH_CODE_MAP,
-  BRANCH_SHORT_NAMES,
-} from "@/config/constants";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Search,
-  ChevronRight,
-  ChevronLeft,
-  SlidersHorizontal,
-  Plus,
-  MessageSquare,
-  Calendar,
-  Send,
-  ChevronUp,
-  ChevronDown,
-  Trash2,
-} from "lucide-react";
+import { BRANCH_SHORT_NAMES } from "@/config/constants";
 import apiClient from "@/api/client";
+import { companyService } from "@/api/services/companyService";
 import { customCompanyDetails } from "../../data/company_details";
 import Fuse from "fuse.js";
-import { Card, Button, Input, Badge, CreateExperienceFullPage } from "@/components/common";
 import { forumService } from "@/api/services/forumService";
 import { useUserStore } from "@/store/useUserStore";
 import {
-  CommentNode,
-  CompanyCard,
-  LogoImage,
+  CompanyDirectory,
+  CompanyHeader,
+  CompanyOverviewTab,
+  CompanyProblemsTab,
+  CompanyExperiencesTab,
   parseMarkdownToHTML,
   buildCommentTree,
   normalizeName,
   getCompanyLogoUrl,
 } from "./components/pyqs";
 
-export function PYQs({ companies }) {
+export function PYQs() {
   const { companyName } = useParams();
   const navigate = useNavigate();
-
-  // Build combined companies map
-  const combinedCompaniesMap = useMemo(() => {
-    const map = {};
-    if (companies && Array.isArray(companies)) {
-      companies.forEach((c) => {
-        const norm = normalizeName(c.name);
-
-        const branchesSet = new Set();
-        let minCgpa = null;
-        if (c.placements && Array.isArray(c.placements)) {
-          c.placements.forEach((p) => {
-            if (p.eligibleBranches) {
-              p.eligibleBranches.forEach((b) => branchesSet.add(b.toLowerCase()));
-            }
-            if (p.minCgpa !== undefined && p.minCgpa !== null) {
-              if (minCgpa === null || p.minCgpa < minCgpa) {
-                minCgpa = p.minCgpa;
-              }
-            }
-          });
-        }
-
-        map[norm] = {
-          name: c.name,
-          questionCount: c.questionCount || 0,
-          hasQuestions: (c.questionCount || 0) > 0,
-          logoUrl: c.logoUrl || getCompanyLogoUrl(c.name),
-          branches: Array.from(branchesSet),
-          minCgpa,
-        };
-      });
-    }
-    return map;
-  }, [companies]);
-
-  const displayCompanies = useMemo(() => {
-    return Object.values(combinedCompaniesMap)
-      .filter((c) => c.questionCount > 0 || customCompanyDetails[normalizeName(c.name)] !== undefined)
-      .sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-      );
-  }, [combinedCompaniesMap]);
 
   const [companySearchInput, setCompanySearchInput] = useState("");
   const [companySearchQuery, setCompanySearchQuery] = useState("");
@@ -114,7 +55,7 @@ export function PYQs({ companies }) {
 
   const getDbBranchCode = (value) => {
     if (!value || value === "all") return "all";
-    
+
     // Normalize and clean string
     const val = value.toLowerCase().replace(/[()]/g, "").trim();
 
@@ -157,47 +98,78 @@ export function PYQs({ companies }) {
     setQuestionPage(1);
   }, [searchQuery, difficultyFilter]);
 
-  const searchedCompanies = useMemo(() => {
-    let filtered = displayCompanies;
+  // ── Directory: fetch one page (12) of companies from the backend at a time ──
+  const [companiesList, setCompaniesList] = useState([]);
+  const [companiesTotal, setCompaniesTotal] = useState(0);
+  const [companiesLoading, setCompaniesLoading] = useState(false);
 
-    if (branchFilter !== "all") {
-      const targetCode = getDbBranchCode(branchFilter);
-      filtered = filtered.filter((company) => {
-        const branches = company.branches || [];
-        if (branches.length === 0) {
-          // If no specific placement data is available, assume typical tech eligibility (CS, IT, ECE, MAC)
-          return ["cs", "it", "ece", "mac"].includes(targetCode);
+  const mapCompanyForDisplay = (c) => {
+    const branchesSet = new Set();
+    let minCgpa = null;
+    if (c.placements && Array.isArray(c.placements)) {
+      c.placements.forEach((p) => {
+        if (p.eligibleBranches) {
+          p.eligibleBranches.forEach((b) => branchesSet.add(b.toLowerCase()));
         }
-        return branches.includes("all") || branches.includes(targetCode);
+        if (p.minCgpa !== undefined && p.minCgpa !== null) {
+          if (minCgpa === null || p.minCgpa < minCgpa) {
+            minCgpa = p.minCgpa;
+          }
+        }
       });
     }
+    return {
+      name: c.name,
+      slug: c.slug,
+      questionCount: c.questionCount || 0,
+      hasQuestions: (c.questionCount || 0) > 0,
+      logoUrl: c.logoUrl || getCompanyLogoUrl(c.name),
+      branches: Array.from(branchesSet),
+      minCgpa,
+    };
+  };
 
-    if (cgpaFilter !== "all") {
-      const userCgpa = parseFloat(cgpaFilter);
-      filtered = filtered.filter((company) => {
-        if (company.minCgpa === undefined || company.minCgpa === null)
-          return true; // No requirement specified
-        return company.minCgpa <= userCgpa;
-      });
-    }
+  useEffect(() => {
+    if (companyName) return; // only browse-list needs this
 
-    if (!companySearchQuery) return filtered;
+    let cancelled = false;
+    const fetchCompaniesPage = async () => {
+      setCompaniesLoading(true);
+      try {
+        const params = {
+          take: companiesPerPage,
+          skip: (companyPage - 1) * companiesPerPage,
+        };
+        if (companySearchQuery) params.search = companySearchQuery;
+        if (branchFilter !== "all") params.branch = getDbBranchCode(branchFilter);
+        if (cgpaFilter !== "all") params.cgpa = cgpaFilter;
 
-    const fuse = new Fuse(filtered, {
-      keys: ["name"],
-      threshold: 0.4,
-    });
-    return fuse.search(companySearchQuery).map((r) => r.item);
-  }, [companySearchQuery, branchFilter, cgpaFilter, displayCompanies]);
+        const data = await companyService.getCompanies(params);
+        if (cancelled) return;
+        const list = Array.isArray(data.companies) ? data.companies : [];
+        setCompaniesList(list.map(mapCompanyForDisplay));
+        setCompaniesTotal(typeof data.total === "number" ? data.total : list.length);
+      } catch (err) {
+        console.error("Failed to fetch companies:", err);
+        if (!cancelled) {
+          setCompaniesList([]);
+          setCompaniesTotal(0);
+        }
+      } finally {
+        if (!cancelled) setCompaniesLoading(false);
+      }
+    };
+
+    fetchCompaniesPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [companyName, companyPage, companySearchQuery, branchFilter, cgpaFilter]);
 
   // ── Route validation and data loading (placed at the top to satisfy Rules of Hooks) ────────────────
   const normSelected = companyName ? normalizeName(companyName) : "";
-  const matchedCompany = companyName
-    ? Object.values(combinedCompaniesMap).find(
-        (c) => normalizeName(c.name) === normSelected,
-      )
-    : null;
-  const selectedCompany = matchedCompany ? matchedCompany.name : "";
+  const [companyDetail, setCompanyDetail] = useState(null);
+  const selectedCompany = companyDetail ? companyDetail.name : (companyName || "");
 
   const [questions, setQuestions] = useState([]);
   const [placementsInfo, setPlacementsInfo] = useState([]);
@@ -214,6 +186,7 @@ export function PYQs({ companies }) {
     if (!companyName || !normSelected) {
       setQuestions([]);
       setPlacementsInfo([]);
+      setCompanyDetail(null);
       setMetadata({
         eligibility_criteria: "Not specified",
         rounds_info: "Not specified",
@@ -234,6 +207,7 @@ export function PYQs({ companies }) {
 
         if (compRes.company) {
           const c = compRes.company;
+          setCompanyDetail(c);
           setMetadata({
             eligibility_criteria: c.eligibilityCriteria || "Not specified",
             rounds_info: c.roundsInfo || "Not specified",
@@ -267,6 +241,7 @@ export function PYQs({ companies }) {
         }
       } catch (err) {
         console.error("Failed to fetch company details:", err);
+        setCompanyDetail(null);
       } finally {
         setLoadingCompanyData(false);
       }
@@ -347,7 +322,7 @@ export function PYQs({ companies }) {
     e.stopPropagation();
     try {
       const data = await forumService.votePost(postId, value);
-      
+
       // Update details view state if open
       if (selectedExperience && selectedExperience.id === postId) {
         setSelectedExperience(prev => ({
@@ -409,7 +384,7 @@ export function PYQs({ companies }) {
   const handleAddTopComment = async (e) => {
     e.preventDefault();
     if (!commentContent.trim() || !selectedExperience) return;
-    
+
     try {
       setSubmittingComment(true);
       await handleAddCommentOrReply(null, commentContent);
@@ -435,7 +410,7 @@ export function PYQs({ companies }) {
     if (!selectedExperience) return;
     try {
       await forumService.deleteComment(commentId);
-      
+
       const getDescendantIds = (cId, allComments) => {
         const directChildren = allComments.filter(c => c.parentId === cId);
         let ids = [cId];
@@ -494,8 +469,8 @@ export function PYQs({ companies }) {
   const filteredExperiences = useMemo(() => {
     if (!experienceSearchQuery) return experiences;
     const query = experienceSearchQuery.toLowerCase();
-    return experiences.filter(exp => 
-      exp.title?.toLowerCase().includes(query) || 
+    return experiences.filter(exp =>
+      exp.title?.toLowerCase().includes(query) ||
       exp.content?.toLowerCase().includes(query) ||
       exp.author?.name?.toLowerCase().includes(query)
     );
@@ -655,13 +630,8 @@ export function PYQs({ companies }) {
     return result;
   }, [searchQuery, difficultyFilter, questions, fuseProblems]);
 
-  const paginatedCompanies = useMemo(() => {
-    const startIndex = (companyPage - 1) * companiesPerPage;
-    return searchedCompanies.slice(startIndex, startIndex + companiesPerPage);
-  }, [searchedCompanies, companyPage, companiesPerPage]);
-
   const totalCompanyPages =
-    Math.ceil(searchedCompanies.length / companiesPerPage) || 1;
+    Math.ceil(companiesTotal / companiesPerPage) || 1;
 
   const paginatedQuestions = useMemo(() => {
     const startIndex = (questionPage - 1) * questionsPerPage;
@@ -674,269 +644,41 @@ export function PYQs({ companies }) {
   // ── Directory landing view (conditional rendering moved here, AFTER all hooks) ─────────────────
   if (!companyName) {
     return (
-      <div className="space-y-8 pb-16">
-        <div>
-          <h1 className="text-white text-4xl font-normal italic mb-2 font-serif">
-            Company Placement Archives
-          </h1>
-          <p className="text-[#9CA3AF] text-sm font-medium">
-            Explore recruitment pipelines, eligibility criteria, and past year
-            interview questions for top tech employers.
-          </p>
-        </div>
+      <CompanyDirectory
+        companySearchInput={companySearchInput}
+        setCompanySearchInput={setCompanySearchInput}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        branchFilter={branchFilter}
+        setBranchFilter={setBranchFilter}
+        cgpaFilter={cgpaFilter}
+        setCgpaFilter={setCgpaFilter}
+        companySearchQuery={companySearchQuery}
+        companiesList={companiesList}
+        companiesTotal={companiesTotal}
+        companiesLoading={companiesLoading}
+        companyPage={companyPage}
+        setCompanyPage={setCompanyPage}
+        companiesPerPage={companiesPerPage}
+        totalCompanyPages={totalCompanyPages}
+        onCompanyClick={(company) => navigate(`/dashboard/pyqs/${company.name}`)}
+      />
+    );
+  }
 
-        {/* Search & Filter Controls */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-              <input
-                type="text"
-                placeholder="Search companies (e.g., Goldman Sachs, JPMorgan, Apple...)"
-                value={companySearchInput}
-                onChange={(e) => setCompanySearchInput(e.target.value)}
-                className="w-full bg-[#161B22] border border-[#1F2937] rounded-xl pl-11 pr-4 py-2.5 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[#35b9f1]/40 focus:ring-1 focus:ring-[#35b9f1]/40 transition-all"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer font-mono uppercase ${
-                showFilters || branchFilter !== "all" || cgpaFilter !== "all"
-                  ? "bg-[#35b9f1]/10 border-[#35b9f1] text-[#35b9f1]"
-                  : "bg-[#161B22] border-[#1F2937] text-neutral-400 hover:text-neutral-200 hover:border-neutral-800"
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span>Filters</span>
-              {(branchFilter !== "all" || cgpaFilter !== "all") && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[#35b9f1] shadow-[0_0_8px_#35b9f1]" />
-              )}
-            </button>
-          </div>
-
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="bg-[#161B22]/50 border border-[#1F2937] rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-5 transition-all duration-200">
-              {/* Branch Selector */}
-              <div>
-                <label className="block text-[10px] text-neutral-400 font-bold uppercase mb-2 font-mono tracking-wider">
-                  Eligible Branch
-                </label>
-                <select
-                  value={branchFilter}
-                  onChange={(e) => setBranchFilter(e.target.value)}
-                  className="w-full bg-[#0D1117] border border-[#1F2937] text-xs text-neutral-200 rounded-lg p-2.5 focus:outline-none focus:border-[#35b9f1]/40 focus:ring-1 focus:ring-[#35b9f1]/40 transition-all cursor-pointer"
-                >
-                  <option value="all">ALL BRANCHES</option>
-                  {Object.entries(BRANCH_CODE_MAP).map(([name, code]) => (
-                    <option key={code} value={code}>
-                      {name} ({code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* CGPA Selector */}
-              <div>
-                <label className="block text-[10px] text-neutral-400 font-bold uppercase mb-2 font-mono tracking-wider">
-                  Max CGPA Required (Your CGPA)
-                </label>
-                <select
-                  value={cgpaFilter}
-                  onChange={(e) => setCgpaFilter(e.target.value)}
-                  className="w-full bg-[#0D1117] border border-[#1F2937] text-xs text-neutral-200 rounded-lg p-2.5 focus:outline-none focus:border-[#35b9f1]/40 focus:ring-1 focus:ring-[#35b9f1]/40 transition-all cursor-pointer"
-                >
-                  <option value="all">ANY CGPA</option>
-                  {["9.5", "9.0", "8.5", "8.0", "7.5", "7.0", "6.5", "6.0"].map(
-                    (cgpa) => (
-                      <option key={cgpa} value={cgpa}>
-                        {cgpa} or below
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* Records Status Bar */}
-          {(branchFilter !== "all" ||
-            cgpaFilter !== "all" ||
-            companySearchQuery) && (
-            <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono bg-neutral-950/20 border border-neutral-900/60 px-4 py-2 rounded-lg">
-              <span>
-                Found{" "}
-                <strong className="text-neutral-300 font-bold">
-                  {searchedCompanies.length}
-                </strong>{" "}
-                matching{" "}
-                {searchedCompanies.length === 1 ? "company" : "companies"}
-              </span>
-              <button
-                onClick={() => {
-                  setBranchFilter("all");
-                  setCgpaFilter("all");
-                  setCompanySearchInput("");
-                  setCompanySearchQuery("");
-                }}
-                className="text-[#35b9f1] hover:underline cursor-pointer font-bold uppercase text-[10px] tracking-wider"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          )}
-        </div>
-
-        {searchedCompanies.length > 0 ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {paginatedCompanies.map((company) => (
-                <CompanyCard
-                  key={company.name}
-                  company={company}
-                  onClick={() => navigate(`/dashboard/pyqs/${company.name}`)}
-                />
-              ))}
-            </div>
-
-            {/* Pagination Controls */}
-            {totalCompanyPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-900 pt-6 font-mono text-xs">
-                <span className="text-neutral-500">
-                  Showing{" "}
-                  {Math.min(
-                    searchedCompanies.length,
-                    (companyPage - 1) * companiesPerPage + 1,
-                  )}
-                  -
-                  {Math.min(
-                    searchedCompanies.length,
-                    companyPage * companiesPerPage,
-                  )}{" "}
-                  of {searchedCompanies.length} companies
-                </span>
-                <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                  <button
-                    disabled={companyPage === 1}
-                    onClick={() =>
-                      setCompanyPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    className="p-2 border border-neutral-900 bg-neutral-950/20 text-neutral-400 rounded-lg hover:border-neutral-800 disabled:opacity-30 disabled:hover:border-neutral-900 cursor-pointer disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  {(() => {
-                    const pages = [];
-                    const maxVisible = 5;
-                    let start = Math.max(1, companyPage - 2);
-                    let end = Math.min(
-                      totalCompanyPages,
-                      start + maxVisible - 1,
-                    );
-                    if (end - start + 1 < maxVisible) {
-                      start = Math.max(1, end - maxVisible + 1);
-                    }
-
-                    if (start > 1) {
-                      pages.push(
-                        <button
-                          key={1}
-                          onClick={() => setCompanyPage(1)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-900 hover:border-neutral-800 text-neutral-400 transition-all cursor-pointer"
-                        >
-                          1
-                        </button>,
-                      );
-                      if (start > 2) {
-                        pages.push(
-                          <span
-                            key="dots-start"
-                            className="px-1 text-neutral-600"
-                          >
-                            ...
-                          </span>,
-                        );
-                      }
-                    }
-
-                    for (let i = start; i <= end; i++) {
-                      pages.push(
-                        <button
-                          key={i}
-                          onClick={() => setCompanyPage(i)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
-                            companyPage === i
-                              ? "bg-[#35b9f1]/10 border-[#35b9f1] text-[#35b9f1] font-bold"
-                              : "border-neutral-900 hover:border-neutral-800 text-neutral-400"
-                          }`}
-                        >
-                          {i}
-                        </button>,
-                      );
-                    }
-
-                    if (end < totalCompanyPages) {
-                      if (end < totalCompanyPages - 1) {
-                        pages.push(
-                          <span
-                            key="dots-end"
-                            className="px-1 text-neutral-600"
-                          >
-                            ...
-                          </span>,
-                        );
-                      }
-                      pages.push(
-                        <button
-                          key={totalCompanyPages}
-                          onClick={() => setCompanyPage(totalCompanyPages)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-900 hover:border-neutral-800 text-neutral-400 transition-all cursor-pointer"
-                        >
-                          {totalCompanyPages}
-                        </button>,
-                      );
-                    }
-                    return pages;
-                  })()}
-
-                  <button
-                    disabled={companyPage === totalCompanyPages}
-                    onClick={() =>
-                      setCompanyPage((prev) =>
-                        Math.min(prev + 1, totalCompanyPages),
-                      )
-                    }
-                    className="p-2 border border-neutral-900 bg-neutral-950/20 text-neutral-400 rounded-lg hover:border-neutral-800 disabled:opacity-30 disabled:hover:border-neutral-900 cursor-pointer disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-16 bg-[#161B22]/30 rounded-2xl border border-dashed border-[#1F2937] transition-all">
-            <p className="text-neutral-400 font-mono text-sm">
-              No companies found matching{" "}
-              {companySearchQuery
-                ? `"${companySearchQuery}"`
-                : "selected criteria"}
-              {branchFilter !== "all"
-                ? ` for branch ${branchFilter === "mac" ? "M&C" : branchFilter.toUpperCase()}`
-                : ""}
-              {cgpaFilter !== "all"
-                ? ` with CGPA requirement <= ${cgpaFilter}`
-                : ""}
-            </p>
-          </div>
-        )}
+  // ── RENDER: loading state must be checked before the not-found state, since
+  // company details now arrive asynchronously instead of from a preloaded list ──
+  if (loadingCompanyData) {
+    return (
+      <div className="min-h-screen bg-[#000000] text-[#E5E7EB] flex flex-col items-center justify-center font-mono text-xs text-neutral-500">
+        <div className="w-8 h-8 border-2 border-neutral-800 border-t-[#35b9f1] rounded-full animate-spin mb-4" />
+        Loading company details...
       </div>
     );
   }
 
   // ── Route validation (conditional rendering moved here, AFTER all hooks) ────────────────────
-  if (companyName && !matchedCompany) {
+  if (companyName && !companyDetail) {
     return (
       <div className="text-center py-16 bg-[#161B22]/30 rounded-2xl border border-dashed border-[#1F2937]">
         <p className="text-white text-lg font-bold">
@@ -951,18 +693,6 @@ export function PYQs({ companies }) {
       </div>
     );
   }
-
-  // ── Difficulty badge styles ─────────────────────────────────────────────────
-  const getDifficultyBadge = (diff) => {
-    const d = diff?.toLowerCase();
-    if (d === "easy")
-      return { cls: "border-[#30D158] text-[#30D158]", label: "EASY" };
-    if (d === "medium")
-      return { cls: "border-[#FF9F0A] text-[#FF9F0A]", label: "MEDIUM" };
-    if (d === "hard")
-      return { cls: "border-[#FF453A] text-[#FF453A]", label: "HARD" };
-    return { cls: "border-[#6B7280] text-[#6B7280]", label: "EASY" };
-  };
 
   // Show timeline from custom.timeline (rich data) or fall back to metadata.rounds (PDF-extracted)
   const hasTimeline =
@@ -986,853 +716,92 @@ export function PYQs({ companies }) {
         .toUpperCase()
     : "";
 
-  // ── RENDER ──────────────────────────────────────────────────────────────────
-  if (loadingCompanyData) {
-    return (
-      <div className="min-h-screen bg-[#000000] text-[#E5E7EB] flex flex-col items-center justify-center font-mono text-xs text-neutral-500">
-        <div className="w-8 h-8 border-2 border-neutral-800 border-t-[#35b9f1] rounded-full animate-spin mb-4" />
-        Loading company details...
-      </div>
-    );
-  }
+  const stats = [
+    { label: "CGPA MIN *", value: getCgpaDisplay() },
+    { label: "ROUNDS", value: getRoundsDisplay() },
+    { label: "PLATFORM", value: getPlatformDisplay() },
+    { label: "BRANCHES", value: getBranchesDisplay() },
+    { label: "DEGREE", value: getDegreeDisplay() },
+  ];
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setDifficultyFilter("all");
+    setSearchInput("");
+    setSearchQuery("");
+  };
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#E5E7EB] pb-20">
-      {/* ── Breadcrumb ── */}
-      <div className="flex items-center gap-2 text-xs tracking-wider uppercase text-neutral-500 mb-6 font-mono">
-        <button
-          onClick={() => navigate("/dashboard/pyqs")}
-          className="hover:text-[#35b9f1] transition-colors cursor-pointer"
-        >
-          Company Mines
-        </button>
-        <ChevronRight className="w-3 h-3 text-neutral-600" />
-        <span className="text-[#35b9f1] font-semibold">
-          {selectedCompany.toUpperCase()}
-        </span>
-      </div>
+      <CompanyHeader
+        onBack={() => navigate("/dashboard/pyqs")}
+        selectedCompany={selectedCompany}
+        companyDetail={companyDetail}
+        initials={initials}
+        stats={stats}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        questionsCount={questions.length}
+      />
 
-      {/* ── Company header ── */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center flex-shrink-0 text-black font-extrabold text-base select-none shadow-md overflow-hidden">
-          {matchedCompany?.logoUrl ? (
-            <LogoImage
-              name={selectedCompany}
-              logoUrl={matchedCompany.logoUrl}
-              size="w-36 h-36 text-base"
-            />
-          ) : (
-            initials
-          )}
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[10px] tracking-widest uppercase text-neutral-500 font-mono">
-            Company Profile
-          </span>
-          <h1 className="text-4xl sm:text-5xl text-white font-normal italic mt-0.5 leading-none font-serif">
-            {selectedCompany}
-          </h1>
-        </div>
-      </div>
-
-      {/* ── Stats grid ── */}
-      <div className="border border-neutral-900 rounded-xl mb-8 bg-neutral-950/20 font-mono">
-        <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-neutral-900">
-          {[
-            { label: "CGPA MIN *", value: getCgpaDisplay() },
-            { label: "ROUNDS", value: getRoundsDisplay() },
-            { label: "PLATFORM", value: getPlatformDisplay() },
-            { label: "BRANCHES", value: getBranchesDisplay() },
-            { label: "DEGREE", value: getDegreeDisplay() },
-          ].map((stat, i) => (
-            <div key={i} className="px-5 py-5 text-center md:text-left">
-              <p className="text-[10px] tracking-widest uppercase text-neutral-500 mb-2">
-                {stat.label}
-              </p>
-              <p
-                className={`text-sm font-semibold tracking-wide ${
-                  i === 0 ? "text-[#35b9f1]" : "text-neutral-200"
-                }`}
-              >
-                {stat.value}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Tab Navigation ── */}
-      <div className="flex items-center gap-0 border-b border-neutral-900 mb-8 font-mono">
-        {[
-          { id: "overview", label: "Overview" },
-          { id: "problems", label: `Problems (${questions.length})` },
-          { id: "experiences", label: "Experiences" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              setDifficultyFilter("all");
-              setSearchInput("");
-              setSearchQuery("");
-            }}
-            className={`px-6 py-3.5 text-xs tracking-widest uppercase transition-all duration-200 cursor-pointer border-b-2 font-bold ${
-              activeTab === tab.id
-                ? "text-[#35b9f1] border-[#35b9f1]"
-                : "text-neutral-500 border-transparent hover:text-neutral-300"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ══════════════════════════════════════════
-          OVERVIEW TAB
-      ══════════════════════════════════════════ */}
       {activeTab === "overview" && (
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* ── Left / Main ── */}
-          <div className="flex-1 min-w-0">
-            {/* Interview Process — only if custom timeline exists */}
-            {hasTimeline && (
-              <div className="mt-12">
-                <p className="text-xs tracking-widest uppercase text-neutral-500 mb-8 font-bold font-mono">
-                  Interview Process
-                </p>
-                <div className="relative border-l border-neutral-800 ml-3 pl-8 space-y-8">
-                  {timelineSteps.map((step, idx) => {
-                    const stepLabel = idx === 0 ? "OA" : `R${idx}`;
-                    const isFirst = idx === 0;
-                    return (
-                      <div key={idx} className="relative group">
-                        {/* Dot indicator on the left line */}
-                        <div
-                          className={`absolute -left-[37px] top-1.5 w-2 h-2 rounded-full border transition-all duration-300 ${
-                            isFirst
-                              ? "bg-[#35b9f1] border-[#35b9f1] shadow-[0_0_8px_#35b9f1]"
-                              : "bg-neutral-900 border-neutral-700"
-                          }`}
-                        />
-
-                        {/* Content */}
-                        <div>
-                          <p className="text-sm tracking-wide mb-2 text-neutral-200 font-mono font-semibold">
-                            <span
-                              className={
-                                isFirst ? "text-[#35b9f1]" : "text-neutral-400"
-                              }
-                            >
-                              {stepLabel}
-                            </span>
-                            <span className="text-neutral-600 mx-2">—</span>
-                            <span className="text-neutral-100">
-                              {step.title}
-                            </span>
-                          </p>
-                          <p className="text-neutral-400 text-sm leading-relaxed max-w-xl">
-                            {step.desc}
-                          </p>
-                          {step.tags && (
-                            <div className="flex gap-2 mt-3 flex-wrap">
-                              {step.tags.map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="text-[10px] tracking-wider uppercase border border-neutral-800 bg-neutral-900/10 text-neutral-400 px-2 py-0.5 rounded font-mono"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Right Sidebar ── */}
-          <div className="w-full lg:w-64 flex-shrink-0 space-y-4 font-mono">
-            {/* Eligibility */}
-            <div className="border border-neutral-900 bg-neutral-950/10 rounded-xl p-5">
-              <p className="text-xs tracking-wider uppercase text-neutral-500 mb-4 font-bold">
-                Eligibility
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-400">CGPA</span>
-                  <span className="text-[#35b9f1] text-xs font-bold">
-                    {getCgpaDisplay()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-400">Backlogs</span>
-                  <span className="text-[#FF453A] text-xs font-bold tracking-wider uppercase">
-                    NONE
-                  </span>
-                </div>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-xs text-neutral-400 whitespace-nowrap">
-                    Branches
-                  </span>
-                  <span className="text-neutral-200 text-xs font-bold tracking-wider uppercase text-right break-words">
-                    {placementStats?.branches?.length > 0 &&
-                    placementStats.branches.includes("all")
-                      ? "ALL OPEN"
-                      : eligibility.branches?.includes("all")
-                        ? "ALL OPEN"
-                        : getBranchesDisplay()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* NSUT Placement History */}
-            {placementStats && (
-              <div className="border border-neutral-900 bg-neutral-950/10 rounded-xl p-5">
-                <p className="text-xs tracking-wider uppercase text-neutral-500 mb-4 font-bold">
-                  Placements
-                </p>
-                {placementStats.maxCtc && (
-                  <div className="mb-4">
-                    <span className="text-xs text-neutral-400 block mb-1">
-                      Max CTC *:
-                    </span>
-                    <span className="text-[#35b9f1] font-normal italic text-2xl font-serif">
-                      {placementStats.maxCtc} LPA
-                    </span>
-                  </div>
-                )}
-                {placementStats.stipend && (
-                  <div className="mb-4">
-                    <span className="text-xs text-neutral-400 block mb-1">
-                      Max Stipend:
-                    </span>
-                    <span className="text-emerald-400 text-sm font-bold">
-                      ₹{placementStats.stipend.toLocaleString()}/mo
-                    </span>
-                  </div>
-                )}
-                {placementStats.roles?.length > 0 && (
-                  <div>
-                    <span className="text-xs text-neutral-400 block mb-1">
-                      Target Roles:
-                    </span>
-                    <span className="text-neutral-200 text-xs">
-                      {placementStats.roles.slice(0, 2).join(", ")}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Popular Topics */}
-            {popularTopics.length > 0 && (
-              <div className="border border-neutral-900 bg-neutral-950/10 rounded-xl p-5">
-                <p className="text-xs tracking-wider uppercase text-neutral-500 mb-4 font-bold">
-                  Popular Topics
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {popularTopics.map((topic, i) => (
-                    <span
-                      key={i}
-                      className="text-xs border border-neutral-900 bg-neutral-950/30 text-neutral-400 px-2.5 py-1 rounded"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Disclaimer Footnote */}
-            <div className="border border-neutral-900/60 bg-neutral-950/5 rounded-xl p-5">
-              <p className="text-[10px] text-neutral-500 leading-relaxed">
-                * Note: CGPA requirements and CTC stats are based on historical
-                placement history and are subject to change for upcoming
-                recruiting seasons.
-              </p>
-            </div>
-
-            {/* CTA */}
-            {questions.length > 0 && (
-              <button
-                onClick={() => setActiveTab("problems")}
-                className="w-full bg-[#35b9f1] hover:bg-[#35b9f1]/90 text-black text-xs tracking-wider uppercase font-extrabold py-3.5 px-4 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-mono"
-              >
-                <span>View {questions.length} Tagged Problems</span>
-                <ChevronRight className="w-4 h-4 text-black" />
-              </button>
-            )}
-          </div>
-        </div>
+        <CompanyOverviewTab
+          hasTimeline={hasTimeline}
+          timelineSteps={timelineSteps}
+          cgpaDisplay={getCgpaDisplay()}
+          branchesDisplay={getBranchesDisplay()}
+          placementStats={placementStats}
+          eligibilityBranches={eligibility.branches}
+          popularTopics={popularTopics}
+          questionsCount={questions.length}
+          onViewProblems={() => setActiveTab("problems")}
+        />
       )}
 
-      {/* ══════════════════════════════════════════
-          PROBLEMS TAB
-      ══════════════════════════════════════════ */}
       {activeTab === "problems" && (
-        <div className="font-mono">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 border-b border-neutral-900 pb-6">
-            <div>
-              <p className="text-neutral-400 text-sm tracking-wide">
-                {custom.subTitle || "Software Engineering Opportunities"}
-              </p>
-            </div>
-            {placementStats?.maxCtc && (
-              <div className="text-left md:text-right">
-                <span className="text-xs text-neutral-500 block mb-1 font-mono">
-                  MAX CTC *
-                </span>
-                <span className="text-[#35b9f1] font-normal italic text-3xl font-serif">
-                  {placementStats.maxCtc} LPA
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Filter pills */}
-          <div className="flex items-center gap-2 flex-wrap mb-6">
-            {["all", "easy", "medium", "hard"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setDifficultyFilter(f)}
-                className={`text-xs tracking-wider uppercase px-4 py-2 rounded-lg border transition-all duration-150 cursor-pointer ${
-                  difficultyFilter === f
-                    ? f === "all"
-                      ? "bg-[#35b9f1] text-black border-[#35b9f1] font-bold"
-                      : f === "easy"
-                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-400 font-bold"
-                        : f === "medium"
-                          ? "bg-amber-500/10 border-amber-500 text-amber-400 font-bold"
-                          : "bg-red-500/10 border-red-500 text-red-400 font-bold"
-                    : "border-neutral-900 text-neutral-500 hover:border-neutral-800 hover:text-neutral-300"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-
-            {/* Search bar */}
-            <div className="ml-auto relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
-              <input
-                type="text"
-                placeholder="Search problems..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="bg-neutral-950 border border-neutral-900 rounded-lg pl-9 pr-4 py-2 text-xs text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-[#35b9f1]/40 transition-all w-48"
-              />
-            </div>
-          </div>
-
-          {/* Questions table */}
-          <div className="border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950/20">
-            {/* Table header */}
-            <div className="grid grid-cols-[4rem_1fr_8rem_5rem] border-b border-neutral-900 bg-neutral-950/60 font-bold">
-              <div className="px-5 py-4 text-xs tracking-wider uppercase text-neutral-500">
-                IDX
-              </div>
-              <div className="px-5 py-4 text-xs tracking-wider uppercase text-neutral-500">
-                Problem
-              </div>
-              <div className="px-5 py-4 text-xs tracking-wider uppercase text-neutral-500 text-center">
-                Difficulty
-              </div>
-              <div className="px-5 py-4 text-xs tracking-wider uppercase text-neutral-500 text-center">
-                Action
-              </div>
-            </div>
-
-            {/* Rows */}
-            {filteredQuestions.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-neutral-500 text-xs tracking-wider uppercase">
-                  No problems match current filters
-                </p>
-              </div>
-            ) : (
-              paginatedQuestions.map((question, index) => {
-                const badge = getDifficultyBadge(question.difficulty);
-                const actualIndex =
-                  (questionPage - 1) * questionsPerPage + index + 1;
-                return (
-                  <div
-                    key={index}
-                    onClick={() =>
-                      question.url &&
-                      window.open(question.url, "_blank", "noopener,noreferrer")
-                    }
-                    className={`grid grid-cols-[4rem_1fr_8rem_5rem] border-b border-neutral-900 last:border-0 hover:bg-neutral-950/40 transition-colors duration-100 ${question.url ? "cursor-pointer" : ""} group`}
-                  >
-                    {/* Index */}
-                    <div className="px-5 py-5 flex items-center">
-                      <span className="text-neutral-500 text-xs font-bold font-mono">
-                        {String(actualIndex).padStart(2, "0")}
-                      </span>
-                    </div>
-                    {/* Problem */}
-                    <div className="px-5 py-5">
-                      <p className="text-neutral-200 text-sm font-semibold group-hover:text-[#35b9f1] transition-colors leading-snug mb-2">
-                        {question.title}
-                      </p>
-                      {question.tags && question.tags.length > 0 && (
-                        <div className="flex gap-2 flex-wrap">
-                          {question.tags.slice(0, 4).map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-[10px] tracking-wider uppercase border border-neutral-900 bg-neutral-950/40 text-neutral-500 px-2 py-0.5 rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    {/* Difficulty */}
-                    <div className="px-5 py-5 flex items-center justify-center">
-                      <span
-                        className={`text-[10px] font-bold tracking-widest uppercase border px-2.5 py-1 rounded ${badge.cls}`}
-                      >
-                        {badge.label}
-                      </span>
-                    </div>
-                    {/* Action */}
-                    <div className="px-5 py-5 flex items-center justify-center">
-                      {question.url && (
-                        <ExternalLink className="w-4 h-4 text-neutral-600 group-hover:text-[#35b9f1] transition-colors" />
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalQuestionPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-900 pt-6 mt-6 font-mono text-xs">
-              <span className="text-neutral-500">
-                Showing{" "}
-                {Math.min(
-                  filteredQuestions.length,
-                  (questionPage - 1) * questionsPerPage + 1,
-                )}
-                -
-                {Math.min(
-                  filteredQuestions.length,
-                  questionPage * questionsPerPage,
-                )}{" "}
-                of {filteredQuestions.length} problems
-              </span>
-              <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                <button
-                  disabled={questionPage === 1}
-                  onClick={() =>
-                    setQuestionPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  className="p-2 border border-neutral-900 bg-neutral-950/20 text-neutral-400 rounded-lg hover:border-neutral-800 disabled:opacity-30 disabled:hover:border-neutral-900 cursor-pointer disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                {(() => {
-                  const pages = [];
-                  const maxVisible = 5;
-                  let start = Math.max(1, questionPage - 2);
-                  let end = Math.min(
-                    totalQuestionPages,
-                    start + maxVisible - 1,
-                  );
-                  if (end - start + 1 < maxVisible) {
-                    start = Math.max(1, end - maxVisible + 1);
-                  }
-
-                  if (start > 1) {
-                    pages.push(
-                      <button
-                        key={1}
-                        onClick={() => setQuestionPage(1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-900 hover:border-neutral-800 text-neutral-400 transition-all cursor-pointer"
-                      >
-                        1
-                      </button>,
-                    );
-                    if (start > 2) {
-                      pages.push(
-                        <span
-                          key="dots-start"
-                          className="px-1 text-neutral-600"
-                        >
-                          ...
-                        </span>,
-                      );
-                    }
-                  }
-
-                  for (let i = start; i <= end; i++) {
-                    pages.push(
-                      <button
-                        key={i}
-                        onClick={() => setQuestionPage(i)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
-                          questionPage === i
-                            ? "bg-[#35b9f1]/10 border-[#35b9f1] text-[#35b9f1] font-bold"
-                            : "border-neutral-900 hover:border-neutral-800 text-neutral-400"
-                        }`}
-                      >
-                        {i}
-                      </button>,
-                    );
-                  }
-
-                  if (end < totalQuestionPages) {
-                    if (end < totalQuestionPages - 1) {
-                      pages.push(
-                        <span key="dots-end" className="px-1 text-neutral-600">
-                          ...
-                        </span>,
-                      );
-                    }
-                    pages.push(
-                      <button
-                        key={totalQuestionPages}
-                        onClick={() => setQuestionPage(totalQuestionPages)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-neutral-900 hover:border-neutral-800 text-neutral-400 transition-all cursor-pointer"
-                      >
-                        {totalQuestionPages}
-                      </button>,
-                    );
-                  }
-                  return pages;
-                })()}
-
-                <button
-                  disabled={questionPage === totalQuestionPages}
-                  onClick={() =>
-                    setQuestionPage((prev) =>
-                      Math.min(prev + 1, totalQuestionPages),
-                    )
-                  }
-                  className="p-2 border border-neutral-900 bg-neutral-950/20 text-neutral-400 rounded-lg hover:border-neutral-800 disabled:opacity-30 disabled:hover:border-neutral-900 cursor-pointer disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {filteredQuestions.length > 0 && totalQuestionPages <= 1 && (
-            <p className="text-neutral-600 text-xs tracking-wider uppercase text-center mt-6">
-              Showing all {filteredQuestions.length} problems
-            </p>
-          )}
-        </div>
+        <CompanyProblemsTab
+          subTitle={custom.subTitle}
+          placementStats={placementStats}
+          difficultyFilter={difficultyFilter}
+          setDifficultyFilter={setDifficultyFilter}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          filteredQuestions={filteredQuestions}
+          paginatedQuestions={paginatedQuestions}
+          questionPage={questionPage}
+          setQuestionPage={setQuestionPage}
+          questionsPerPage={questionsPerPage}
+          totalQuestionPages={totalQuestionPages}
+        />
       )}
 
-      {/* ══════════════════════════════════════════
-          EXPERIENCES TAB
-      ══════════════════════════════════════════ */}
       {activeTab === "experiences" && (
-        <div className="space-y-6">
-          {creatingExperience ? (
-            <CreateExperienceFullPage
-              company={selectedCompany}
-              onPublish={publishExperience}
-              onCancel={() => setCreatingExperience(false)}
-            />
-          ) : selectedExperience ? (
-            // ─── Detailed Experience View ───
-            <div className="space-y-6 animate-fadeIn">
-              <Button
-                onClick={() => setSelectedExperience(null)}
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-neutral-900 text-neutral-400 hover:text-white flex items-center gap-2 cursor-pointer font-mono uppercase tracking-widest text-[10px]"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Experiences
-              </Button>
-
-              <Card variant="default" animated={false} className="rounded-2xl p-6 md:p-8 space-y-6 border-neutral-900 bg-neutral-950/20">
-                {/* Header info */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
-                  <div 
-                    className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-all"
-                    onClick={() => {
-                      if (selectedExperience.author?.userName) navigate(`/profile/${selectedExperience.author.userName}`);
-                    }}
-                  >
-                    <img
-                      src={selectedExperience.author?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedExperience.author?.name || 'Anonymous'}`}
-                      alt="avatar"
-                      className="w-12 h-12 rounded-xl bg-neutral-950 border border-neutral-900 p-0.5"
-                    />
-                    <div>
-                      <h4 className="text-white font-extrabold text-base leading-snug">
-                        {selectedExperience.author?.name || 'Anonymous'}
-                      </h4>
-                      <p className="text-neutral-500 text-xs font-semibold mt-1">
-                        {selectedExperience.author?.college || 'NSUT'} • {selectedExperience.author?.branch || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-neutral-500 text-xs font-semibold font-mono">
-                      <Calendar className="w-4 h-4" />
-                      {formatDate(selectedExperience.createdAt)}
-                    </div>
-                    {(loggedInUser?.id === selectedExperience.author?.id || loggedInUser?.role === 'admin') && (
-                      <button
-                        onClick={() => {
-                          if (window.confirm("Are you sure you want to delete this experience post? This will delete all comments and cannot be undone.")) {
-                            handleDeletePost(selectedExperience.id);
-                          }
-                        }}
-                        className="text-red-500 hover:text-red-400 p-2 rounded-xl bg-neutral-950 border border-neutral-900/60 hover:bg-neutral-900 hover:border-neutral-800 transition-all cursor-pointer flex items-center gap-1.5 font-bold text-xs"
-                        title="Delete Experience"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Title & Tags */}
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
-                    {selectedExperience.title}
-                  </h1>
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {selectedExperience.tags?.map((tag) => (
-                      <Badge
-                        key={tag}
-                        className="bg-neutral-950 text-[#35b9f1] border border-neutral-900 font-bold text-xs px-2.5 py-0.5 rounded-lg"
-                      >
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Post Content */}
-                <div 
-                  className="wysiwyg-content text-[#E5E7EB] text-base leading-relaxed font-medium border-b border-neutral-900 pb-6"
-                  dangerouslySetInnerHTML={{ __html: renderPostContent(selectedExperience.content) }}
-                />
-
-                {/* Voting & Footer info */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center bg-neutral-950 border border-neutral-900 rounded-xl p-1 gap-1">
-                    <button
-                      onClick={(e) => handleVote(e, selectedExperience.id, 1)}
-                      className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                        selectedExperience.userVote === 1
-                          ? 'text-[#35b9f1] bg-[#35b9f1]/10'
-                          : 'text-neutral-500 hover:text-white hover:bg-neutral-900'
-                      }`}
-                      title="Upvote"
-                    >
-                      <ChevronUp className="w-5 h-5" />
-                    </button>
-                    
-                    <span className={`px-2 font-mono font-bold text-sm min-w-[20px] text-center ${
-                      selectedExperience.userVote === 1
-                        ? 'text-[#35b9f1]'
-                        : selectedExperience.userVote === -1
-                        ? 'text-red-500'
-                        : 'text-[#E5E7EB]'
-                    }`}>
-                      {selectedExperience.score || 0}
-                    </span>
-
-                    <button
-                      onClick={(e) => handleVote(e, selectedExperience.id, -1)}
-                      className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                        selectedExperience.userVote === -1
-                          ? 'text-red-500 bg-red-500/10'
-                          : 'text-neutral-500 hover:text-white hover:bg-neutral-900'
-                      }`}
-                      title="Downvote"
-                    >
-                      <ChevronDown className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-neutral-500 text-sm font-semibold font-mono pl-2">
-                    <MessageSquare className="w-4 h-4" />
-                    {selectedExperience.comments?.length || 0} Comments
-                  </div>
-                </div>
-
-                {/* Comments Area */}
-                <div className="space-y-6 pt-6 border-t border-neutral-900">
-                  <h3 className="text-lg font-extrabold text-white">Comments</h3>
-                  
-                  {/* Comment submission form */}
-                  <form onSubmit={handleAddTopComment} className="flex gap-4">
-                    <textarea
-                      placeholder="Share your thoughts or ask a question..."
-                      value={commentContent}
-                      onChange={(e) => setCommentContent(e.target.value)}
-                      className="flex-1 min-h-[48px] max-h-[160px] bg-neutral-950 border border-neutral-900 rounded-xl px-4 py-3 text-sm text-[#E5E7EB] placeholder-neutral-600 focus:outline-none focus:border-[#35b9f1]/30 transition-all"
-                      rows={2}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={submittingComment || !commentContent.trim()}
-                      className="bg-[#35b9f1] hover:bg-[#10a3e0] text-[#0D1117] font-extrabold rounded-xl px-5 flex items-center justify-center cursor-pointer transition-all self-end h-[48px]"
-                    >
-                      {submittingComment ? 'Posting...' : <Send className="w-4 h-4" />}
-                    </Button>
-                  </form>
-
-                  {/* Comments list */}
-                  <div className="space-y-6 pt-2">
-                    {commentTree && commentTree.length > 0 ? (
-                      commentTree.map((comment) => (
-                        <CommentNode 
-                          key={comment.id} 
-                          comment={comment} 
-                          onAddReply={handleAddCommentOrReply}
-                          onDeleteComment={handleDeleteComment}
-                          formatDate={formatDate}
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center py-10 bg-neutral-950/20 border border-dashed border-neutral-900 rounded-xl">
-                        <p className="text-neutral-600 font-mono text-xs">No comments yet. Be the first to comment!</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </div>
-          ) : (
-            // ─── Experiences List View ───
-            <div className="space-y-6">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <Input
-                  type="text"
-                  placeholder="Search experiences..."
-                  value={experienceSearchInput}
-                  onChange={(e) => setExperienceSearchInput(e.target.value)}
-                  icon={Search}
-                  className="w-full md:w-80"
-                  inputClassName="py-2.5 bg-neutral-950 border-neutral-900 rounded-xl placeholder-neutral-600 text-white"
-                />
-                
-                <Button
-                  onClick={() => setCreatingExperience(true)}
-                  className="bg-[#35b9f1] hover:bg-[#10a3e0] text-[#0D1117] font-extrabold rounded-xl px-5 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
-                >
-                  <Plus className="w-5 h-5" />
-                  Share Experience
-                </Button>
-              </div>
-
-              {loadingExperiences ? (
-                <div className="text-center py-20 font-mono text-neutral-500 uppercase tracking-widest text-xs">
-                  Loading Experiences...
-                </div>
-              ) : filteredExperiences.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredExperiences.map((post) => (
-                    <Card
-                      key={post.id}
-                      variant="default"
-                      onClick={() => fetchExperienceDetail(post.id)}
-                      className="p-6 flex flex-col justify-between cursor-pointer hover:border-[#35b9f1]/20 rounded-2xl w-full h-auto bg-neutral-950/20 border-neutral-900"
-                    >
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div 
-                            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-all"
-                            onClick={(e) => {
-                              if (post.author?.userName) {
-                                e.stopPropagation();
-                                navigate(`/profile/${post.author.userName}`);
-                              }
-                            }}
-                          >
-                            <img
-                              src={post.author?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.name || 'Anonymous'}`}
-                              alt="avatar"
-                              className="w-9 h-9 rounded-lg bg-neutral-950 border border-neutral-900 p-0.5"
-                            />
-                            <div>
-                              <span className="text-white font-bold text-sm block leading-none">
-                                {post.author?.name || 'Anonymous'}
-                              </span>
-                              <span className="text-neutral-500 text-[10px] font-bold mt-1 block">
-                                {post.author?.college || 'NSUT'} • {post.author?.branch || 'N/A'}
-                              </span>
-                            </div>
-                          </div>
-                          <span className="text-neutral-600 text-[10px] font-mono">
-                            {formatDate(post.createdAt)}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h3 className="text-white font-bold text-base leading-snug hover:text-[#35b9f1] transition-all">
-                            {post.title}
-                          </h3>
-                          <p className="text-neutral-400 text-xs leading-relaxed line-clamp-3 font-medium">
-                            {post.content?.replace(/<[^>]*>/g, '').replace(/[#*`_[\]()]/g, '').slice(0, 200)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between border-t border-neutral-900/60 pt-4 mt-5">
-                        <div className="flex items-center gap-1.5 bg-neutral-950/50 border border-neutral-900 rounded-lg py-1 px-2">
-                          <button
-                            onClick={(e) => handleVote(e, post.id, 1)}
-                            className={`p-0.5 rounded transition-all duration-200 cursor-pointer ${
-                              post.userVote === 1 ? 'text-[#35b9f1]' : 'text-neutral-500 hover:text-white'
-                            }`}
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <span className="text-xs font-mono font-bold text-neutral-300 min-w-[12px] text-center">
-                            {post.score || 0}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-1 text-neutral-500 font-mono text-xs">
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          {post.commentCount || 0}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-24 border border-dashed border-neutral-900 rounded-2xl bg-neutral-950/5 font-mono">
-                  <div className="w-16 h-16 border border-neutral-900 rounded-xl flex items-center justify-center mx-auto mb-6 bg-neutral-950/10">
-                    <MessageSquare className="w-6 h-6 text-neutral-600" />
-                  </div>
-                  <p className="text-neutral-500 text-xs tracking-widest uppercase mb-2">
-                    No Experiences
-                  </p>
-                  <p className="text-neutral-600 text-sm mb-6">
-                    Interview experiences for {selectedCompany} will appear here.
-                  </p>
-                  <Button
-                    onClick={() => setCreatingExperience(true)}
-                    className="bg-[#35b9f1] hover:bg-[#10a3e0] text-[#0D1117] font-extrabold rounded-xl px-5 py-2.5 text-xs cursor-pointer shadow-lg transition-all"
-                  >
-                    Share your experience
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <CompanyExperiencesTab
+          selectedCompany={selectedCompany}
+          navigate={navigate}
+          loggedInUser={loggedInUser}
+          formatDate={formatDate}
+          renderPostContent={renderPostContent}
+          commentTree={commentTree}
+          creatingExperience={creatingExperience}
+          setCreatingExperience={setCreatingExperience}
+          publishExperience={publishExperience}
+          selectedExperience={selectedExperience}
+          setSelectedExperience={setSelectedExperience}
+          fetchExperienceDetail={fetchExperienceDetail}
+          handleVote={handleVote}
+          handleDeletePost={handleDeletePost}
+          handleDeleteComment={handleDeleteComment}
+          handleAddCommentOrReply={handleAddCommentOrReply}
+          commentContent={commentContent}
+          setCommentContent={setCommentContent}
+          submittingComment={submittingComment}
+          handleAddTopComment={handleAddTopComment}
+          experienceSearchInput={experienceSearchInput}
+          setExperienceSearchInput={setExperienceSearchInput}
+          loadingExperiences={loadingExperiences}
+          filteredExperiences={filteredExperiences}
+        />
       )}
     </div>
   );
