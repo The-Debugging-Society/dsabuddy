@@ -1012,6 +1012,55 @@ export function PYQs({ companies }) {
         </span>
       </div>
 
+      {/* ── Company header ── */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center flex-shrink-0 text-black font-extrabold text-base select-none shadow-md overflow-hidden">
+          {matchedCompany?.logoUrl ? (
+            <LogoImage
+              name={selectedCompany}
+              logoUrl={matchedCompany.logoUrl}
+              size="w-36 h-36 text-base"
+            />
+          ) : (
+            initials
+          )}
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] tracking-widest uppercase text-neutral-500 font-mono">
+            Company Profile
+          </span>
+          <h1 className="text-4xl sm:text-5xl text-white font-normal italic mt-0.5 leading-none font-serif">
+            {selectedCompany}
+          </h1>
+        </div>
+      </div>
+
+      {/* ── Stats grid ── */}
+      <div className="border border-neutral-900 rounded-xl mb-8 bg-neutral-950/20 font-mono">
+        <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-neutral-900">
+          {[
+            { label: "CGPA MIN *", value: getCgpaDisplay() },
+            { label: "ROUNDS", value: getRoundsDisplay() },
+            { label: "PLATFORM", value: getPlatformDisplay() },
+            { label: "BRANCHES", value: getBranchesDisplay() },
+            { label: "DEGREE", value: getDegreeDisplay() },
+          ].map((stat, i) => (
+            <div key={i} className="px-5 py-5 text-center md:text-left">
+              <p className="text-[10px] tracking-widest uppercase text-neutral-500 mb-2">
+                {stat.label}
+              </p>
+              <p
+                className={`text-sm font-semibold tracking-wide ${
+                  i === 0 ? "text-[#35b9f1]" : "text-neutral-200"
+                }`}
+              >
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ── Tab Navigation ── */}
       <div className="flex items-center gap-0 border-b border-neutral-900 mb-8 font-mono">
         {[
@@ -1045,55 +1094,6 @@ export function PYQs({ companies }) {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Left / Main ── */}
           <div className="flex-1 min-w-0">
-            {/* Company header */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center flex-shrink-0 text-black font-extrabold text-base select-none shadow-md overflow-hidden">
-                {matchedCompany?.logoUrl ? (
-                  <LogoImage
-                    name={selectedCompany}
-                    logoUrl={matchedCompany.logoUrl}
-                    size="w-36 h-36 text-base"
-                  />
-                ) : (
-                  initials
-                )}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] tracking-widest uppercase text-neutral-500 font-mono">
-                  Company Profile
-                </span>
-                <h1 className="text-4xl sm:text-5xl text-white font-normal italic mt-0.5 leading-none font-serif">
-                  {selectedCompany}
-                </h1>
-              </div>
-            </div>
-
-            {/* Stats grid */}
-            <div className="border border-neutral-900 rounded-xl mb-8 bg-neutral-950/20 font-mono">
-              <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-neutral-900">
-                {[
-                  { label: "CGPA MIN *", value: getCgpaDisplay() },
-                  { label: "ROUNDS", value: getRoundsDisplay() },
-                  { label: "PLATFORM", value: getPlatformDisplay() },
-                  { label: "BRANCHES", value: getBranchesDisplay() },
-                  { label: "DEGREE", value: getDegreeDisplay() },
-                ].map((stat, i) => (
-                  <div key={i} className="px-5 py-5 text-center md:text-left">
-                    <p className="text-[10px] tracking-widest uppercase text-neutral-500 mb-2">
-                      {stat.label}
-                    </p>
-                    <p
-                      className={`text-sm font-semibold tracking-wide ${
-                        i === 0 ? "text-[#35b9f1]" : "text-neutral-200"
-                      }`}
-                    >
-                      {stat.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Interview Process — only if custom timeline exists */}
             {hasTimeline && (
               <div className="mt-12">
@@ -1278,10 +1278,6 @@ export function PYQs({ companies }) {
         <div className="font-mono">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 border-b border-neutral-900 pb-6">
             <div>
-              {/* Company hero name on problems tab */}
-              <h1 className="text-4xl sm:text-5xl font-normal italic text-white mb-2 font-serif">
-                {selectedCompany}
-              </h1>
               <p className="text-neutral-400 text-sm tracking-wide">
                 {custom.subTitle || "Software Engineering Opportunities"}
               </p>

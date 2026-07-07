@@ -22,7 +22,7 @@ const DIFFICULTY_FILTER_CLASSES = {
   HARD:     'bg-red-500/10 text-red-500 border-red-500/25',
 };
 
-const ROW_GRID = 'grid grid-cols-[24px_1fr_70px] md:grid-cols-[24px_1fr_110px_120px_100px]';
+const ROW_GRID = 'grid grid-cols-[24px_1fr_70px] md:grid-cols-[24px_1fr_110px_120px_100px] gap-x-3 md:gap-x-4';
 
 export default function QuestionsPage() {
   const navigate = useNavigate();
@@ -203,7 +203,7 @@ export default function QuestionsPage() {
 
           {/* Loading skeleton */}
           {loading && Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className={`${ROW_GRID} items-center gap-2 border-b border-[#111120] px-5 py-3.5`}>
+            <div key={i} className={`${ROW_GRID} items-center border-b border-[#111120] px-5 py-3.5`}>
               <div className="h-5 w-5 animate-pulse rounded-full bg-[#1a1a2e]" />
               <div className="h-4 w-[70%] animate-pulse rounded bg-[#1a1a2e]" />
               <div className="ml-auto h-4 w-14 animate-pulse rounded bg-[#1a1a2e]" />
