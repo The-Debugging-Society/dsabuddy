@@ -28,6 +28,8 @@ import leetcodeRoutes from "./routes/leetcode.routes.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.routes.js";
 import sheetRoutes from "./routes/sheet.routes.js";
+import { pointsWorker } from "./queues/pointsWorker.js";
+import { scheduleFanOutJob } from "./queues/pointsQueue.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -143,11 +145,18 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/sheets", sheetRoutes);
 
-
 app.get("/", (req, res) => res.send("Server running"));
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+});
+
+scheduleFanOutJob().catch((err) => {
+  console.error("Failed to schedule points fan-out job:", err.message);
+});
+
+process.on("SIGTERM", async () => {
+  await pointsWorker.close();
 });
 
 

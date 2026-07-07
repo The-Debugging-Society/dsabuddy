@@ -1,6 +1,6 @@
 import { prisma } from "../config/prismaClient.js";
-import { syncUserStats } from "../ingestion/index.js";
 import { recalculateUserPoints } from "../utils/points.js";
+import { syncPlatformConnection } from "../utils/platformSync.js";
 import { clearAnalyticsCache } from "./dailyActivity.controller.js";
 
 const getAuthUserId = (req) => req.user?.userId ?? null;
@@ -110,48 +110,13 @@ export const syncMyPlatformStats = async (req, res) => {
       });
     }
 
-    // Fetch stats from external platform
-    const stats = await syncUserStats({
-      platform,
-      username: existing.username,
-    });
-
-    // Update the DB with fetched stats
-    const updated = await prisma.platformConnection.update({
-      where: { userId_platform: { userId, platform } },
-      data: {
-        problemsSolved: stats.problemsSolved,
-        rating: stats.rating ?? stats.maxRating ?? null,
-        rankLabel: stats.rankLabel ?? stats.maxRank ?? null,
-        stars: stats.starRating ?? stats.stars ?? null,
-        synced: true,
-        lastSyncedAt: new Date(),
-        topicBreakdown: stats.topicBreakdown ?? {},
-      },
-      select: {
-        id: true,
-        platform: true,
-        username: true,
-        rating: true,
-        stars: true,
-        problemsSolved: true,
-        rankLabel: true,
-        synced: true,
-        lastSyncedAt: true,
-        topicBreakdown: true,
-        updatedAt: true,
-      },
-    });
-
-    // Clear analytics cache for this user since we just synced new data
-    clearAnalyticsCache(existing.username);
+    const updated = await syncPlatformConnection(userId, platform, existing.username);
 
     await recalculateUserPoints(userId);
 
     return res.status(200).json({
       message: "Platform stats synced successfully",
       platformConnection: updated,
-      fetchedStats: stats,
     });
   } catch (error) {
     console.error("syncMyPlatformStats error:", error);
