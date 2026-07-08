@@ -65,6 +65,13 @@ model User {
   votes               Vote[]
   sheetProgress       UserSheetProblem[]
   questionBankStatuses UserQuestionBank[]
+
+  // Leaderboard ordering + rank COUNT queries filter/sort on points, often
+  // scoped by branch / year / college.
+  @@index([points])
+  @@index([branch, points])
+  @@index([year, points])
+  @@index([college, points])
 }
 
 model PlatformConnection {

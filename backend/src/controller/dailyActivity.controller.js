@@ -193,7 +193,7 @@ export const getUnifiedAnalytics = async (req, res) => {
           lcData.activeYears.forEach((y) => yearsSet.add(Number(y)));
         }
       } catch (e) {
-        /* silently ignore */
+        console.warn("LeetCode active-years fetch failed:", e.message || e);
       }
     }
 
@@ -211,7 +211,7 @@ export const getUnifiedAnalytics = async (req, res) => {
           });
         }
       } catch (e) {
-        /* silently ignore */
+        console.warn("Codeforces active-years fetch failed:", e.message || e);
       }
     }
 
@@ -229,7 +229,7 @@ export const getUnifiedAnalytics = async (req, res) => {
           });
         }
       } catch (e) {
-        /* silently ignore */
+        console.warn("GFG active-years fetch failed:", e.message || e);
       }
     }
 

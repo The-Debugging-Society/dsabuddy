@@ -8,7 +8,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { prisma } from "./config/prismaClient.js";
 import routes from "./routes/index.js";
-import session from "express-session";
 import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
@@ -62,19 +61,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use(apiLimiter);
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
+// Auth is stateless (JWT in an httpOnly cookie); Passport is only used for the
+// Google OAuth handshake, so no session store is needed.
 app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
 
 passport.use(
   new GoogleStrategy(

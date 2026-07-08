@@ -167,11 +167,20 @@ export const getLeaderboard = async (req, res) => {
       return (b.points ?? 0) - (a.points ?? 0);
     });
 
+    // Competition ranking: equal ratings share the same rank (matches the
+    // rank shown on a user's profile), instead of a dense row index.
+    let rank = 0;
+    let prevRating = null;
     const usersWithRank = allUsers.map((u, idx) => {
       const { platformConnections, ...rest } = u;
+      const rating = platformConnections[0]?.rating ?? -1;
+      if (idx === 0 || rating !== prevRating) {
+        rank = idx + 1;
+      }
+      prevRating = rating;
       return {
         ...rest,
-        overallRank: idx + 1,
+        overallRank: rank,
         displayValue: platformConnections[0]?.rating ?? null,
         displayLabel: `${sortBy} rating`,
       };
@@ -180,15 +189,17 @@ export const getLeaderboard = async (req, res) => {
     const paginatedUsers = usersWithRank.slice(skip, skip + take);
     const response = { users: paginatedUsers };
 
-await setCache(cacheKey, response, 300);
+    await setCache(cacheKey, response, 300);
 
-return res.status(200).json(response);
+    return res.status(200).json(response);
   }
 
-  // Default: sort by overall points
-  const allMatchedUsers = await prisma.user.findMany({
+  // Default: sort by overall points, paginated at the DB level.
+  const pageUsers = await prisma.user.findMany({
     where: whereClause,
     orderBy: [{ points: "desc" }, { createdAt: "asc" }],
+    skip,
+    take,
     select: {
       id: true,
       name: true,
@@ -200,19 +211,36 @@ return res.status(200).json(response);
     },
   });
 
-  const usersWithRank = allMatchedUsers.map((u, idx) => ({
-    ...u,
-    overallRank: idx + 1,
-    displayValue: u.points,
-    displayLabel: "points",
-  }));
+  // Competition ranking (ties share a rank), consistent with the profile's
+  // `count(points > mine) + 1`. Only one extra count query is needed to find
+  // the rank offset of the first row on this page.
+  let usersWithRank = [];
+  if (pageUsers.length > 0) {
+    const rankOffset = await prisma.user.count({
+      where: { ...whereClause, points: { gt: pageUsers[0].points } },
+    });
 
-  const paginatedUsers = usersWithRank.slice(skip, skip + take);
-  const response = { users: paginatedUsers };
+    let rank = rankOffset + 1;
+    let prevPoints = pageUsers[0].points;
+    usersWithRank = pageUsers.map((u, i) => {
+      if (i > 0 && u.points !== prevPoints) {
+        rank = skip + i + 1;
+      }
+      prevPoints = u.points;
+      return {
+        ...u,
+        overallRank: rank,
+        displayValue: u.points,
+        displayLabel: "points",
+      };
+    });
+  }
 
-await setCache(cacheKey, response, 300);
+  const response = { users: usersWithRank };
 
-return res.status(200).json(response);
+  await setCache(cacheKey, response, 300);
+
+  return res.status(200).json(response);
 };
 
 export const getUserByUserName = async (req, res) => {
@@ -321,26 +349,40 @@ export const updateMe = async (req, res) => {
     }
   }
 
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: updateData,
-    select: {
-      id: true,
-      name: true,
-      userName: true,
-      email: true,
-      avatarUrl: true,
-      college: true,
-      branch: true,
-      year: true,
-      role: true,
-      points: true,
-      overallRank: true,
-      branchChangesCount: true,
-      socialLinks: true,
-      updatedAt: true,
-    },
-  });
+  let updated;
+  try {
+    updated = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        userName: true,
+        email: true,
+        avatarUrl: true,
+        college: true,
+        branch: true,
+        year: true,
+        role: true,
+        points: true,
+        overallRank: true,
+        branchChangesCount: true,
+        socialLinks: true,
+        updatedAt: true,
+      },
+    });
+  } catch (error) {
+    // Unique constraint violation (e.g. userName already taken)
+    if (error?.code === "P2002") {
+      const target = error.meta?.target;
+      const field = Array.isArray(target) ? target[0] : target;
+      return res
+        .status(409)
+        .json({ error: `That ${field ?? "value"} is already taken.` });
+    }
+    console.error("Error updating user:", error);
+    return res.status(500).json({ error: "Failed to update profile" });
+  }
 
   await deleteCacheByPattern(`user:ranks:${userId}:*`);
   const enriched = await enrichUserWithRanks(updated);

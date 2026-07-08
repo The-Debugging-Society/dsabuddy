@@ -22,9 +22,10 @@ router.get(
     } catch (e) {
       console.error("Failed to parse referer in OAuth setup:", e);
     }
-    passport.authenticate("google", { 
+    passport.authenticate("google", {
       scope: ["profile", "email"],
-      state: origin
+      state: origin,
+      session: false,
     })(req, res, next);
   }
 );
@@ -35,51 +36,48 @@ router.get("/google/callback", (req, res, next) => {
   const defaultOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
   const state = ALLOWED_ORIGINS.has(rawState) ? rawState : defaultOrigin;
   
-  passport.authenticate("google", (err, user, info) => {
+  passport.authenticate("google", { session: false }, (err, user, info) => {
     if (err || !user) {
       const errMsg = err?.message || "";
       const errCode = errMsg.includes("NSUT") ? "email_not_nsut" : "auth_failed";
       return res.redirect(`${state}/login?error=${errCode}`);
     }
-    
-    req.logIn(user, (loginErr) => {
-      if (loginErr) {
-        return res.redirect(`${state}/login?error=auth_failed`);
-      }
-      
-      const token = user.token;
-      if (!token) {
-        return res.redirect(`${state}/login?error=auth_token_missing`);
-      }
-      
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: process.env.COOKIE_DOMAIN || undefined,
-      });
 
-      const needsOnboarding = !user.branch;
-      const targetPath = needsOnboarding ? "/onboarding" : "/dashboard";
-      return res.redirect(`${state}${targetPath}`);
+    const token = user.token;
+    if (!token) {
+      return res.redirect(`${state}/login?error=auth_token_missing`);
+    }
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: process.env.COOKIE_DOMAIN || undefined,
     });
+
+    const needsOnboarding = !user.branch;
+    const targetPath = needsOnboarding ? "/onboarding" : "/dashboard";
+    return res.redirect(`${state}${targetPath}`);
   })(req, res, next);
 });
 
 // Failed login
 router.get("/fail", (req, res) => {
-  const frontendUrl = req.session.frontendOrigin || process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
   res.redirect(`${frontendUrl}/login?error=email_not_nsut`);
 });
 
-// Logout
-router.get("/logout", (req, res, next) => {
-  req.logout(err => {
-    if (err) return next(err);
-    const redirectUrl = req.headers.referer || process.env.FRONTEND_URL || "http://localhost:5173";
-    res.redirect(redirectUrl);
+// Logout — clear the JWT cookie (auth is stateless, so there's no session to destroy)
+router.get("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    domain: process.env.COOKIE_DOMAIN || undefined,
   });
+  const redirectUrl = req.headers.referer || process.env.FRONTEND_URL || "http://localhost:5173";
+  res.redirect(redirectUrl);
 });
 
 

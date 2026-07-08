@@ -1,10 +1,11 @@
 import express from "express";
 import upload from "../config/multer.js";
 import { uploadBufferToCloudinary } from "../config/cloudinaryUpload.js";
+import { authMiddleware, ensureAuthenticated } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", authMiddleware, ensureAuthenticated, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
