@@ -9,7 +9,7 @@ export const idParamSchema = z.object({
 export const paginationQuerySchema = z.object({
   take: z.coerce.number().int().min(1).max(100).optional(),
   skip: z.coerce.number().int().min(0).optional(),
-  filter: z.enum(["college", "branch", "year"]).optional(),
+  filter: z.enum(["college", "branch", "year", "class"]).optional(),
   sortBy: z.enum(["all", "leetcode", "codeforces", "codechef"]).optional(),
 });
 
@@ -25,7 +25,10 @@ export const userNameParamSchema = z.object({
   userName: z.string().min(1),
 });
 
-const socialLinkUrlSchema = z.union([z.string().trim().url().max(300), z.literal("")]);
+const socialLinkUrlSchema = z.union([
+  z.string().trim().url().max(300),
+  z.literal(""),
+]);
 
 export const socialLinksSchema = z
   .object({
@@ -42,7 +45,12 @@ export const updateMeBodySchema = z
   .object({
     name: z.string().min(1).optional(),
     userName: z.string().min(1).optional(),
-    avatarUrl: z.string().url().or(z.string().startsWith("data:")).optional().nullable(),
+    avatarUrl: z
+      .string()
+      .url()
+      .or(z.string().startsWith("data:"))
+      .optional()
+      .nullable(),
     college: z.string().min(1).optional().nullable(),
     branch: z.string().min(1).optional().nullable(),
     socialLinks: socialLinksSchema.optional(),
@@ -112,7 +120,10 @@ export const companyQuestionParamsSchema = z.object({
 
 export const upsertCompanyQuestionBodySchema = z
   .object({
-    frequency: z.enum(["VERY_HIGH", "HIGH", "OCCASIONAL"]).optional().nullable(),
+    frequency: z
+      .enum(["VERY_HIGH", "HIGH", "OCCASIONAL"])
+      .optional()
+      .nullable(),
     solved: z.boolean().optional().nullable(),
     order: z.number().int().min(0).optional().nullable(),
   })
@@ -125,7 +136,10 @@ export const createQuestionBodySchema = z
     difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
     leetcodeUrl: z.string().url().optional().nullable(),
     acceptanceRate: z.number().optional().nullable(),
-    frequency: z.enum(["VERY_HIGH", "HIGH", "OCCASIONAL"]).optional().nullable(),
+    frequency: z
+      .enum(["VERY_HIGH", "HIGH", "OCCASIONAL"])
+      .optional()
+      .nullable(),
     statement: z.string().optional().nullable(),
     examples: z.any().optional().nullable(),
     constraints: z.any().optional().nullable(),
@@ -135,7 +149,9 @@ export const createQuestionBodySchema = z
   })
   .strict();
 
-export const updateQuestionBodySchema = createQuestionBodySchema.partial().strict();
+export const updateQuestionBodySchema = createQuestionBodySchema
+  .partial()
+  .strict();
 
 export const listQuestionsQuerySchema = z
   .object({
@@ -192,8 +208,9 @@ export const upsertSheetProgressBodySchema = z
   })
   .strict()
   .refine(
-    (v) => v.status !== undefined || v.starred !== undefined || v.note !== undefined,
-    { message: "At least one of status, starred, or note is required" }
+    (v) =>
+      v.status !== undefined || v.starred !== undefined || v.note !== undefined,
+    { message: "At least one of status, starred, or note is required" },
   );
 
 export const platformParamSchema = z.object({
@@ -236,4 +253,3 @@ export const syncProblemsBodySchema = z
     maxItems: z.coerce.number().int().min(1).max(5000).optional(),
   })
   .strict();
-
