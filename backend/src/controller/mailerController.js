@@ -1,5 +1,5 @@
 import resend from '../config/resend.js';
-import { getWelcomeEmailTemplate, getPotdEmailTemplate } from '../utils/emailTemplates.js';
+import { getWelcomeEmailTemplate, getPotdEmailTemplate, getOtpEmailTemplate } from '../utils/emailTemplates.js';
 
 export const sendEmail = async (to, subject, content) => {
     try {
@@ -42,5 +42,11 @@ export const sendWelcomeEmail = async (to, name) => {
 export const sendDailyPotdEmail = async (to, name, problem) => {
     const subject = `Daily DSA Challenge: ${problem.displayName || problem.title} 🎯`;
     const htmlContent = getPotdEmailTemplate(name, problem);
+    return sendEmail(to, subject, htmlContent);
+};
+
+export const sendOtpEmail = async (to, otp) => {
+    const subject = 'Verify your email - DSA Buddy 🚀';
+    const htmlContent = getOtpEmailTemplate(otp);
     return sendEmail(to, subject, htmlContent);
 };

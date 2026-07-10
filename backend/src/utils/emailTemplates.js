@@ -358,3 +358,112 @@ export const getPotdEmailTemplate = (name, problem) => {
 </body>
 </html>`;
 };
+
+/**
+ * Returns the OTP Verification Email HTML template (Professional, gradient-free, logo branded)
+ * @param {string} otp 
+ * @returns {string} HTML Content
+ */
+export const getOtpEmailTemplate = (otp) => {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - DSA Buddy</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      table-layout: fixed;
+      background-color: #f8fafc;
+      padding: 40px 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .header {
+      background-color: ${BRAND_NAVY};
+      border-bottom: 4px solid ${BRAND_PRIMARY};
+      padding: 36px 32px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .content {
+      padding: 36px 32px;
+      color: #334155;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .content h2 {
+      font-size: 19px;
+      color: ${BRAND_NAVY};
+      margin-top: 0;
+      font-weight: 700;
+    }
+    .otp-code {
+      display: inline-block;
+      margin: 24px auto;
+      padding: 16px 32px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: ${BRAND_NAVY};
+      background-color: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    .footer {
+      background-color: #f8fafc;
+      padding: 24px 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer a {
+      color: #0369a1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1>Verify Your Email 🚀</h1>
+      </div>
+      <div class="content">
+        <h2>Welcome to DSA Buddy!</h2>
+        <p>Thank you for signing up. Please use the following one-time password (OTP) to verify your email address. This code is valid for 10 minutes.</p>
+        <div class="otp-code">${otp}</div>
+        <p>If you didn't request this code, you can safely ignore this email.</p>
+      </div>
+      <div class="footer">
+        <p>Happy Coding! <br><strong>The DSA Buddy Team</strong></p>
+        <p><a href="${frontendUrl}">dsabuddy.xyz</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+};
+

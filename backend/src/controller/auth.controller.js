@@ -3,14 +3,119 @@ import jwt from "jsonwebtoken";
 import {
   loginPostRequestBodySchema,
   signupPostRequestBodySchema,
+  signupVerifyPostRequestBodySchema,
 } from "../validation/request.validation.js";
 import { prisma } from "../config/prismaClient.js";
 import { enrichUserWithRanks } from "./user.controller.js";
-import { sendWelcomeEmail } from "./mailerController.js";
+import { sendWelcomeEmail, sendOtpEmail } from "./mailerController.js";
 import { deriveGraduationYearFromEmail } from "../utils/graduationYear.js";
+import redisClient from "../config/redis.js";
+
+// Fallback in-memory store if Redis is unavailable
+const memoryOtps = new Map();
+
+const setOtp = async (email, otp) => {
+  const key = `otp:${email.toLowerCase()}`;
+  try {
+    if (redisClient.status === "ready") {
+      await redisClient.set(key, otp, "EX", 600);
+      return;
+    }
+  } catch (err) {
+    console.error("Redis set failed, falling back to memory:", err.message);
+  }
+  memoryOtps.set(key, { otp, expiresAt: Date.now() + 600000 });
+};
+
+const getOtp = async (email) => {
+  const key = `otp:${email.toLowerCase()}`;
+  try {
+    if (redisClient.status === "ready") {
+      return await redisClient.get(key);
+    }
+  } catch (err) {
+    console.error("Redis get failed, falling back to memory:", err.message);
+  }
+  const entry = memoryOtps.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    memoryOtps.delete(key);
+    return null;
+  }
+  return entry.otp;
+};
+
+const delOtp = async (email) => {
+  const key = `otp:${email.toLowerCase()}`;
+  try {
+    if (redisClient.status === "ready") {
+      await redisClient.del(key);
+      return;
+    }
+  } catch (err) {
+    console.error("Redis del failed, falling back to memory:", err.message);
+  }
+  memoryOtps.delete(key);
+};
+
+export const sendSignupOtp = async (req, res) => {
+  try {
+    const validationResult = await signupPostRequestBodySchema.safeParseAsync(
+      req.body
+    );
+
+    if (validationResult.error) {
+      return res.status(400).json({ error: validationResult.error.format() });
+    }
+
+    const { email, userName, year: manualYear } = validationResult.data;
+
+    // Check if email or username is already taken
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    const existingByUserName = await prisma.user.findUnique({
+      where: { userName },
+      select: { id: true },
+    });
+
+    if (existingByEmail || existingByUserName) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    // Validate graduation year check
+    let year = deriveGraduationYearFromEmail(email);
+    if (!year) {
+      if (manualYear) {
+        const parsedYear = parseInt(manualYear, 10);
+        if (isNaN(parsedYear) || parsedYear < 2020 || parsedYear > 2100) {
+          return res.status(400).json({ error: "Please provide a valid graduation year between 2020 and 2100." });
+        }
+      } else {
+        return res.status(400).json({ error: "Could not determine graduation year from email. Please provide graduation year manually." });
+      }
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store OTP (uses Redis, fallbacks to memory)
+    await setOtp(email, otp);
+
+    // Send OTP email
+    await sendOtpEmail(email, otp);
+
+    return res.status(200).json({ message: "Verification code sent to your email." });
+  } catch (error) {
+    console.error("Error sending signup OTP:", error);
+    return res.status(500).json({ error: "Failed to send verification code. Please try again." });
+  }
+};
 
 export const signup = async (req, res) => {
-  const validationResult = await signupPostRequestBodySchema.safeParseAsync(
+  const validationResult = await signupVerifyPostRequestBodySchema.safeParseAsync(
     req.body
   );
 
@@ -18,7 +123,21 @@ export const signup = async (req, res) => {
     return res.status(400).json({ error: validationResult.error.format() });
   }
 
-  const { name, userName, email, password, year: manualYear } = validationResult.data;
+  const { name, userName, email, password, year: manualYear, otp } = validationResult.data;
+
+  // Verify OTP (uses Redis, fallbacks to memory)
+  const savedOtp = await getOtp(email);
+
+  if (!savedOtp) {
+    return res.status(400).json({ error: "Verification code has expired or is invalid. Please request a new one." });
+  }
+
+  if (savedOtp !== otp) {
+    return res.status(400).json({ error: "Invalid verification code. Please check and try again." });
+  }
+
+  // Delete OTP on successful verification
+  await delOtp(email);
 
   const existingByEmail = await prisma.user.findUnique({
     where: { email },

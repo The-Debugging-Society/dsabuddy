@@ -21,6 +21,10 @@ export const signupPostRequestBodySchema = z.object({
     year: z.string().optional(),
 })
 
+export const signupVerifyPostRequestBodySchema = signupPostRequestBodySchema.extend({
+    otp: z.string().length(6, "OTP must be exactly 6 digits"),
+})
+
 export const loginPostRequestBodySchema = z.object({
     identifier: z.string().min(1, "Username or Email is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),

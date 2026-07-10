@@ -22,6 +22,10 @@ export const RegisterForm = () => {
 
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState("register"); // "register" or "otp"
+  const [otpCode, setOtpCode] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [resending, setResending] = useState(false);
 
   const UG_YEAR_PATTERN = /(?:^|[._-])ug(\d{2})/i;
   const PG_YEAR_PATTERN = /(?:^|[._-])pg(\d{2})/i;
@@ -65,7 +69,7 @@ export const RegisterForm = () => {
     if (error) setError(null);
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -92,12 +96,41 @@ export const RegisterForm = () => {
     }
     try {
       setLoading(true);
+      await authService.sendSignupOtp({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        userName: formData.userName,
+        ...(showManualYear ? { year: formData.year } : {}),
+      });
+      setStep("otp");
+      setSuccessMessage("Verification code sent to your email!");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+
+    if (!otpCode.trim() || otpCode.length !== 6) {
+      setError("Please enter a valid 6-digit verification code.");
+      return;
+    }
+
+    try {
+      setLoading(true);
       const res = await authService.register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
         userName: formData.userName,
         ...(showManualYear ? { year: formData.year } : {}),
+        otp: otpCode,
       });
       setUser(res.user || res);
       navigate("/onboarding");
@@ -107,6 +140,106 @@ export const RegisterForm = () => {
       setLoading(false);
     }
   };
+
+  const handleResendOtp = async () => {
+    setError("");
+    setSuccessMessage("");
+    setResending(true);
+    try {
+      await authService.sendSignupOtp({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        userName: formData.userName,
+        ...(showManualYear ? { year: formData.year } : {}),
+      });
+      setSuccessMessage("A new verification code has been sent!");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setResending(false);
+    }
+  };
+
+  if (step === "otp") {
+    return (
+      <div className="flex justify-center items-center w-full">
+        <div className="mt-6 sm:mt-10 w-full max-w-md border-t-primary border-t-2 p-6 sm:p-10 rounded-2xl bg-[#0D1117] border border-[#1F2937] mx-auto">
+          <div className="w-full text-center mx-auto mb-6">
+            <h2 className="font-normal italic text-white font-serif text-3xl">
+              Verify Email
+            </h2>
+            <p className="text-content text-sm mt-1">We sent a 6-digit verification code to <span className="text-[#35b9f1]">{formData.email}</span></p>
+          </div>
+
+          {error && (
+            <div className="mb-4 text-sm text-red-500 font-semibold bg-red-950/40 p-3 rounded-lg border border-red-500/30">
+              {error}
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="mb-4 text-sm text-green-400 font-semibold bg-green-950/40 p-3 rounded-lg border border-green-500/30">
+              {successMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleOtpSubmit} className="mx-auto w-full flex flex-col justify-center items-center">
+            <FormField
+              label="Verification Code"
+              type="text"
+              placeholder="e.g. 123456"
+              name="otpCode"
+              value={otpCode}
+              onChange={(e) => {
+                setOtpCode(e.target.value);
+                if (error) setError("");
+                if (successMessage) setSuccessMessage("");
+              }}
+              required
+              maxLength={6}
+            />
+
+            <Button type="submit" variant="accent" className="w-full text-sm sm:text-base mt-4 justify-center" disabled={loading}>
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Verifying...</span>
+                </div>
+              ) : (
+                "Verify & Complete Signup"
+              )}
+            </Button>
+          </form>
+
+          <div className="flex justify-between items-center mt-6 text-sm px-1">
+            <button 
+              type="button" 
+              onClick={handleResendOtp} 
+              disabled={resending}
+              className="text-[#6c7280] hover:text-[#35b9f1] transition-colors duration-200 disabled:opacity-50"
+            >
+              {resending ? "Resending..." : "Resend Code"}
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => {
+                setStep("register");
+                setError("");
+                setSuccessMessage("");
+                setOtpCode("");
+              }}
+              className="text-[#6c7280] hover:text-white transition-colors duration-200 underline"
+            >
+              Change Email
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center items-center w-full">
       <div className="mt-6 sm:mt-10 w-full max-w-md border-t-primary border-t-2 p-6 sm:p-10 rounded-2xl bg-[#0D1117] border border-[#1F2937] mx-auto">
@@ -122,7 +255,7 @@ export const RegisterForm = () => {
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="mx-auto w-full flex flex-col justify-center items-center">
+        <form onSubmit={handleRegisterSubmit} className="mx-auto w-full flex flex-col justify-center items-center">
           <FormField label="Name" placeholder="enter_name" name="name" value={formData.name} onChange={handleChange} required />
 
           <FormField
