@@ -123,7 +123,7 @@ export const signup = async (req, res) => {
     return res.status(400).json({ error: validationResult.error.format() });
   }
 
-  const { name, userName, email, password, year: manualYear, otp } = validationResult.data;
+  const { name, userName, email, password, college, branch, year: manualYear, otp } = validationResult.data;
 
   // Verify OTP (uses Redis, fallbacks to memory)
   const savedOtp = await getOtp(email);
@@ -176,6 +176,8 @@ export const signup = async (req, res) => {
       email,
       passwordHash,
       salt,
+      college,
+      branch,
       year,
     },
     select: {

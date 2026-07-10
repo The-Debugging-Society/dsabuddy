@@ -18,6 +18,8 @@ export const signupPostRequestBodySchema = z.object({
         message: "Only NSUT (@nsut.ac.in) and DTU (@dtu.ac.in) email addresses are allowed."
     }),
     password: z.string().min(6),
+    college: z.string().min(1, "College is required"),
+    branch: z.string().min(1, "Branch is required"),
     year: z.string().optional(),
 })
 

@@ -45,8 +45,8 @@ model User {
 
   // Profile used by frontend
   avatarUrl String?
-  college   String?
-  branch    String?
+  college   String  @default("")
+  branch    String  @default("")
   socialLinks Json? @default("{}") // e.g. { "linkedin": "...", "github": "...", "twitter": "...", "portfolio": "..." }
   year      String // graduation year, derived from email's "ugYY" admission-year code
   role      String? // e.g. "CS - 2024" (can be derived but stored for convenience)
