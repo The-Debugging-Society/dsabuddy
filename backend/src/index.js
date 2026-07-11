@@ -84,16 +84,18 @@ passport.use(
           return done(new Error("Invalid email format"), null);
         }
         const domain = parts[1];
-        const isAllowedEmail = 
-          domain === "nsut.ac.in" || 
-          domain === "dtu.ac.in" || 
-          domain === "igdtuw.ac.in" || 
-          domain.endsWith(".nsut.ac.in") || 
-          domain.endsWith(".dtu.ac.in") || 
-          domain.endsWith(".igdtuw.ac.in");
+        const isAllowedEmail =
+          domain === "nsut.ac.in" ||
+          domain === "dtu.ac.in" ||
+          domain === "igdtuw.ac.in" ||
+          domain === "iiitd.ac.in" ||
+          domain.endsWith(".nsut.ac.in") ||
+          domain.endsWith(".dtu.ac.in") ||
+          domain.endsWith(".igdtuw.ac.in") ||
+          domain.endsWith(".iiitd.ac.in");
 
         if (!isAllowedEmail) {
-          return done(new Error("Only NSUT, DTU, and IGDTUW email addresses are allowed."), null);
+          return done(new Error("Only NSUT, DTU, IGDTUW, and IIITD email addresses are allowed."), null);
         }
         let user = await prisma.user.findUnique({ where: { email } });
 

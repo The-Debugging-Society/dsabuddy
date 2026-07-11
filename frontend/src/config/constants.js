@@ -81,6 +81,22 @@ export const IGDTUW_BRANCH_CODE_MAP = {
 };
 
 /**
+ * IIITD — Indraprastha Institute of Information Technology, Delhi
+ * Maps full branch name → branch code.
+ */
+export const IIITD_BRANCH_CODE_MAP = {
+  "Computer Science and Artificial Intelligence":  "CSAI",
+  "Computer Science Engineering":                  "CSE",
+  "Computer Science and Applied Mathematics":       "CSAM",
+  "Computer Science & Economics":                   "CSEC",
+  "Computer Science and Design":                    "CSD",
+  "Computer Science and Social Sciences":            "CSSS",
+  "Electronics & Communication Engineering":         "ECE",
+  "Computer Science and Biosciences":                "CSB",
+  "Electronics & VLSI Engineering":                  "EVE",
+};
+
+/**
  * Maps email domain → college branch map.
  * Used to derive the correct branch options during onboarding.
  */
@@ -88,6 +104,7 @@ export const COLLEGE_BRANCH_MAP = {
   'nsut.ac.in':   NSUT_BRANCH_CODE_MAP,
   'dtu.ac.in':    DTU_BRANCH_CODE_MAP,
   'igdtuw.ac.in': IGDTUW_BRANCH_CODE_MAP,
+  'iiitd.ac.in':  IIITD_BRANCH_CODE_MAP,
 };
 
 /**
@@ -119,6 +136,7 @@ export const BRANCH_CODE_MAP = {
   ...NSUT_BRANCH_CODE_MAP,
   ...DTU_BRANCH_CODE_MAP,
   ...IGDTUW_BRANCH_CODE_MAP,
+  ...IIITD_BRANCH_CODE_MAP,
 };
 
 /** Branch names for dropdowns — sorted alphabetically (all colleges). */

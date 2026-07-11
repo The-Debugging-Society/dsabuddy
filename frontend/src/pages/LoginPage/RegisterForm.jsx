@@ -48,9 +48,11 @@ export const RegisterForm = () => {
       domain === "nsut.ac.in" ||
       domain === "dtu.ac.in" ||
       domain === "igdtuw.ac.in" ||
+      domain === "iiitd.ac.in" ||
       domain.endsWith(".nsut.ac.in") ||
       domain.endsWith(".dtu.ac.in") ||
-      domain.endsWith(".igdtuw.ac.in")
+      domain.endsWith(".igdtuw.ac.in") ||
+      domain.endsWith(".iiitd.ac.in")
     );
   };
 

@@ -12,12 +12,14 @@ export const signupPostRequestBodySchema = z.object({
             domain === "nsut.ac.in" ||
             domain === "dtu.ac.in" ||
             domain === "igdtuw.ac.in" ||
+            domain === "iiitd.ac.in" ||
             domain.endsWith(".nsut.ac.in") ||
             domain.endsWith(".dtu.ac.in") ||
-            domain.endsWith(".igdtuw.ac.in")
+            domain.endsWith(".igdtuw.ac.in") ||
+            domain.endsWith(".iiitd.ac.in")
         );
     }, {
-        message: "Only NSUT, DTU, and IGDTUW email addresses are allowed."
+        message: "Only NSUT, DTU, IGDTUW, and IIITD email addresses are allowed."
     }),
     password: z.string().min(6),
     college: z.string().min(1, "College is required"),

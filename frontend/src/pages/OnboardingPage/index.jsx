@@ -47,6 +47,9 @@ export default function OnboardingPage() {
     if (lower.endsWith('igdtuw.ac.in')) {
       return 'Indira Gandhi Delhi Technical University for Women';
     }
+    if (lower.endsWith('iiitd.ac.in')) {
+      return 'Indraprastha Institute of Information Technology, Delhi';
+    }
     return '';
   };
 
