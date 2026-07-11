@@ -46,6 +46,16 @@ export function ShareStatsCard({ user, activeRank, activeFilter }) {
     ? `I'm ranked ${displayRank}${cohortText} with ${points} DSA points on DSABuddy! Track your competitive programming progress across LeetCode, Codeforces, CodeChef & GFG.`
     : `Track my competitive programming progress on DSABuddy!`;
 
+  const rankNum = displayRank !== '—' ? parseInt(displayRank.slice(1), 10) : null;
+  const tier =
+    rankNum === null
+      ? null
+      : rankNum <= 10
+      ? { label: 'Top 10', color: '#F5B14C' }
+      : rankNum <= 50
+      ? { label: 'Top 50', color: '#35b9f1' }
+      : { label: 'Ranked', color: '#10B981' };
+
   const shareTargets = [
     {
       name: 'X',
@@ -89,43 +99,74 @@ export function ShareStatsCard({ user, activeRank, activeFilter }) {
       </div>
 
       {/* Shareable stat card preview */}
-      <div className="rounded-xl border border-[#1F2937] bg-[#0D1117] p-4 space-y-4">
-        <div className="flex items-center gap-3">
-          {showInitials ? (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#161B22] border border-[#35b9f1]/40 text-[#35b9f1] font-bold text-sm select-none">
-              {getInitials(user.name)}
-            </div>
-          ) : (
-            <img
-              src={avatarUrl}
-              alt={user.name}
-              onError={() => setImgError(true)}
-              className="w-12 h-12 rounded-full object-cover border border-[#35b9f1]/40"
-            />
+      <div className="rounded-xl border border-[#1F2937] bg-[#0D1117] overflow-hidden">
+        {/* Header strip */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1F2937]">
+          <div className="flex items-center gap-1.5 text-[#9CA3AF]">
+            <Trophy className="w-3.5 h-3.5 text-[#35b9f1]" />
+            <span className="text-[10px] font-mono uppercase tracking-wider">DSABuddy</span>
+          </div>
+          {tier && (
+            <span
+              className="text-[10px] font-mono uppercase tracking-wider font-semibold"
+              style={{ color: tier.color }}
+            >
+              {displayRank} · {tier.label}
+            </span>
           )}
-          <div className="min-w-0">
-            <p className="text-white font-semibold text-sm truncate">{user.name}</p>
-            {user.userName && (
-              <p className="text-[#6B7280] text-xs font-mono truncate">@{user.userName}</p>
+        </div>
+
+        {/* Hero banner with spotlighted avatar */}
+        <div className="relative h-32 overflow-hidden bg-[#0B0F16]">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 0%, rgba(53,185,241,0.28), rgba(13,17,23,0) 65%)',
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D1117] to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            {showInitials ? (
+              <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[#161B22] border-2 border-[#35b9f1]/60 text-[#35b9f1] font-bold text-lg select-none shadow-[0_0_24px_rgba(53,185,241,0.35)]">
+                {getInitials(user.name)}
+              </div>
+            ) : (
+              <img
+                src={avatarUrl}
+                alt={user.name}
+                onError={() => setImgError(true)}
+                className="w-16 h-16 rounded-full object-cover border-2 border-[#35b9f1]/60 shadow-[0_0_24px_rgba(53,185,241,0.35)]"
+              />
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg bg-[#161B22] border border-[#1F2937] p-3">
-            <div className="flex items-center gap-1.5 text-[#6B7280] text-[10px] font-mono uppercase tracking-wider mb-1">
-              <Trophy className="w-3.5 h-3.5 text-[#35b9f1]" />
-              {activeFilter && activeFilter !== 'all' ? `${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)} Rank` : 'Rank'}
+        {/* Identity + headline stat */}
+        <div className="px-4 pt-3 pb-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-white font-semibold text-sm truncate">{user.name}</p>
+              {user.userName && (
+                <p className="text-[#6B7280] text-xs font-mono truncate">@{user.userName}</p>
+              )}
             </div>
-            <p className="text-white text-xl font-bold">{displayRank}</p>
-          </div>
-          <div className="rounded-lg bg-[#161B22] border border-[#1F2937] p-3">
-            <div className="flex items-center gap-1.5 text-[#6B7280] text-[10px] font-mono uppercase tracking-wider mb-1">
-              <Zap className="w-3.5 h-3.5 text-[#10B981]" />
-              Points
+            <div className="text-right shrink-0">
+              <div className="flex items-center justify-end gap-1 text-[#6B7280] text-[10px] font-mono uppercase tracking-wider">
+                <Zap className="w-3 h-3 text-[#10B981]" />
+                Points
+              </div>
+              <p className="text-[#35b9f1] text-2xl font-bold leading-tight tabular-nums">{points}</p>
             </div>
-            <p className="text-[#35b9f1] text-xl font-bold">{points}</p>
           </div>
+        </div>
+
+        {/* Footer strip */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#1F2937] bg-[#0B0F16]">
+          <span className="text-[#6B7280] text-[10px] font-mono truncate">{profileUrl.replace(/^https?:\/\//, '')}</span>
+          <span className="text-[#9CA3AF] text-[10px] font-mono uppercase tracking-wider shrink-0">
+            {activeFilter && activeFilter !== 'all' ? `${activeFilter} rank` : 'rank'} {displayRank}
+          </span>
         </div>
       </div>
 
