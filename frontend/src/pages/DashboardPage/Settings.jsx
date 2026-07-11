@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Camera, CheckCircle2, AlertCircle, User, Link2, GraduationCap, Share2 } from 'lucide-react';
 import { Card, Button, Input } from '@/components/common';
 import { userService, platformService } from '@/api/services';
-import { BRANCHES, PLATFORMS, SOCIAL_LINKS } from '@/config/constants';
+import { PLATFORMS, SOCIAL_LINKS, getBranchesForEmail } from '@/config/constants';
 import { PLATFORMS as PLATFORM_ICONS } from '@/utils/platformUtils';
 import { SocialIcon } from '@/utils/socialIcons';
 import { useUserStore } from '@/store/useUserStore';
@@ -20,7 +20,9 @@ function getInitials(name) {
 export function Settings({ user: propUser, platforms, onUpdate }) {
   const globalUser = useUserStore(state => state.user);
   const user = propUser || globalUser;
-  
+
+  const availableBranches = getBranchesForEmail(user?.email);
+
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -302,7 +304,7 @@ export function Settings({ user: propUser, platforms, onUpdate }) {
                 }`}
               >
                 <option value="" disabled>Select your branch</option>
-                {BRANCHES.map((b) => (
+                {availableBranches.map((b) => (
                   <option key={b} value={b} className="bg-[#161B22]">
                     {b}
                   </option>

@@ -10,11 +10,13 @@ export const ROUTES = {
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5001/api';
 
+// ── Per-College Branch Maps ──────────────────────────────────────────────────
+
 /**
+ * NSUT — Netaji Subhas University of Technology
  * Maps full branch name → branch code.
- * Branch names are used as the stored value; codes are for display only.
  */
-export const BRANCH_CODE_MAP = {
+export const NSUT_BRANCH_CODE_MAP = {
   "Bio-Technology":                                                    "BT",
   "Civil Engineering":                                                 "CE",
   "Computer Science and Engineering (Artificial Intelligence)":        "CSAI",
@@ -35,7 +37,91 @@ export const BRANCH_CODE_MAP = {
   "Mechanical Engineering":                                            "ME",
 };
 
-/** Branch names for dropdowns — sorted alphabetically. */
+/**
+ * DTU — Delhi Technological University
+ * Maps full branch name → branch code.
+ */
+export const DTU_BRANCH_CODE_MAP = {
+  "Computer Science Engineering":                          "CSE",
+  "Data Analytics":                                        "DA",
+  "Information Technology":                               "IT",
+  "Software Engineering":                                 "SE",
+  "Information and Cyber Security":                       "ICS",
+  "Mathematics and Computing":                            "MAC",
+  "Electronics & Communication Engineering":              "ECE",
+  "Electronics Engineering in VLSI Design and Technology": "EVDT",
+  "Electrical Engineering":                               "EE",
+  "Mechanical Engineering":                               "ME",
+  "Mechanical & Automation Engineering":                  "MAE",
+  "Automotive Engineering":                               "AE",
+  "Engineering Physics":                                  "EP",
+  "Chemical Engineering":                                 "CHE",
+  "Industrial & Production Engineering":                  "IPE",
+  "Civil Engineering":                                    "CE",
+  "Environmental Engineering":                            "ENV",
+  "Biotechnology":                                        "BT",
+};
+
+/**
+ * IGDTUW — Indira Gandhi Delhi Technical University for Women
+ * Maps full branch name → branch code.
+ */
+export const IGDTUW_BRANCH_CODE_MAP = {
+  "Computer Science Engineering - Artificial Intelligence":            "CSAI",
+  "Computer Science Engineering":                                      "CSE",
+  "Artificial Intelligence and Machine Learning":                      "AIML",
+  "Cyber Security":                                                    "CS",
+  "Information Technology":                                            "IT",
+  "Mathematics and Computing":                                         "MAC",
+  "Electronics and Communication Engineering - Artificial Intelligence": "ECAI",
+  "Electronics and Communication Engineering":                         "ECE",
+  "Robotics and Artificial Intelligence":                              "RAI",
+  "Mechanical and Automation Engineering":                             "MAE",
+  "Mechanical and Automation Engineering (with MBA)":                  "MMBA",
+};
+
+/**
+ * Maps email domain → college branch map.
+ * Used to derive the correct branch options during onboarding.
+ */
+export const COLLEGE_BRANCH_MAP = {
+  'nsut.ac.in':   NSUT_BRANCH_CODE_MAP,
+  'dtu.ac.in':    DTU_BRANCH_CODE_MAP,
+  'igdtuw.ac.in': IGDTUW_BRANCH_CODE_MAP,
+};
+
+/**
+ * Returns a sorted array of branch names for the given email address.
+ * Falls back to the union of all colleges if the domain is unrecognised.
+ *
+ * @param {string | null | undefined} email
+ * @returns {string[]}
+ */
+export function getBranchesForEmail(email) {
+  if (!email) return BRANCHES;
+  const domain = email.toLowerCase().split('@')[1] || '';
+  // Handle sub-domains like bt.nsut.ac.in
+  const matched = Object.entries(COLLEGE_BRANCH_MAP).find(
+    ([d]) => domain === d || domain.endsWith(`.${d}`)
+  );
+  const map = matched ? matched[1] : null;
+  if (!map) return BRANCHES;
+  return Object.keys(map).sort((a, b) => a.localeCompare(b));
+}
+
+// ── Backward-compatible union exports ────────────────────────────────────────
+
+/**
+ * Maps full branch name → branch code (all colleges combined).
+ * Branch names are used as the stored value; codes are for display only.
+ */
+export const BRANCH_CODE_MAP = {
+  ...NSUT_BRANCH_CODE_MAP,
+  ...DTU_BRANCH_CODE_MAP,
+  ...IGDTUW_BRANCH_CODE_MAP,
+};
+
+/** Branch names for dropdowns — sorted alphabetically (all colleges). */
 export const BRANCHES = Object.keys(BRANCH_CODE_MAP).sort((a, b) => a.localeCompare(b));
 
 /**

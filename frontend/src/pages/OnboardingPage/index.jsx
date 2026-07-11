@@ -16,13 +16,16 @@ import { userService, platformService } from '@/api/services';
 import { useUserStore } from '@/store/useUserStore';
 import { Button, Input, Seo } from '@/components/common';
 import apiClient from '@/api/client';
-import { BRANCHES } from '@/config/constants';
+import { getBranchesForEmail } from '@/config/constants';
 import LogoImg from "@/assets/logo.png";
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const user = useUserStore(state => state.user);
+
+  // Derive branches available to this user based on their college email domain
+  const availableBranches = getBranchesForEmail(user?.email);
   const setUser = useUserStore(state => state.setUser);
 
   const [step, setStep] = useState(1);
@@ -512,7 +515,7 @@ export default function OnboardingPage() {
                     className="bg-transparent border-none outline-none text-white text-sm w-full ml-3 mr-2 placeholder-gray-500 focus:ring-0 font-medium cursor-pointer appearance-none"
                   >
                     <option value="" disabled className="bg-[#0D1117] text-gray-400">Select your branch</option>
-                    {BRANCHES.map((b) => (
+                    {availableBranches.map((b) => (
                       <option key={b} value={b} className="bg-[#0D1117] text-white">
                         {b}
                       </option>
